@@ -195,8 +195,11 @@ class StudyListComposer:
 
     def _add_study_to_database(self, buffer_study):
         self.repo.save_study(buffer_study)
-        self.display.show_message(
-            f'New study added (mode = {buffer_study.run_mode.name}): "{buffer_study.path}"',
+        self._display.show_message(
+            f"New study added "
+            f"(mode = {buffer_study.run_mode.name}, "
+            f"version={buffer_study.antares_version}): "
+            f'"{buffer_study.path}"',
             __name__ + "." + __class__.__name__,
         )
         self.new_study_added = True
