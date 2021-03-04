@@ -5,4 +5,4 @@ PROJECT_NAME = "Antares_Launcher"
 DESCRIPTION = "Antares_Launcher to run Antares on a remote linux machine"
 
 #: Project's version (:py:class:`Version <rspace.application.Version.Version>`)
-VERSION = "1.1.2"
+VERSION = "1.1.3"

@@ -59,8 +59,6 @@ class TestRemoteEnvironmentWithSlurm:
     def my_remote_env_with_slurm_mock(self):
         remote_home_dir = "remote_home_dir"
         connection = mock.Mock()
-        connection.make_dir = mock.Mock(return_value=True)
-        connection.check_file_not_empty = mock.Mock(return_value=True)
         connection.home_dir = remote_home_dir
         slurm_script_features = SlurmScriptFeatures()
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
@@ -93,9 +91,7 @@ class TestRemoteEnvironmentWithSlurm:
         self,
     ):
         # given
-        remote_home_dir = "/applis/antares/"
         connection = mock.Mock()
-        connection.home_dir = remote_home_dir
         slurm_script_features = SlurmScriptFeatures()
         # when
         connection.make_dir = mock.Mock(return_value=False)
@@ -108,9 +104,7 @@ class TestRemoteEnvironmentWithSlurm:
         self,
     ):
         # given
-        remote_home_dir = "/applis/antares"
         connection = mock.Mock()
-        connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
         slurm_script_features = SlurmScriptFeatures()
@@ -288,23 +282,6 @@ class TestRemoteEnvironmentWithSlurm:
         )
 
     @pytest.mark.unit_test
-    def test_given_a_submitted_study_when_check_job_state_is_called_and_output_is_not_empty_then_the_first_word_is_returned(
-        self, my_remote_env_with_slurm_mock, study
-    ):
-        # given
-        output = "word1 word2"
-        error = ""
-        study.submitted = True
-        study.job_id = 42
-        my_remote_env_with_slurm_mock.connection.execute_command = mock.Mock(
-            return_value=(output, error)
-        )
-        # when
-        return_value = my_remote_env_with_slurm_mock.check_job_state(study)
-        # then
-        assert return_value == "word1"
-
-    @pytest.mark.unit_test
     def test_given_a_submitted_study_when_execute_command_returns_empty_output_then_an_exception_is_raised(
         self, my_remote_env_with_slurm_mock, study
     ):
@@ -344,10 +321,10 @@ class TestRemoteEnvironmentWithSlurm:
         [
             ("PENDING", False, False, False),
             ("RUNNING", True, False, False),
-            ("CANCELLED", True, True, True),
+            ("CANCELLED BY DUMMY", True, True, True),
             ("TIMEOUT", True, True, True),
             ("COMPLETED", True, True, False),
-            ("FAILED", True, True, True),
+            ("FAILED DUMMYWORD", True, True, True),
         ],
     )
     def test_given_state_when_get_job_state_flags_is_called_then_started_and_finished_and_with_error_are_correct(
@@ -474,7 +451,9 @@ class TestRemoteEnvironmentWithSlurm:
         my_remote_env_with_slurm_mock.download_logs(study)
 
         # then
-        my_remote_env_with_slurm_mock._list_remote_logs.assert_called_once_with(study.job_id)
+        my_remote_env_with_slurm_mock._list_remote_logs.assert_called_once_with(
+            study.job_id
+        )
 
     @pytest.mark.unit_test
     def test_given_an_empty_file_list_when_download_logs_is_called_then_connection_download_files_is_not_called(
@@ -557,11 +536,11 @@ class TestRemoteEnvironmentWithSlurm:
         # given
         study.finished = True
         final_zip_name = "final_zip_name"
-        my_remote_env_with_slurm_mock.check_file_not_empty = mock.Mock()
+        my_remote_env_with_slurm_mock.connection.check_file_not_empty = mock.Mock()
         # when
         my_remote_env_with_slurm_mock.check_final_zip_not_empty(study, final_zip_name)
         # then
-        my_remote_env_with_slurm_mock.check_file_not_empty.assert_called_once()
+        my_remote_env_with_slurm_mock.connection.check_file_not_empty.assert_called_once()
 
     @pytest.mark.unit_test
     def test_given_a_finished_study_with_empty_file_when_check_final_zip_not_empty_then_return_false(
@@ -570,7 +549,7 @@ class TestRemoteEnvironmentWithSlurm:
         # given
         study.finished = True
         final_zip_name = "final_zip_name"
-        my_remote_env_with_slurm_mock.check_file_not_empty = mock.Mock(
+        my_remote_env_with_slurm_mock.connection.check_file_not_empty = mock.Mock(
             return_value=False
         )
         # when
@@ -587,7 +566,7 @@ class TestRemoteEnvironmentWithSlurm:
         # given
         study.finished = True
         final_zip_name = "final_zip_name"
-        my_remote_env_with_slurm_mock.check_file_not_empty = mock.Mock(
+        my_remote_env_with_slurm_mock.connection.check_file_not_empty = mock.Mock(
             return_value=True
         )
         # when
@@ -620,7 +599,7 @@ class TestRemoteEnvironmentWithSlurm:
         # given
         study.path = "path"
         study.job_id = 1234
-        my_remote_env_with_slurm_mock.check_file_not_empty = mock.Mock(
+        my_remote_env_with_slurm_mock.connection.check_file_not_empty = mock.Mock(
             return_value=False
         )
         # when
@@ -655,7 +634,7 @@ class TestRemoteEnvironmentWithSlurm:
         final_zip_name = (
             "finished_" + Path(study.path).name + "_" + str(study.job_id) + ".zip"
         )
-        my_remote_env_with_slurm_mock.check_file_not_empty = mock.Mock(
+        my_remote_env_with_slurm_mock.connection.check_file_not_empty = mock.Mock(
             return_value=True
         )
         my_remote_env_with_slurm_mock.connection.download_file = mock.Mock()
@@ -700,7 +679,7 @@ class TestRemoteEnvironmentWithSlurm:
         )
         local_final_zipfile_path = str(Path(study.output_dir) / final_zip_name)
         study.local_final_zipfile_path = ""
-        my_remote_env_with_slurm_mock.check_file_not_empty = mock.Mock(
+        my_remote_env_with_slurm_mock.connection.check_file_not_empty = mock.Mock(
             return_value=True
         )
         my_remote_env_with_slurm_mock.connection.download_file = mock.Mock(
@@ -869,26 +848,6 @@ class TestRemoteEnvironmentWithSlurm:
         )
         # then
         assert output == 1
-
-    @pytest.mark.unit_test
-    def test_given_study_with_xpansion_mode_when_compose_launch_command_is_called_then_use_xpansion_script(
-        self, my_remote_env_with_slurm_mock, study
-    ):
-        # given
-        study.run_mode = Modes.xpansion
-        # when
-        script_params = ScriptParametersDTO(
-            study_dir_name=Path(study.path).name,
-            input_zipfile_name=Path(study.zipfile_path).name,
-            time_limit=10,
-            n_cpu=study.n_cpu,
-            antares_version=study.antares_version,
-            run_mode=study.run_mode,
-            post_processing=study.post_processing,
-        )
-        command = my_remote_env_with_slurm_mock.compose_launch_command(script_params)
-        # then
-        assert ("ANTARES_XPANSION" in command) is True
 
     @pytest.mark.parametrize(
         "job_type,mode,post_processing",

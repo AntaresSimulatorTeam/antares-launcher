@@ -50,14 +50,6 @@ class IRemoteEnvironment(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def compose_command_to_check_state(self, job_id):
-        raise NotImplementedError
-
-    @abstractmethod
-    def check_job_state(self, arg_study: StudyDTO):
-        raise NotImplementedError
-
-    @abstractmethod
     def upload_file(self, src):
         raise NotImplementedError
 
@@ -72,12 +64,6 @@ class IRemoteEnvironment(ABC):
     @abstractmethod
     def clean_remote_server(self, study: StudyDTO) -> bool:
         raise NotImplementedError
-
-    def execute_command(self, cmd):
-        return self.connection.execute_command(cmd)
-
-    def check_file_not_empty(self, file_path):
-        return self.connection.check_file_not_empty(file_path)
 
     @abstractmethod
     def submit_job(self, _study: StudyDTO):

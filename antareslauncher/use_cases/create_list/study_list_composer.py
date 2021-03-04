@@ -10,20 +10,30 @@ from antareslauncher.study_dto import StudyDTO, Modes
 
 @dataclass
 class StudyListComposer:
-    repo: IDataRepo
-    file_manager: FileManager
-    display: IDisplay
-    studies_in_dir: str
-    time_limit: int
-    log_dir: str
-    n_cpu: int
-    xpansion_mode: bool
-    output_dir: str
-    post_processing: bool
-    # supported_antares_versions: List[str]
-
-    def __post_init__(self):
-        self.new_study_added = False
+    def __init__(
+        self,
+        repo: IDataRepo,
+        file_manager: FileManager,
+        display: IDisplay,
+        studies_in_dir: str,
+        time_limit: int,
+        log_dir: str,
+        n_cpu: int,
+        xpansion_mode: bool,
+        output_dir: str,
+        post_processing: bool,
+    ):
+        self._repo = repo
+        self._file_manager = file_manager
+        self._display = display
+        self._studies_in_dir = studies_in_dir
+        self.time_limit = time_limit
+        self.log_dir = log_dir
+        self.n_cpu = n_cpu
+        self.xpansion_mode = xpansion_mode
+        self.output_dir = output_dir
+        self.post_processing = post_processing
+        self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
 
     def get_list_of_studies(self):
@@ -32,15 +42,21 @@ class StudyListComposer:
         Returns:
             List of all the saved studies in the repo
         """
-        return self.repo.get_list_of_studies()
+        return self._repo.get_list_of_studies()
 
-    def get_dir_list_of_studiesin_dir(self):
+    def get_ls_of_studiesin_dir(self):
         """Retrieve the list of directories inside the STUDIES_IN_DIR folder
 
         Returns:
             list of directories inside the STUDIES_IN_DIR folder
         """
-        return self.file_manager.listdir_of(self.studies_in_dir)
+        ls_of_dir = self._file_manager.listdir_of(self._studies_in_dir)
+        # dir_list = []
+        # for entry in ls_of_dir:
+        #    path = Path(self._studies_in_dir) / Path(entry)
+        #    if self._file_manager.is_dir(path):
+        #        dir_list.append(path)
+        return ls_of_dir
 
     def _create_study(self, path, antares_version, xpansion_study):
         """Generate a study dto from study directory path, antares version and directory hash
@@ -84,22 +100,13 @@ class StudyListComposer:
             The version if the directory is an antares study, None otherwise
         """
         file_path = Path(directory_path) / "study.antares"
-        config = self.file_manager.get_config_from_file(file_path)
+        config = self._file_manager.get_config_from_file(file_path)
         if "antares" in config:
             return config["antares"].get("version", None)
 
     def _is_valid_antares_study(self, antares_version):
-        """Checks if antares version is a positive number compatible with version
-        installed on the remote server (the list is found in the definitions
-
-        Args:
-            antares_version: antares version
-
-        Returns:
-            True if the version is positive, False otherwise
-        """
         if antares_version is None:
-            self.display.show_message(
+            self._display.show_message(
                 "... not a valid Antares study",
                 __name__ + "." + __class__.__name__,
             )
@@ -109,64 +116,50 @@ class StudyListComposer:
             return True
         else:
             message = f"... Antares version ({antares_version}) is not supported (supported versions: {ANTARES_VERSIONS_ON_REMOTE_SERVER})"
-            self.display.show_message(
+            self._display.show_message(
                 message,
                 __name__ + "." + __class__.__name__,
             )
             return False
 
     def _is_there_candidates_file(self, directory_path: Path):
-        """Checks if the file candidates.ini exists
-
-        Args:
-            directory_path: path to the study
-
-        Returns:
-            True if candidates.ini exists, False otherwise
-        """
         candidates_file_path = str(
             Path.joinpath(directory_path, "user", "expansion", "candidates.ini")
         )
-        return self.file_manager.file_exists(candidates_file_path)
+        return self._file_manager.file_exists(candidates_file_path)
 
     def _is_xpansion_study(self, xpansion_study_path: str):
-        """Checks if the study correspond to an xpansion study
-
-        Args:
-            xpansion_study_path: path to the study
-
-        Returns:
-            True if the directory correspond to an xpansion study, False otherwise
-        """
         return self._is_there_candidates_file(Path(xpansion_study_path))
 
     def update_study_database(self):
         """List all directories inside the STUDIES_IN_DIR folder, if a directory is a valid antares study
-        and is new, then creates an IStudyDTO object then saves it in the repo
+        and is new, then creates a StudyDTO object then saves it in the repo
         """
+        self._show_welcome_message()
+
+        self._new_study_added = False
+        for directory in self.get_ls_of_studiesin_dir():
+            directory_path = Path(self._studies_in_dir) / Path(directory)
+            if self._file_manager.is_dir(directory_path):
+                self._update_database_with_directory(directory_path)
+
+        if self._new_study_added is False:
+            self._display.show_message(
+                "Didn't find any new simulations...",
+                __name__ + "." + __class__.__name__,
+            )
+
+    def _show_welcome_message(self):
         if self.xpansion_mode:
             message = (
                 "Updating current database... New studies will be ran in xpansion mode"
             )
         else:
             message = "Updating current database..."
-
-        self.display.show_message(
+        self._display.show_message(
             message,
             __name__ + "." + __class__.__name__,
         )
-
-        self.new_study_added = False
-        for directory in self.get_dir_list_of_studiesin_dir():
-            directory_path = str(Path(self.studies_in_dir) / Path(directory))
-            if self.file_manager.is_dir(Path(directory_path)):
-                self._update_database_with_directory(directory_path)
-
-        if not self.new_study_added:
-            self.display.show_message(
-                "Didn't find any new simulations...",
-                __name__ + "." + __class__.__name__,
-            )
 
     def _update_database_with_new_study(
         self, antares_version, directory_path, is_xpansion_study
@@ -190,11 +183,11 @@ class StudyListComposer:
                 )
 
     def _update_database_with_study(self, buffer_study):
-        if not self.repo.is_study_inside_database(buffer_study):
+        if not self._repo.is_study_inside_database(buffer_study):
             self._add_study_to_database(buffer_study)
 
     def _add_study_to_database(self, buffer_study):
-        self.repo.save_study(buffer_study)
+        self._repo.save_study(buffer_study)
         self._display.show_message(
             f"New study added "
             f"(mode = {buffer_study.run_mode.name}, "
@@ -202,4 +195,4 @@ class StudyListComposer:
             f'"{buffer_study.path}"',
             __name__ + "." + __class__.__name__,
         )
-        self.new_study_added = True
+        self._new_study_added = True

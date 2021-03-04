@@ -26,15 +26,16 @@ class TestIntegrationStudyListComposer:
         self,
     ):
         self.study_list_composer.get_list_of_studies()
-        self.study_list_composer.repo.get_list_of_studies.assert_called_once()
+        self.study_list_composer._repo.get_list_of_studies.assert_called_once()
 
     @pytest.mark.integration_test
     def test_study_list_composer_get_studies_in_dir_list_calls_file_manager_listdir_of(
         self,
     ):
-        self.study_list_composer.get_dir_list_of_studiesin_dir()
-        self.study_list_composer.file_manager.listdir_of.assert_called_once_with(
-            self.study_list_composer.studies_in_dir
+        self.study_list_composer._file_manager.listdir_of = mock.Mock(return_value=[])
+        self.study_list_composer.get_ls_of_studiesin_dir()
+        self.study_list_composer._file_manager.listdir_of.assert_called_once_with(
+            self.study_list_composer._studies_in_dir
         )
 
     @pytest.mark.integration_test
@@ -44,13 +45,13 @@ class TestIntegrationStudyListComposer:
         # given
         directory_path = "directory_path"
         file_path = Path(directory_path) / "study.antares"
-        self.study_list_composer.file_manager.get_config_from_file = mock.Mock(
+        self.study_list_composer._file_manager.get_config_from_file = mock.Mock(
             return_value={}
         )
         # when
         self.study_list_composer.get_antares_version(directory_path)
         # then
-        self.study_list_composer.file_manager.get_config_from_file.assert_called_once_with(
+        self.study_list_composer._file_manager.get_config_from_file.assert_called_once_with(
             file_path
         )
 

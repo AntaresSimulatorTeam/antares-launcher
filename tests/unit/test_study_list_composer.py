@@ -85,12 +85,12 @@ class TestStudyListComposer:
             post_processing=False,
         )
         # when
-        study_list_composer.file_manager.get_config_from_file = mock.Mock(
+        study_list_composer._file_manager.get_config_from_file = mock.Mock(
             return_value={}
         )
         return_value = study_list_composer.get_antares_version(dir_path)
         # then
-        study_list_composer.file_manager.get_config_from_file.assert_called_once_with(
+        study_list_composer._file_manager.get_config_from_file.assert_called_once_with(
             expected_config_file_path
         )
         assert not return_value
@@ -115,12 +115,12 @@ class TestStudyListComposer:
             post_processing=False,
         )
         # when
-        study_list_composer.file_manager.get_config_from_file = mock.Mock(
+        study_list_composer._file_manager.get_config_from_file = mock.Mock(
             return_value={"antares": {"version": 42}}
         )
         return_value = study_list_composer.get_antares_version(dir_path)
         # then
-        study_list_composer.file_manager.get_config_from_file.assert_called_once_with(
+        study_list_composer._file_manager.get_config_from_file.assert_called_once_with(
             expected_config_file_path
         )
         assert return_value
@@ -140,17 +140,17 @@ class TestStudyListComposer:
             output_dir="output_dir",
             post_processing=False,
         )
-        study_list_composer.get_dir_list_of_studiesin_dir = mock.Mock(
-            return_value=["study"]
-        )
+        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(return_value=["study"])
         study_list_composer.get_antares_version = mock.Mock(return_value=True)
-        study_list_composer.repo.is_study_inside_database = mock.Mock(return_value=True)
+        study_list_composer._repo.is_study_inside_database = mock.Mock(
+            return_value=True
+        )
 
         # when
         study_list_composer.update_study_database()
 
         # then
-        assert study_list_composer.display.show_message.call_count == 3
+        assert study_list_composer._display.show_message.call_count == 3
 
     @pytest.mark.unit_test
     def test_given_existing_db_when_new_study_then_save_new_study_and_show_message(
@@ -169,20 +169,18 @@ class TestStudyListComposer:
             output_dir="output_dir",
             post_processing=False,
         )
-        study_list_composer.get_dir_list_of_studiesin_dir = mock.Mock(
-            return_value=["study"]
-        )
+        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(return_value=["study"])
         study_list_composer.get_antares_version = mock.Mock(return_value="700")
-        study_list_composer.repo.is_study_inside_database = mock.Mock(
+        study_list_composer._repo.is_study_inside_database = mock.Mock(
             return_value=False
         )
-        study_list_composer.file_manager.is_dir = mock.Mock(return_value=True)
+        study_list_composer._file_manager.is_dir = mock.Mock(return_value=True)
         # when
         study_list_composer.update_study_database()
 
         # then
-        study_list_composer.repo.save_study.assert_called_once()
-        assert study_list_composer.display.show_message.call_count == 2
+        study_list_composer._repo.save_study.assert_called_once()
+        assert study_list_composer._display.show_message.call_count == 2
 
     @pytest.mark.unit_test
     def test_given_empty_study_dir_list_when_update_study_database_called_then_display_show_two_messages(
@@ -201,11 +199,11 @@ class TestStudyListComposer:
             output_dir="output_dir",
             post_processing=False,
         )
-        study_list_composer.get_dir_list_of_studiesin_dir = mock.Mock(return_value=[])
+        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(return_value=[])
         # when
         study_list_composer.update_study_database()
         # then
-        assert study_list_composer.display.show_message.call_count == 2
+        assert study_list_composer._display.show_message.call_count == 2
 
     @pytest.mark.unit_test
     def test_given_two_new_studies_when_update_study_database_called_then_display_show_three_messages(
@@ -224,18 +222,18 @@ class TestStudyListComposer:
             output_dir="output_dir",
             post_processing=False,
         )
-        study_list_composer.get_dir_list_of_studiesin_dir = mock.Mock(
+        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(
             return_value=["study1", "study2"]
         )
         study_list_composer.get_antares_version = mock.Mock(return_value="700")
-        study_list_composer.repo.is_study_inside_database = mock.Mock(
+        study_list_composer._repo.is_study_inside_database = mock.Mock(
             return_value=False
         )
-        study_list_composer.file_manager.is_dir = mock.Mock(return_value=True)
+        study_list_composer._file_manager.is_dir = mock.Mock(return_value=True)
         # when
         study_list_composer.update_study_database()
         # then
-        assert study_list_composer.display.show_message.call_count == 3
+        assert study_list_composer._display.show_message.call_count == 3
 
     @pytest.mark.unit_test
     def test_given_directory_path_when_create_study_is_called_then_return_study_dto_with_righ_values(
@@ -255,7 +253,7 @@ class TestStudyListComposer:
             post_processing=False,
         )
 
-        study_dir = study_list_composer.studies_in_dir
+        study_dir = study_list_composer._studies_in_dir
         antares_version = 700
 
         is_xpansion_study = False
@@ -264,7 +262,7 @@ class TestStudyListComposer:
             study_dir, antares_version, is_xpansion_study
         )
         # then
-        assert new_study_dto.path == study_list_composer.studies_in_dir
+        assert new_study_dto.path == study_list_composer._studies_in_dir
         assert new_study_dto.n_cpu == study_list_composer.n_cpu
         assert new_study_dto.time_limit == study_list_composer.time_limit
         assert new_study_dto.antares_version == antares_version
@@ -404,7 +402,7 @@ class TestStudyListComposer:
             post_processing=False,
         )
 
-        study_dir = study_list_composer.studies_in_dir
+        study_dir = study_list_composer._studies_in_dir
         antares_version = 700
 
         is_xpansion_study = True
@@ -433,7 +431,7 @@ class TestStudyListComposer:
             post_processing=False,
         )
 
-        study_dir = study_list_composer.studies_in_dir
+        study_dir = study_list_composer._studies_in_dir
         antares_version = 700
         is_xpansion_study = True
         # when
@@ -463,7 +461,7 @@ class TestStudyListComposer:
         study_list_composer._update_database_with_study = mock.Mock()
         study_list_composer.get_antares_version = mock.Mock(return_value="610")
 
-        study_dir = study_list_composer.studies_in_dir
+        study_dir = study_list_composer._studies_in_dir
         is_xpansion_study = True
         study_list_composer._is_xpansion_study = mock.Mock(
             return_value=is_xpansion_study

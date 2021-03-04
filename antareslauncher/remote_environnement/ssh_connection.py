@@ -23,6 +23,11 @@ class SshConnection(IConnection):
         self.__client = None
         self.__home_dir = None
         self.timeout = 10
+        self.host = ""
+        self.username = ""
+        self.port = 22
+        self.password = None
+        self.private_key = None
 
         if config:
             self.logger.info("Loading ssh connection from config dictionary")
@@ -71,7 +76,9 @@ class SshConnection(IConnection):
                 key_file_name=key_file_path, key_password=key_password
             )
         elif self.password is None:
-            self.logger.debug("self.password is None")
+            self.logger.debug(
+                "self.password is None, no key found, now password was given"
+            )
             raise ValueError
 
     def initialize_home_dir(self):
