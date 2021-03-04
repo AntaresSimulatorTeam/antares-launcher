@@ -1,0 +1,57 @@
+from pathlib import Path
+from unittest import mock
+
+import pytest
+
+from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer
+
+
+class TestIntegrationStudyListComposer:
+    def setup_method(self):
+        self.study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in",
+            time_limit=42,
+            n_cpu=24,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+
+    @pytest.mark.integration_test
+    def test_study_list_composer_get_list_of_studies_calls_repo_get_list_of_studies(
+        self,
+    ):
+        self.study_list_composer.get_list_of_studies()
+        self.study_list_composer.repo.get_list_of_studies.assert_called_once()
+
+    @pytest.mark.integration_test
+    def test_study_list_composer_get_studies_in_dir_list_calls_file_manager_listdir_of(
+        self,
+    ):
+        self.study_list_composer.get_dir_list_of_studiesin_dir()
+        self.study_list_composer.file_manager.listdir_of.assert_called_once_with(
+            self.study_list_composer.studies_in_dir
+        )
+
+    @pytest.mark.integration_test
+    def test_study_list_composer_get_antares_version_calls_file_manager_get_config_from_file(
+        self,
+    ):
+        # given
+        directory_path = "directory_path"
+        file_path = Path(directory_path) / "study.antares"
+        self.study_list_composer.file_manager.get_config_from_file = mock.Mock(
+            return_value={}
+        )
+        # when
+        self.study_list_composer.get_antares_version(directory_path)
+        # then
+        self.study_list_composer.file_manager.get_config_from_file.assert_called_once_with(
+            file_path
+        )
+
+    # TODO: test_update_study_database already in unit tests?

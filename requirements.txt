@@ -1,0 +1,18 @@
+paramiko
+pytest-xdist
+pytest
+pytest-cov
+tinydb
+black
+pyinstaller
+setuptools
+tqdm
+pyyaml
+
+# for documentation
+sphinx
+sphinx_rtd_theme
+recommonmark
+
+# for documentation, from markdown to sphinx (rst)
+m2r

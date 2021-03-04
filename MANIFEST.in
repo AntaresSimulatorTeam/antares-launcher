@@ -1,0 +1,2 @@
+include data/launchAntares_v0.sh
+include data/sshconfig.json

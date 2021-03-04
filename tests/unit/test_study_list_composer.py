@@ -1,0 +1,505 @@
+from pathlib import Path
+from unittest import mock
+
+import pytest
+
+from antareslauncher import definitions
+from antareslauncher.file_manager.file_manager import FileManager
+from antareslauncher.study_dto import Modes
+from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer
+
+DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
+
+
+class TestStudyListComposer:
+    @pytest.fixture(scope="function")
+    def study_mock(self):
+        study = mock.Mock()
+        return study
+
+    @pytest.mark.unit_test
+    def test_given_repo_when_get_list_of_studies_called_then_repo_get_list_of_studies_is_called(
+        self,
+    ):
+        # given
+        repo_mock = mock.Mock()
+        repo_mock.get_list_of_studies = mock.Mock()
+        study_list_composer = StudyListComposer(
+            repo=repo_mock,
+            file_manager=None,
+            display=None,
+            studies_in_dir=None,
+            time_limit=None,
+            n_cpu=None,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        # when
+        study_list_composer.get_list_of_studies()
+        # then
+        repo_mock.get_list_of_studies.assert_called_once()
+
+    @pytest.mark.unit_test
+    def test_given_repo_when_get_list_of_studies_called_then_repo_get_list_of_studies_is_called(
+        self,
+    ):
+        # given
+        repo_mock = mock.Mock()
+        repo_mock.get_list_of_studies = mock.Mock()
+        study_list_composer = StudyListComposer(
+            repo=repo_mock,
+            file_manager=None,
+            display=None,
+            studies_in_dir=None,
+            time_limit=None,
+            n_cpu=None,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        # when
+        study_list_composer.get_list_of_studies()
+        # then
+        repo_mock.get_list_of_studies.assert_called_once()
+
+    @pytest.mark.unit_test
+    def test_when_is_dir_an_antares_study_is_called_then_the_file_study_antares_is_checked(
+        self,
+    ):
+        # given
+        dir_path = "dir_path"
+        expected_config_file_path = Path(dir_path) / "study.antares"
+        study_list_composer = StudyListComposer(
+            repo=None,
+            file_manager=mock.Mock(),
+            display=None,
+            studies_in_dir=None,
+            time_limit=None,
+            n_cpu=None,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        # when
+        study_list_composer.file_manager.get_config_from_file = mock.Mock(
+            return_value={}
+        )
+        return_value = study_list_composer.get_antares_version(dir_path)
+        # then
+        study_list_composer.file_manager.get_config_from_file.assert_called_once_with(
+            expected_config_file_path
+        )
+        assert not return_value
+
+    @pytest.mark.unit_test
+    def test_when_antares_is_in_the_config_file_then_is_dir_an_antares_study_return_true(
+        self,
+    ):
+        # given
+        dir_path = "dir_path"
+        expected_config_file_path = Path(dir_path) / "study.antares"
+        study_list_composer = StudyListComposer(
+            repo=None,
+            file_manager=mock.Mock(),
+            display=None,
+            studies_in_dir=None,
+            time_limit=None,
+            n_cpu=None,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        # when
+        study_list_composer.file_manager.get_config_from_file = mock.Mock(
+            return_value={"antares": {"version": 42}}
+        )
+        return_value = study_list_composer.get_antares_version(dir_path)
+        # then
+        study_list_composer.file_manager.get_config_from_file.assert_called_once_with(
+            expected_config_file_path
+        )
+        assert return_value
+
+    @pytest.mark.unit_test
+    def test_given_existing_db_when_no_new_study_then_do_nothing_and_show_message(self):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=None,
+            n_cpu=None,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        study_list_composer.get_dir_list_of_studiesin_dir = mock.Mock(
+            return_value=["study"]
+        )
+        study_list_composer.get_antares_version = mock.Mock(return_value=True)
+        study_list_composer.repo.is_study_inside_database = mock.Mock(return_value=True)
+
+        # when
+        study_list_composer.update_study_database()
+
+        # then
+        assert study_list_composer.display.show_message.call_count == 3
+
+    @pytest.mark.unit_test
+    def test_given_existing_db_when_new_study_then_save_new_study_and_show_message(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        study_list_composer.get_dir_list_of_studiesin_dir = mock.Mock(
+            return_value=["study"]
+        )
+        study_list_composer.get_antares_version = mock.Mock(return_value="700")
+        study_list_composer.repo.is_study_inside_database = mock.Mock(
+            return_value=False
+        )
+        study_list_composer.file_manager.is_dir = mock.Mock(return_value=True)
+        # when
+        study_list_composer.update_study_database()
+
+        # then
+        study_list_composer.repo.save_study.assert_called_once()
+        assert study_list_composer.display.show_message.call_count == 2
+
+    @pytest.mark.unit_test
+    def test_given_empty_study_dir_list_when_update_study_database_called_then_display_show_two_messages(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=None,
+            file_manager=None,
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        study_list_composer.get_dir_list_of_studiesin_dir = mock.Mock(return_value=[])
+        # when
+        study_list_composer.update_study_database()
+        # then
+        assert study_list_composer.display.show_message.call_count == 2
+
+    @pytest.mark.unit_test
+    def test_given_two_new_studies_when_update_study_database_called_then_display_show_three_messages(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        study_list_composer.get_dir_list_of_studiesin_dir = mock.Mock(
+            return_value=["study1", "study2"]
+        )
+        study_list_composer.get_antares_version = mock.Mock(return_value="700")
+        study_list_composer.repo.is_study_inside_database = mock.Mock(
+            return_value=False
+        )
+        study_list_composer.file_manager.is_dir = mock.Mock(return_value=True)
+        # when
+        study_list_composer.update_study_database()
+        # then
+        assert study_list_composer.display.show_message.call_count == 3
+
+    @pytest.mark.unit_test
+    def test_given_directory_path_when_create_study_is_called_then_return_study_dto_with_righ_values(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+
+        study_dir = study_list_composer.studies_in_dir
+        antares_version = 700
+
+        is_xpansion_study = False
+        # when
+        new_study_dto = study_list_composer._create_study(
+            study_dir, antares_version, is_xpansion_study
+        )
+        # then
+        assert new_study_dto.path == study_list_composer.studies_in_dir
+        assert new_study_dto.n_cpu == study_list_composer.n_cpu
+        assert new_study_dto.time_limit == study_list_composer.time_limit
+        assert new_study_dto.antares_version == antares_version
+        assert new_study_dto.job_log_dir == str(
+            Path(study_list_composer.log_dir) / "JOB_LOGS"
+        )
+
+    @pytest.mark.unit_test
+    def test_given_an_antares_version_when_is_valid_antares_study_is_called_return_boolean_value(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        antares_version_700 = "700"
+        wrong_antares_version = "137"
+        antares_version_none = None
+        # when
+        is_valid_antares_study_expected_true = (
+            study_list_composer._is_valid_antares_study(antares_version_700)
+        )
+        is_valid_antares_study_expected_false = (
+            study_list_composer._is_valid_antares_study(wrong_antares_version)
+        )
+        is_valid_antares_study_expected_false2 = (
+            study_list_composer._is_valid_antares_study(antares_version_none)
+        )
+        # then
+        assert is_valid_antares_study_expected_true is True
+        assert is_valid_antares_study_expected_false is False
+        assert is_valid_antares_study_expected_false2 is False
+
+    @pytest.mark.unit_test
+    def test_given_a_none_antares_version_when_is_antares_study_is_called_return_false_and_message(
+        self,
+    ):
+        # given
+        display_mock = mock.Mock()
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=display_mock,
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        display_mock.show_message = mock.Mock()
+        antares_version = None
+        # when
+        is_antares_study = study_list_composer._is_valid_antares_study(antares_version)
+        # then
+        assert is_antares_study is False
+        display_mock.show_message.assert_called_once_with(
+            "... not a valid Antares study", mock.ANY
+        )
+
+    @pytest.mark.unit_test
+    def test_given_a_non_supported_antares_version_when_is_antares_study_is_called_return_false_and_message(
+        self,
+    ):
+        # given
+        display_mock = mock.Mock()
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=display_mock,
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        display_mock.show_message = mock.Mock()
+        antares_version = "600"
+        message = f"... Antares version ({antares_version}) is not supported (supported versions: {definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER})"
+        # when
+        is_antares_study = study_list_composer._is_valid_antares_study(antares_version)
+        # then
+        assert is_antares_study is False
+        display_mock.show_message.assert_called_once_with(message, mock.ANY)
+
+    @pytest.mark.unit_test
+    def test_given_xpansion_study_path_when_is_xpansion_study_is_called_return_true(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        xpansion_study_path = Path("xpansion_study_path")
+        study_list_composer._is_there_candidates_file = mock.Mock(return_value=True)
+        # when
+        is_xpansion_study = study_list_composer._is_xpansion_study(xpansion_study_path)
+        # then
+        assert is_xpansion_study is True
+
+    @pytest.mark.unit_test
+    def test_given_xpansion_study_path_when_create_study_is_called_then_xpansion_value_of_dto_is_true(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+
+        study_dir = study_list_composer.studies_in_dir
+        antares_version = 700
+
+        is_xpansion_study = True
+        # when
+        new_study_dto = study_list_composer._create_study(
+            study_dir, antares_version, is_xpansion_study
+        )
+        # then
+        assert new_study_dto.xpansion_study == True
+
+    @pytest.mark.unit_test
+    def test_given_xpansion_mode_option_when_create_study_is_called_then_run_mode_value_of_dto_is_xpansion_mode(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=True,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+
+        study_dir = study_list_composer.studies_in_dir
+        antares_version = 700
+        is_xpansion_study = True
+        # when
+        new_study_dto = study_list_composer._create_study(
+            study_dir, antares_version, is_xpansion_study
+        )
+        # then
+        assert new_study_dto.run_mode == Modes.xpansion
+
+    @pytest.mark.unit_test
+    def test_given_xpansion_mode_option_when_update_study_only_xpansion_studies_are_saved_in_database(
+        self,
+    ):
+        # given
+        study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=mock.Mock(),
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=True,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+        study_list_composer._update_database_with_study = mock.Mock()
+        study_list_composer.get_antares_version = mock.Mock(return_value="610")
+
+        study_dir = study_list_composer.studies_in_dir
+        is_xpansion_study = True
+        study_list_composer._is_xpansion_study = mock.Mock(
+            return_value=is_xpansion_study
+        )
+        study_list_composer._update_database_with_directory(study_dir)
+
+        isnot_xpansion_study = False
+        study_list_composer._is_xpansion_study = mock.Mock(
+            return_value=isnot_xpansion_study
+        )
+        # when
+        study_list_composer._update_database_with_directory(study_dir)
+        # then
+        study_list_composer._update_database_with_study.assert_called_once()
+
+    @pytest.mark.unit_test
+    def test_given_a_study_path_when_is_there_candidates_file_is_called_return_true_if_present(
+        self,
+    ):
+        # given
+        directory_path = Path.joinpath(DATA_4_TEST_DIR, "xpansion-reference")
+        file_manager = FileManager(display_terminal=mock.Mock())
+        my_study_list_composer = StudyListComposer(
+            repo=mock.Mock(),
+            file_manager=file_manager,
+            display=mock.Mock(),
+            studies_in_dir="studies_in_dir",
+            time_limit=24,
+            n_cpu=42,
+            log_dir="job_log_dir",
+            xpansion_mode=True,
+            output_dir="output_dir",
+            post_processing=False,
+        )
+
+        # when
+        output = my_study_list_composer._is_there_candidates_file(directory_path)
+        # then
+        assert output
