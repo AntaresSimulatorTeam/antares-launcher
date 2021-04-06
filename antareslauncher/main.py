@@ -96,13 +96,7 @@ def run_with(arguments):
         repo=data_repo,
         file_manager=file_manager,
         display=display,
-        studies_in_dir=studies_in,
-        time_limit=arguments.time_limit,
-        n_cpu=arguments.n_cpu,
-        log_dir=arguments.log_dir,
-        output_dir=arguments.output_dir,
-        xpansion_mode=arguments.xpansion_mode,
-        post_processing=arguments.post_processing,
+        parameters=StudyListComposerParameters(),
     )
     launch_controller = LaunchController(
         repo=data_repo,

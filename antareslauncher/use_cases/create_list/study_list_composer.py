@@ -9,30 +9,35 @@ from antareslauncher.study_dto import StudyDTO, Modes
 
 
 @dataclass
+class StudyListComposerParameters:
+    studies_in_dir: str
+    time_limit: int
+    log_dir: str
+    n_cpu: int
+    xpansion_mode: bool
+    output_dir: str
+    post_processing: bool
+
+
+@dataclass
 class StudyListComposer:
     def __init__(
         self,
         repo: IDataRepo,
         file_manager: FileManager,
         display: IDisplay,
-        studies_in_dir: str,
-        time_limit: int,
-        log_dir: str,
-        n_cpu: int,
-        xpansion_mode: bool,
-        output_dir: str,
-        post_processing: bool,
+        parameters: StudyListComposerParameters,
     ):
         self._repo = repo
         self._file_manager = file_manager
         self._display = display
-        self._studies_in_dir = studies_in_dir
-        self.time_limit = time_limit
-        self.log_dir = log_dir
-        self.n_cpu = n_cpu
-        self.xpansion_mode = xpansion_mode
-        self.output_dir = output_dir
-        self.post_processing = post_processing
+        self._studies_in_dir = parameters.studies_in_dir
+        self.time_limit = parameters.time_limit
+        self.log_dir = parameters.log_dir
+        self.n_cpu = parameters.n_cpu
+        self.xpansion_mode = parameters.xpansion_mode
+        self.output_dir = parameters.output_dir
+        self.post_processing = parameters.post_processing
         self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
 
@@ -51,23 +56,9 @@ class StudyListComposer:
             list of directories inside the STUDIES_IN_DIR folder
         """
         ls_of_dir = self._file_manager.listdir_of(self._studies_in_dir)
-        # dir_list = []
-        # for entry in ls_of_dir:
-        #    path = Path(self._studies_in_dir) / Path(entry)
-        #    if self._file_manager.is_dir(path):
-        #        dir_list.append(path)
         return ls_of_dir
 
     def _create_study(self, path, antares_version, xpansion_study):
-        """Generate a study dto from study directory path, antares version and directory hash
-
-        Args:
-            path: path of the study directory
-            antares_version: version number of antares
-
-        Returns:
-            study dto filled with the specified data
-        """
         if self.xpansion_mode:
             run_mode = Modes.xpansion
         else:

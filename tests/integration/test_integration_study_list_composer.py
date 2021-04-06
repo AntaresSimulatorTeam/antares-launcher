@@ -12,13 +12,7 @@ class TestIntegrationStudyListComposer:
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in",
-            time_limit=42,
-            n_cpu=24,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=StudyListComposerParameters(),
         )
 
     @pytest.mark.integration_test

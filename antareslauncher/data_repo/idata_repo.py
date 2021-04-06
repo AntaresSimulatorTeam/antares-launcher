@@ -17,7 +17,7 @@ class IDataRepo(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def is_study_inside_database(self, study: StudyDTO):
+    def is_study_inside_database(self, study: StudyDTO) -> bool:
         raise NotImplementedError
 
     @abstractmethod

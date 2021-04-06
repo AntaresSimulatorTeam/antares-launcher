@@ -32,7 +32,7 @@ class StudyDTO:
     job_state: Optional[str] = ""
     time_limit: Optional[int] = None
     n_cpu: Optional[int] = None
-    antares_version: Optional[int] = None
+    antares_version: Optional[str] = None
     xpansion_study: Optional[bool] = False
     run_mode: Optional[Modes] = Modes.antares
     post_processing: Optional[bool] = False
