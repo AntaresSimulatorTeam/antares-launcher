@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from antareslauncher import main
-from antareslauncher.main_option_parser import MainOptionParser
+from antareslauncher import main, definitions
+from antareslauncher.main_option_parser import MainOptionParser, MainOptionsParameters
 
 DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
 ANTARES_STUDY = DATA_4_TEST_DIR / "one_node_v7"
@@ -39,7 +39,20 @@ class TestEndToEnd:
 
         self.ssh_config_file_path = DATA_4_TEST_DIR / "sshconfig.json"
 
-        self.parser: MainOptionParser = MainOptionParser()
+        main_options_parameters = MainOptionsParameters(
+            default_wait_time=definitions.DEFAULT_WAIT_TIME,
+            default_time_limit=definitions.DEFAULT_TIME_LIMIT,
+            default_n_cpu=definitions.DEFAULT_N_CPU,
+            studies_in_dir=definitions.STUDIES_IN_DIR,
+            log_dir=definitions.LOG_DIR,
+            finished_dir=definitions.FINISHED_DIR,
+            ssh_config_file_is_required=definitions.SSH_CONFIG_FILE_IS_REQUIRED,
+            ssh_configfile_path_prod_cwd=definitions.SSH_CONFIGFILE_PATH_PROD_CWD,
+            ssh_configfile_path_prod_user=definitions.SSH_CONFIGFILE_PATH_PROD_USER,
+        )
+        self.parser: MainOptionParser = MainOptionParser(
+            main_options_parameters=main_options_parameters
+        )
         self.parser.add_basic_arguments()
         self.parser.add_advanced_arguments()
 
