@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List
 
 from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.definitions import ANTARES_VERSIONS_ON_REMOTE_SERVER
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.study_dto import StudyDTO, Modes
@@ -17,6 +17,7 @@ class StudyListComposerParameters:
     xpansion_mode: bool
     output_dir: str
     post_processing: bool
+    antares_versions_on_remote_server: List[str]
 
 
 @dataclass
@@ -40,6 +41,9 @@ class StudyListComposer:
         self.post_processing = parameters.post_processing
         self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
+        self.ANTARES_VERSIONS_ON_REMOTE_SERVER = (
+            parameters.antares_versions_on_remote_server
+        )
 
     def get_list_of_studies(self):
         """Retrieve the list of studies from the repo
@@ -103,10 +107,10 @@ class StudyListComposer:
             )
             return False
 
-        elif antares_version in ANTARES_VERSIONS_ON_REMOTE_SERVER:
+        elif antares_version in self.ANTARES_VERSIONS_ON_REMOTE_SERVER:
             return True
         else:
-            message = f"... Antares version ({antares_version}) is not supported (supported versions: {ANTARES_VERSIONS_ON_REMOTE_SERVER})"
+            message = f"... Antares version ({antares_version}) is not supported (supported versions: {self.ANTARES_VERSIONS_ON_REMOTE_SERVER})"
             self._display.show_message(
                 message,
                 __name__ + "." + __class__.__name__,

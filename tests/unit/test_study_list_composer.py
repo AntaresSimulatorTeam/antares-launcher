@@ -4,8 +4,6 @@ from unittest.mock import call
 
 import pytest
 
-from antareslauncher import definitions
-from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.study_dto import Modes, StudyDTO
@@ -27,6 +25,7 @@ class TestStudyListComposer:
             xpansion_mode=False,
             output_dir="output_dir",
             post_processing=False,
+            antares_versions_on_remote_server=["610", "700", "800"],
         )
 
     @pytest.fixture(scope="function")
@@ -202,6 +201,7 @@ class TestStudyListComposer:
         self,
     ):
         # given
+        self.parameters.studies_in_dir = "studies_in_dir"
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
@@ -226,6 +226,7 @@ class TestStudyListComposer:
         self,
     ):
         # given
+        self.parameters.studies_in_dir = "studies_in_dir"
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
@@ -315,7 +316,7 @@ class TestStudyListComposer:
         )
         display_mock.show_message = mock.Mock()
         antares_version = "600"
-        message = f"... Antares version ({antares_version}) is not supported (supported versions: {definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER})"
+        message = f"... Antares version ({antares_version}) is not supported (supported versions: {self.parameters.antares_versions_on_remote_server})"
         # when
         is_antares_study = study_list_composer._is_valid_antares_study(antares_version)
         # then
@@ -368,6 +369,7 @@ class TestStudyListComposer:
         self,
     ):
         # given
+        self.parameters.xpansion_mode = True
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
@@ -390,6 +392,7 @@ class TestStudyListComposer:
         self,
     ):
         # given
+        self.parameters.xpansion_mode = True
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),

@@ -3,7 +3,10 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer
+from antareslauncher.use_cases.create_list.study_list_composer import (
+    StudyListComposer,
+    StudyListComposerParameters,
+)
 
 
 class TestIntegrationStudyListComposer:
@@ -12,7 +15,16 @@ class TestIntegrationStudyListComposer:
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            parameters=StudyListComposerParameters(),
+            parameters=StudyListComposerParameters(
+                studies_in_dir="studies_in",
+                time_limit=42,
+                n_cpu=24,
+                log_dir="job_log_dir",
+                xpansion_mode=False,
+                output_dir="output_dir",
+                post_processing=False,
+                antares_versions_on_remote_server=["700"],
+            ),
         )
 
     @pytest.mark.integration_test

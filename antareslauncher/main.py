@@ -4,7 +4,11 @@ from pathlib import Path
 from antareslauncher import definitions, VERSION
 from antareslauncher.antares_launcher import AntaresLauncher
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
-from antareslauncher.definitions import DEFAULT_JSON_DB_NAME, JSON_DIR
+from antareslauncher.definitions import (
+    DEFAULT_JSON_DB_NAME,
+    JSON_DIR,
+    DEFAULT_TIME_LIMIT,
+)
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.logger_initializer import LoggerInitializer
@@ -19,7 +23,10 @@ from antareslauncher.use_cases.check_remote_queue.check_queue_controller import 
     CheckQueueController,
 )
 from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
-from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer
+from antareslauncher.use_cases.create_list.study_list_composer import (
+    StudyListComposer,
+    StudyListComposerParameters,
+)
 from antareslauncher.use_cases.generate_tree_structure.tree_structure_initializer import (
     TreeStructureInitializer,
 )
@@ -96,7 +103,16 @@ def run_with(arguments):
         repo=data_repo,
         file_manager=file_manager,
         display=display,
-        parameters=StudyListComposerParameters(),
+        parameters=StudyListComposerParameters(
+            studies_in_dir=arguments.studies_in,
+            time_limit=arguments.time_limit,
+            log_dir=arguments.log_dir,
+            n_cpu=arguments.n_cpu,
+            xpansion_mode=arguments.xpansion_mode,
+            output_dir=arguments.output_dir,
+            post_processing=arguments.post_processing,
+            antares_versions_on_remote_server=definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER,
+        ),
     )
     launch_controller = LaunchController(
         repo=data_repo,
