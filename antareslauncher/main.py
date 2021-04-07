@@ -7,7 +7,6 @@ from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.definitions import (
     DEFAULT_JSON_DB_NAME,
     JSON_DIR,
-    DEFAULT_TIME_LIMIT,
 )
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
@@ -96,7 +95,7 @@ def run_with(arguments):
     connection = ssh_connection.SshConnection(config=ssh_dict)
     verify_connection(connection, display)
 
-    slurm_script_features = SlurmScriptFeatures()
+    slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
     data_repo = DataRepoTinydb(database_name=json_file_name)
     study_list_composer = StudyListComposer(

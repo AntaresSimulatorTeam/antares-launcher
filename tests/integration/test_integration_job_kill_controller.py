@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 
+from antareslauncher import definitions
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -13,7 +14,7 @@ from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillContro
 
 class TestIntegrationJobKilController:
     def setup_method(self):
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         env = RemoteEnvironmentWithSlurm(mock.Mock(), slurm_script_features)
         self.job_kill_controller = JobKillController(env, mock.Mock(), repo=mock.Mock())
 

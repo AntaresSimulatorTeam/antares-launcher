@@ -5,6 +5,7 @@ from unittest import mock
 
 import pytest
 
+from antareslauncher import definitions
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
@@ -23,7 +24,7 @@ class TestIntegrationLaunchController:
     ):
         # given
         connection = mock.Mock()
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = mock.Mock()
         study1.zipfile_path = "filepath"
@@ -58,7 +59,7 @@ class TestIntegrationLaunchController:
         connection = mock.Mock()
         connection.execute_command = mock.Mock(return_value=["Submitted 42", ""])
         connection.home_dir = "Submitted"
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = StudyDTO(
             path="dummy_path",
@@ -105,7 +106,7 @@ class TestIntegrationLaunchController:
     ):
         # given
         connection = mock.Mock()
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = mock.Mock()
         study1.zipfile_path = "filepath"

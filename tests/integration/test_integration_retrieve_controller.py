@@ -21,7 +21,7 @@ class TestIntegrationRetrieveController:
     def setup_method(self):
         connection = mock.Mock()
         connection.home_dir = "Submitted"
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         self.env = RemoteEnvironmentWithSlurm(
             _connection=connection, slurm_script_features=slurm_script_features
         )

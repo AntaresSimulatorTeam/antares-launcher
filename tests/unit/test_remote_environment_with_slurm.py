@@ -60,7 +60,7 @@ class TestRemoteEnvironmentWithSlurm:
         remote_home_dir = "remote_home_dir"
         connection = mock.Mock()
         connection.home_dir = remote_home_dir
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
     @pytest.mark.unit_test
@@ -80,7 +80,7 @@ class TestRemoteEnvironmentWithSlurm:
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -92,7 +92,7 @@ class TestRemoteEnvironmentWithSlurm:
     ):
         # given
         connection = mock.Mock()
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         # when
         connection.make_dir = mock.Mock(return_value=False)
         # then
@@ -107,7 +107,7 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock()
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -123,7 +123,7 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock()
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
         # when
         connection.check_file_not_empty = mock.Mock(return_value=False)
         # then
