@@ -73,7 +73,7 @@ class TestStudyLauncher:
 
 class TestLauncherController:
     def setup_method(self):
-        self.data_repo = DataRepoTinydb("")
+        self.data_repo = DataRepoTinydb("", "name")
         self.data_repo.save_study = mock.Mock()
         self.display = mock.Mock()
 

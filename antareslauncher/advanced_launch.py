@@ -27,6 +27,7 @@ if __name__ == "__main__":
         slurm_script_path=definitions.SLURM_SCRIPT_PATH,
         antares_versions_on_remote_server=definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER,
         default_ssh_dict_from_embedded_json=definitions.DEFAULT_SSH_DICT_FROM_EMBEDDED_JSON,
+        db_primary_key=definitions.DB_PRIMARY_KEY,
     )
 
     run_with(arguments, main_parameters)

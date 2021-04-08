@@ -13,7 +13,7 @@ class TestDataRepoTinydb:
         self,
     ):
         # given
-        repo_mock = DataRepoTinydb("")
+        repo_mock = DataRepoTinydb("", "name")
         type(repo_mock).db = mock.PropertyMock()
         repo_mock.is_study_inside_database = mock.Mock()
         study_dto = StudyDTO(path="path")
@@ -25,7 +25,7 @@ class TestDataRepoTinydb:
     @pytest.mark.unit_test
     def test_given_data_repo_if_study_is_inside_database_then_db_update_is_called(self):
         # given
-        repo = DataRepoTinydb("")
+        repo = DataRepoTinydb("", "name")
         repo.is_study_inside_database = mock.Mock(return_value=True)
         type(repo).db = mock.PropertyMock()
         study_dto = StudyDTO(path="path")
@@ -39,7 +39,7 @@ class TestDataRepoTinydb:
         self,
     ):
         # given
-        repo = DataRepoTinydb("")
+        repo = DataRepoTinydb("", "name")
         type(repo).db = mock.PropertyMock()
         repo.db.search = mock.Mock(return_value=["A"])
         study_dto = StudyDTO(path="path")
@@ -53,7 +53,7 @@ class TestDataRepoTinydb:
         self,
     ):
         # given
-        repo = DataRepoTinydb("")
+        repo = DataRepoTinydb("", "name")
         repo.is_study_inside_database = mock.Mock(return_value=False)
         type(repo).db = mock.PropertyMock()
         study_dto = StudyDTO(path="path")
@@ -65,7 +65,7 @@ class TestDataRepoTinydb:
     @pytest.mark.unit_test
     def test_given_db_when_get_list_of_studies_is_called_then_db_all_is_called(self):
         # given
-        repo = DataRepoTinydb("")
+        repo = DataRepoTinydb("", "name")
         repo.doc_to_study = mock.Mock(return_value=42)
         type(repo).db = mock.PropertyMock()
         repo.db.all = mock.Mock(return_value=[])
@@ -80,7 +80,7 @@ class TestDataRepoTinydb:
     ):
         # given
         n = 5
-        repo = DataRepoTinydb("")
+        repo = DataRepoTinydb("", "name")
         repo.doc_to_study = mock.Mock(return_value=42)
         type(repo).db = mock.PropertyMock()
         repo.db.all = mock.Mock(return_value=[""] * n)
@@ -106,7 +106,7 @@ class TestDataRepoTinydb:
     @pytest.mark.unit_test
     def test_is_study_inside_database_returns_true_only_if_one_study_is_found(self):
         # given
-        repo = DataRepoTinydb("")
+        repo = DataRepoTinydb("", "name")
         type(repo).db = mock.PropertyMock()
         dummy_study = StudyDTO(path="path")
         repo.db.search = mock.Mock(return_value=["first_element"])
@@ -130,7 +130,7 @@ class TestDataRepoTinydb:
     @pytest.mark.unit_test
     def test_is_job_id_inside_database_returns_true_only_if_one_job_id_is_found(self):
         # given
-        repo = DataRepoTinydb("")
+        repo = DataRepoTinydb("", "name")
         type(repo).db = mock.PropertyMock()
         study_dto = StudyDTO(path="path")
         study_dto.job_id = 6381

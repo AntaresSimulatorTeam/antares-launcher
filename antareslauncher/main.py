@@ -66,6 +66,7 @@ class MainParameters:
     slurm_script_path: str
     antares_versions_on_remote_server: List[str]
     default_ssh_dict_from_embedded_json: Dict
+    db_primary_key: str
 
 
 def run_with(arguments, parameters: MainParameters):
@@ -103,7 +104,9 @@ def run_with(arguments, parameters: MainParameters):
 
     slurm_script_features = SlurmScriptFeatures(parameters.slurm_script_path)
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
-    data_repo = DataRepoTinydb(database_name=json_file_name)
+    data_repo = DataRepoTinydb(
+        database_name=json_file_name, db_primary_key=parameters.db_primary_key
+    )
     study_list_composer = StudyListComposer(
         repo=data_repo,
         file_manager=file_manager,
