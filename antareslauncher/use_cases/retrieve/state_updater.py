@@ -1,7 +1,4 @@
-from dataclasses import dataclass
-from operator import itemgetter
 from pathlib import Path
-
 from typing import List
 
 from antareslauncher.display.idisplay import IDisplay

@@ -5,7 +5,6 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher import definitions
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
@@ -18,13 +17,10 @@ from antareslauncher.use_cases.launch.launch_controller import LaunchController
 
 
 class TestIntegrationLaunchController:
-    @pytest.mark.integration_test
-    def test_given_2_studies_when_launch_controller_launch_all_studies_is_called_then_connection_upload_file_is_called_twice(
-        self,
-    ):
-        # given
+    @pytest.fixture(scope="function")
+    def launch_controller(self):
         connection = mock.Mock()
-        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = mock.Mock()
         study1.zipfile_path = "filepath"
@@ -45,11 +41,18 @@ class TestIntegrationLaunchController:
             file_manager=file_manager,
             display=display,
         )
+
+        return launch_controller
+
+    @pytest.mark.integration_test
+    def test_given_2_studies_when_launch_controller_launch_all_studies_is_called_then_connection_upload_file_is_called_twice(
+        self, launch_controller
+    ):
         # when
         launch_controller.launch_all_studies()
 
         # then
-        assert connection.upload_file.call_count == 2
+        assert launch_controller.env.connection.upload_file.call_count == 2
 
     @pytest.mark.integration_test
     def test_given_a_study_when_launch_controller_submit_job_is_called_then_connection_execute_command_is_called_once_with_correct_command(
@@ -59,7 +62,7 @@ class TestIntegrationLaunchController:
         connection = mock.Mock()
         connection.execute_command = mock.Mock(return_value=["Submitted 42", ""])
         connection.home_dir = "Submitted"
-        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = StudyDTO(
             path="dummy_path",
@@ -102,28 +105,8 @@ class TestIntegrationLaunchController:
 
     @pytest.mark.integration_test
     def test_given_two_sent_studies_when_launch_all_studies_executed_then_remove_zip_file_is_called_twice(
-        self,
+        self, launch_controller
     ):
-        # given
-        connection = mock.Mock()
-        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
-        environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
-        study1 = mock.Mock()
-        study1.zipfile_path = "filepath"
-        study1.zip_is_sent = False
-        study1.path = "path"
-        study2 = mock.Mock()
-        study2.zipfile_path = "filepath"
-        study2.zip_is_sent = False
-        study2.path = "path"
-
-        data_repo = mock.Mock()
-        data_repo.get_list_of_studies = mock.Mock(return_value=[study1, study2])
-        file_manager = mock.Mock()
-        display = DisplayTerminal()
-        launch_controller = LaunchController(
-            repo=data_repo, env=environment, file_manager=file_manager, display=display
-        )
         launch_controller.file_manager.remove_file = mock.Mock()
 
         # when

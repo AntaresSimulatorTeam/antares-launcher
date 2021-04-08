@@ -2,7 +2,6 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher import definitions
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
@@ -22,7 +21,7 @@ class TestIntegrationCheckQueueController:
         self.connection_mock = mock.Mock()
         self.connection_mock.username = "username"
         self.connection_mock.execute_command = mock.Mock(return_value=("", ""))
-        slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         env_mock = RemoteEnvironmentWithSlurm(
             _connection=self.connection_mock,
             slurm_script_features=slurm_script_features,
