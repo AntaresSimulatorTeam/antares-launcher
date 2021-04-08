@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from antareslauncher import main, definitions
+from antareslauncher.main import MainParameters
 from antareslauncher.main_option_parser import MainOptionParser, MainOptionsParameters
 
 DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
@@ -31,6 +32,13 @@ class TestEndToEnd:
         self.log_path = Path.cwd() / "LOGS"
         self.json_db_file_path = (
             Path.cwd() / f"{getpass.getuser()}_antares_launcher_db.json"
+        )
+        self.main_parameters = MainParameters(
+            json_dir=definitions.JSON_DIR,
+            default_json_db_name=definitions.DEFAULT_JSON_DB_NAME,
+            slurm_script_path=definitions.SLURM_SCRIPT_PATH,
+            antares_versions_on_remote_server=definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER,
+            default_ssh_dict_from_embedded_json=definitions.DEFAULT_SSH_DICT_FROM_EMBEDDED_JSON,
         )
         try:
             self.json_db_file_path.unlink()
@@ -65,7 +73,8 @@ class TestEndToEnd:
     def test_when_run_on_an_empty_directory_the_tree_structure_is_initialised(self):
         arg_ssh_config = ["--ssh-settings-file", f"{str(self.ssh_config_file_path)}"]
         input_arguments = self.parser.parse_args(arg_ssh_config)
-        main.run_with(input_arguments)
+
+        main.run_with(input_arguments, self.main_parameters)
 
         assert self.studies_in_path.is_dir()
         assert self.finished_path.is_dir()
@@ -83,7 +92,8 @@ class TestEndToEnd:
             arg_ssh_config + arg_wait_mode + arg_wait_time + arg_2_cpu + arg_studies_in
         )
         input_arguments = self.parser.parse_args(arguments)
-        main.run_with(input_arguments)
+
+        main.run_with(input_arguments, self.main_parameters)
 
         assert not is_empty(self.finished_path / ANTARES_STUDY.name)
         assert not is_empty(self.finished_path / ANTARES_STUDY.name / "output")
@@ -105,7 +115,8 @@ class TestEndToEnd:
             + arg_studies_in
         )
         input_arguments = self.parser.parse_args(arguments)
-        main.run_with(input_arguments)
+
+        main.run_with(input_arguments, self.main_parameters)
 
         assert not is_empty(self.finished_path / ANTARES_STUDY.name)
         assert not is_empty(self.finished_path / ANTARES_STUDY.name / "output")

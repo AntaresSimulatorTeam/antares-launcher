@@ -1,13 +1,11 @@
 import sys
+from dataclasses import dataclass
 from pathlib import Path
+from typing import List, Dict
 
-from antareslauncher import definitions, VERSION
+from antareslauncher import VERSION
 from antareslauncher.antares_launcher import AntaresLauncher
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
-from antareslauncher.definitions import (
-    DEFAULT_JSON_DB_NAME,
-    JSON_DIR,
-)
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.logger_initializer import LoggerInitializer
@@ -61,8 +59,16 @@ ANTARES_LAUNCHER_BANNER = (
 # fmt: on
 
 
-# fmt: on
-def run_with(arguments):
+@dataclass
+class MainParameters:
+    json_dir: Path
+    default_json_db_name: str
+    slurm_script_path: str
+    antares_versions_on_remote_server: List[str]
+    default_ssh_dict_from_embedded_json: Dict
+
+
+def run_with(arguments, parameters: MainParameters):
     """Instantiates all the objects necessary to antares-launcher, and runs the program"""
     if arguments.version:
         print(f"Antares_Launcher v{VERSION}")
@@ -74,13 +80,13 @@ def run_with(arguments):
     display = DisplayTerminal()
     file_manager = FileManager(display)
 
-    json_file_name = JSON_DIR / DEFAULT_JSON_DB_NAME
+    json_file_name = parameters.json_dir / parameters.default_json_db_name
 
     tree_structure_initializer = TreeStructureInitializer(
         display,
         file_manager,
         arguments.studies_in,
-        definitions.LOG_DIR,
+        arguments.log_dir,
         arguments.output_dir,
     )
 
@@ -91,11 +97,11 @@ def run_with(arguments):
     logger_initializer.init_logger()
 
     # connection
-    ssh_dict = get_ssh_config_dict(file_manager, arguments.json_ssh_config)
+    ssh_dict = get_ssh_config_dict(file_manager, arguments.json_ssh_config, parameters)
     connection = ssh_connection.SshConnection(config=ssh_dict)
     verify_connection(connection, display)
 
-    slurm_script_features = SlurmScriptFeatures(definitions.SLURM_SCRIPT_PATH)
+    slurm_script_features = SlurmScriptFeatures(parameters.slurm_script_path)
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
     data_repo = DataRepoTinydb(database_name=json_file_name)
     study_list_composer = StudyListComposer(
@@ -110,7 +116,7 @@ def run_with(arguments):
             xpansion_mode=arguments.xpansion_mode,
             output_dir=arguments.output_dir,
             post_processing=arguments.post_processing,
-            antares_versions_on_remote_server=definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER,
+            antares_versions_on_remote_server=parameters.antares_versions_on_remote_server,
         ),
     )
     launch_controller = LaunchController(
@@ -160,9 +166,9 @@ def verify_connection(connection, display):
     display.show_message("Ssh connection established", __name__)
 
 
-def get_ssh_config_dict(file_manager, json_ssh_config):
+def get_ssh_config_dict(file_manager, json_ssh_config, parameters: MainParameters):
     if json_ssh_config is None:
-        ssh_dict = definitions.DEFAULT_SSH_DICT_FROM_EMBEDDED_JSON
+        ssh_dict = parameters.default_ssh_dict_from_embedded_json
     else:
         ssh_dict = file_manager.convert_json_file_to_dict(json_ssh_config)
     if ssh_dict is None:

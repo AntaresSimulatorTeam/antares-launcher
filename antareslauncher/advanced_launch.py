@@ -1,7 +1,7 @@
 import sys
 
 from antareslauncher import definitions
-from antareslauncher.main import run_with
+from antareslauncher.main import run_with, MainParameters
 from antareslauncher.main_option_parser import MainOptionParser, MainOptionsParameters
 
 if __name__ == "__main__":
@@ -20,6 +20,15 @@ if __name__ == "__main__":
     parser.add_basic_arguments()
     parser.add_advanced_arguments()
     arguments = parser.parse_args()
-    run_with(arguments)
+
+    main_parameters = MainParameters(
+        json_dir=definitions.JSON_DIR,
+        default_json_db_name=definitions.DEFAULT_JSON_DB_NAME,
+        slurm_script_path=definitions.SLURM_SCRIPT_PATH,
+        antares_versions_on_remote_server=definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER,
+        default_ssh_dict_from_embedded_json=definitions.DEFAULT_SSH_DICT_FROM_EMBEDDED_JSON,
+    )
+
+    run_with(arguments, main_parameters)
     if not len(sys.argv) > 1:
         input("Press ENTER to exit.")
