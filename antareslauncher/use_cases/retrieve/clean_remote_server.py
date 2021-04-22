@@ -27,7 +27,9 @@ class RemoteServerCleaner:
         return self._current_study
 
     def _should_clean_remote_server(self):
-        return (self._current_study.remote_server_is_clean is False) and self._final_zip_downloaded()
+        return (
+            self._current_study.remote_server_is_clean is False
+        ) and self._final_zip_downloaded()
 
     def _final_zip_downloaded(self):
         if isinstance(self._current_study.local_final_zipfile_path, str):

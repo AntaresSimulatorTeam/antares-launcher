@@ -125,7 +125,9 @@ class FileManager:
             subdir_to_exclude: Subdirectory that will not be zipped
         """
         list_dir = self._get_list_dir_without_subdir(dir_path, subdir_to_exclude)
-        file_paths = self._get_complete_list_of_files_and_dirs_in_list_dir(dir_path, list_dir)
+        file_paths = self._get_complete_list_of_files_and_dirs_in_list_dir(
+            dir_path, list_dir
+        )
         root_dir = str(Path(dir_path).parent)
         self.zip_file_paths_with_rootdir_to_zipfile_path(
             zipfile_path, file_paths, root_dir

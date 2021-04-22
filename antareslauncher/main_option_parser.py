@@ -3,7 +3,7 @@ import getpass
 import pathlib
 from argparse import RawTextHelpFormatter
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -15,8 +15,8 @@ class MainOptionsParameters:
     log_dir: str
     finished_dir: str
     ssh_config_file_is_required: bool
-    ssh_configfile_path_prod_cwd: pathlib.Path
-    ssh_configfile_path_prod_user: pathlib.Path
+    ssh_configfile_path_prod_cwd: Optional[pathlib.Path]
+    ssh_configfile_path_prod_user: Optional[pathlib.Path]
 
 
 class MainOptionParser:
