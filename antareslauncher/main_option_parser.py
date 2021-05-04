@@ -208,9 +208,15 @@ def look_for_default_ssh_conf_file(parameters: MainOptionsParameters) -> pathlib
         path to the ssh config file is it exists, None otherwise
     """
     ssh_conf_file: pathlib.Path
-    if parameters.ssh_configfile_path_prod_cwd.is_file():
+    if (
+        parameters.ssh_configfile_path_prod_cwd
+        and parameters.ssh_configfile_path_prod_cwd.is_file()
+    ):
         ssh_conf_file = parameters.ssh_configfile_path_prod_cwd
-    elif parameters.ssh_configfile_path_prod_user.is_file():
+    elif (
+        parameters.ssh_configfile_path_prod_user
+        and parameters.ssh_configfile_path_prod_user.is_file()
+    ):
         ssh_conf_file = parameters.ssh_configfile_path_prod_user
     else:
         ssh_conf_file = None
