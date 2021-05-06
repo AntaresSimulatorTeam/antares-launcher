@@ -69,13 +69,14 @@ class MainParameters:
     db_primary_key: str
 
 
-def run_with(arguments, parameters: MainParameters):
+def run_with(arguments, parameters: MainParameters, show_banner=True):
     """Instantiates all the objects necessary to antares-launcher, and runs the program"""
     if arguments.version:
         print(f"Antares_Launcher v{VERSION}")
         return
 
-    print(ANTARES_LAUNCHER_BANNER)
+    if show_banner:
+        print(ANTARES_LAUNCHER_BANNER)
 
     studies_in = Path(arguments.studies_in).resolve()
     display = DisplayTerminal()
