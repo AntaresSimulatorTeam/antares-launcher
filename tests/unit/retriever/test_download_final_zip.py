@@ -6,7 +6,9 @@ from unittest.mock import call
 import pytest
 
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.iremote_environment import IRemoteEnvironment
+from antareslauncher.remote_environnement.iremote_environment import (
+    IRemoteEnvironment,
+)
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.download_final_zip import (
     FinalZipDownloader,

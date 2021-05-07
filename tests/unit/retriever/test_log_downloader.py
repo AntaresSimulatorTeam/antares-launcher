@@ -7,9 +7,7 @@ import pytest
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.remote_environnement import iremote_environment
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.retrieve.log_downloader import (
-    LogDownloader,
-)
+from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 
 
 class TestLogDownloader:

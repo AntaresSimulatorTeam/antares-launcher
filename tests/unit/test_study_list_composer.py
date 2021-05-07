@@ -42,7 +42,10 @@ class TestStudyListComposer:
         repo_mock = mock.Mock()
         repo_mock.get_list_of_studies = mock.Mock()
         study_list_composer = StudyListComposer(
-            repo=repo_mock, file_manager=None, display=None, parameters=self.parameters
+            repo=repo_mock,
+            file_manager=None,
+            display=None,
+            parameters=self.parameters,
         )
         # when
         study_list_composer.get_list_of_studies()
@@ -58,7 +61,10 @@ class TestStudyListComposer:
         repo_mock = mock.Mock()
         repo_mock.get_list_of_studies = mock.Mock()
         study_list_composer = StudyListComposer(
-            repo=repo_mock, file_manager=None, display=None, parameters=self.parameters
+            repo=repo_mock,
+            file_manager=None,
+            display=None,
+            parameters=self.parameters,
         )
         # when
         study_list_composer.get_list_of_studies()
@@ -116,7 +122,9 @@ class TestStudyListComposer:
         assert return_value
 
     @pytest.mark.unit_test
-    def test_given_existing_db_when_no_new_study_then_do_nothing_and_show_message(self):
+    def test_given_existing_db_when_no_new_study_then_do_nothing_and_show_message(
+        self,
+    ):
         # given
         self.parameters.studies_in_dir = "studies_in_dir"
 

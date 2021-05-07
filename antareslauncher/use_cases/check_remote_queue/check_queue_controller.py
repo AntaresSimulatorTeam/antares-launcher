@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
 from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
+    SlurmQueueShow,
+)
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
 

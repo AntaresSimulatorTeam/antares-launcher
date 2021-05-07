@@ -11,7 +11,10 @@ import pytest
 
 from antareslauncher import main, definitions
 from antareslauncher.main import MainParameters
-from antareslauncher.main_option_parser import MainOptionParser, MainOptionsParameters
+from antareslauncher.main_option_parser import (
+    MainOptionParser,
+    MainOptionsParameters,
+)
 
 DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
 ANTARES_STUDY = DATA_4_TEST_DIR / "one_node_v7"
@@ -71,8 +74,13 @@ class TestEndToEnd:
         self.json_db_file_path.unlink()
 
     @pytest.mark.end_to_end_test
-    def test_when_run_on_an_empty_directory_the_tree_structure_is_initialised(self):
-        arg_ssh_config = ["--ssh-settings-file", f"{str(self.ssh_config_file_path)}"]
+    def test_when_run_on_an_empty_directory_the_tree_structure_is_initialised(
+        self,
+    ):
+        arg_ssh_config = [
+            "--ssh-settings-file",
+            f"{str(self.ssh_config_file_path)}",
+        ]
         input_arguments = self.parser.parse_args(arg_ssh_config)
 
         main.run_with(input_arguments, self.main_parameters)
@@ -84,7 +92,10 @@ class TestEndToEnd:
 
     @pytest.mark.end_to_end_test
     def test_one_study_is_correctly_processed(self):
-        arg_ssh_config = ["--ssh-settings-file", f"{str(self.ssh_config_file_path)}"]
+        arg_ssh_config = [
+            "--ssh-settings-file",
+            f"{str(self.ssh_config_file_path)}",
+        ]
         arg_wait_mode = ["-w"]
         arg_wait_time = ["--wait-time", "2"]
         arg_2_cpu = ["-n", "2"]
@@ -101,7 +112,10 @@ class TestEndToEnd:
 
     @pytest.mark.end_to_end_test
     def test_one_xpansion_study_is_correctly_processed(self):
-        arg_ssh_config = ["--ssh-settings-file", f"{str(self.ssh_config_file_path)}"]
+        arg_ssh_config = [
+            "--ssh-settings-file",
+            f"{str(self.ssh_config_file_path)}",
+        ]
         arg_xpansion = ["-x"]
         arg_wait_mode = ["-w"]
         arg_wait_time = ["--wait-time", "2"]

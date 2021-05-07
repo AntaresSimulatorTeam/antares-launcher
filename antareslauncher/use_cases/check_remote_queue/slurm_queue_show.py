@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.iremote_environment import IRemoteEnvironment
+from antareslauncher.remote_environnement.iremote_environment import (
+    IRemoteEnvironment,
+)
 
 
 @dataclass

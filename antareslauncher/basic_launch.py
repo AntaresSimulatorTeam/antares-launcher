@@ -2,7 +2,10 @@ import sys
 
 from antareslauncher import main, definitions
 from antareslauncher.main import MainParameters
-from antareslauncher.main_option_parser import MainOptionParser, MainOptionsParameters
+from antareslauncher.main_option_parser import (
+    MainOptionParser,
+    MainOptionsParameters,
+)
 
 if __name__ == "__main__":
     main_options_parameters = MainOptionsParameters(

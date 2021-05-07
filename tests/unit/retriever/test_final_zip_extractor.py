@@ -21,7 +21,9 @@ class TestFinalZipExtractor:
     def study_to_extract(self):
         local_zip = "results.zip"
         study = StudyDTO(
-            path="hello", local_final_zipfile_path=local_zip, final_zip_extracted=False
+            path="hello",
+            local_final_zipfile_path=local_zip,
+            final_zip_extracted=False,
         )
         return study
 

@@ -859,7 +859,12 @@ class TestRemoteEnvironmentWithSlurm:
     )
     @pytest.mark.unit_test
     def test_compose_launch_command(
-        self, my_remote_env_with_slurm_mock, job_type, mode, post_processing, study
+        self,
+        my_remote_env_with_slurm_mock,
+        job_type,
+        mode,
+        post_processing,
+        study,
     ):
         # given
         filename_launch_script = (

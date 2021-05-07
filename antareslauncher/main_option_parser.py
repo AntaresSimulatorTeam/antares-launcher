@@ -201,7 +201,9 @@ class MainOptionParser:
         )
 
 
-def look_for_default_ssh_conf_file(parameters: MainOptionsParameters) -> pathlib.Path:
+def look_for_default_ssh_conf_file(
+    parameters: MainOptionsParameters,
+) -> pathlib.Path:
     """Checks if the ssh config file exists.
 
     Returns:

@@ -2,7 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from antareslauncher.main_option_parser import MainOptionParser, MainOptionsParameters
+from antareslauncher.main_option_parser import (
+    MainOptionParser,
+    MainOptionsParameters,
+)
 from antareslauncher.main_option_parser import look_for_default_ssh_conf_file
 
 

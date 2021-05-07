@@ -5,7 +5,9 @@ import pytest
 
 import antareslauncher.use_cases
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.iremote_environment import IRemoteEnvironment
+from antareslauncher.remote_environnement.iremote_environment import (
+    IRemoteEnvironment,
+)
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 
@@ -30,7 +32,9 @@ class TestStudySubmitter:
         assert new_study.job_id == 42
 
     @pytest.mark.unit_test
-    def test_submit_study_shows_error_if_submit_fails_and_exception_is_raised(self):
+    def test_submit_study_shows_error_if_submit_fails_and_exception_is_raised(
+        self,
+    ):
         self.remote_env.submit_job = mock.Mock(return_value=None)
         study = StudyDTO(path="hello")
 

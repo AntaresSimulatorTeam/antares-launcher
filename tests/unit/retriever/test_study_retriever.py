@@ -8,11 +8,19 @@ from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement.iremote_environment import IRemoteEnvironment
+from antareslauncher.remote_environnement.iremote_environment import (
+    IRemoteEnvironment,
+)
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.retrieve.clean_remote_server import RemoteServerCleaner
-from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownloader
-from antareslauncher.use_cases.retrieve.final_zip_extractor import FinalZipExtractor
+from antareslauncher.use_cases.retrieve.clean_remote_server import (
+    RemoteServerCleaner,
+)
+from antareslauncher.use_cases.retrieve.download_final_zip import (
+    FinalZipDownloader,
+)
+from antareslauncher.use_cases.retrieve.final_zip_extractor import (
+    FinalZipExtractor,
+)
 from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 from antareslauncher.use_cases.retrieve.study_retriever import StudyRetriever
@@ -62,7 +70,11 @@ class TestStudyRetriever:
     def test_given_a_not_done_studies_everything_is_called(self):
         study = StudyDTO(path="hello")
         study1 = StudyDTO(
-            path="hello", job_id=42, started=True, finished=True, with_error=False
+            path="hello",
+            job_id=42,
+            started=True,
+            finished=True,
+            with_error=False,
         )
         self.state_updater.run = mock.Mock(return_value=study1)
         study2 = copy(study1)

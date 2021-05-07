@@ -23,7 +23,9 @@ class TestDataRepoTinydb:
         repo_mock.is_study_inside_database.assert_called_with(study=study_dto)
 
     @pytest.mark.unit_test
-    def test_given_data_repo_if_study_is_inside_database_then_db_update_is_called(self):
+    def test_given_data_repo_if_study_is_inside_database_then_db_update_is_called(
+        self,
+    ):
         # given
         repo = DataRepoTinydb("", "name")
         repo.is_study_inside_database = mock.Mock(return_value=True)
@@ -63,7 +65,9 @@ class TestDataRepoTinydb:
         repo.db.insert.assert_called_once()
 
     @pytest.mark.unit_test
-    def test_given_db_when_get_list_of_studies_is_called_then_db_all_is_called(self):
+    def test_given_db_when_get_list_of_studies_is_called_then_db_all_is_called(
+        self,
+    ):
         # given
         repo = DataRepoTinydb("", "name")
         repo.doc_to_study = mock.Mock(return_value=42)
@@ -104,7 +108,9 @@ class TestDataRepoTinydb:
         assert expected_study.__dict__ == output_study.__dict__
 
     @pytest.mark.unit_test
-    def test_is_study_inside_database_returns_true_only_if_one_study_is_found(self):
+    def test_is_study_inside_database_returns_true_only_if_one_study_is_found(
+        self,
+    ):
         # given
         repo = DataRepoTinydb("", "name")
         type(repo).db = mock.PropertyMock()
@@ -128,7 +134,9 @@ class TestDataRepoTinydb:
         assert output is False
 
     @pytest.mark.unit_test
-    def test_is_job_id_inside_database_returns_true_only_if_one_job_id_is_found(self):
+    def test_is_job_id_inside_database_returns_true_only_if_one_job_id_is_found(
+        self,
+    ):
         # given
         repo = DataRepoTinydb("", "name")
         type(repo).db = mock.PropertyMock()

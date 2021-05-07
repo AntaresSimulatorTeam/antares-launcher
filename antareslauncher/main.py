@@ -19,7 +19,9 @@ from antareslauncher.remote_environnement.slurm_script_features import (
 from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
     CheckQueueController,
 )
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
+    SlurmQueueShow,
+)
 from antareslauncher.use_cases.create_list.study_list_composer import (
     StudyListComposer,
     StudyListComposerParameters,
@@ -27,9 +29,13 @@ from antareslauncher.use_cases.create_list.study_list_composer import (
 from antareslauncher.use_cases.generate_tree_structure.tree_structure_initializer import (
     TreeStructureInitializer,
 )
-from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
+from antareslauncher.use_cases.kill_job.job_kill_controller import (
+    JobKillController,
+)
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
-from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
+from antareslauncher.use_cases.retrieve.retrieve_controller import (
+    RetrieveController,
+)
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
     WaitController,
@@ -139,7 +145,9 @@ def run_with(arguments, parameters: MainParameters, show_banner=True):
     )
     slurm_queue_show = SlurmQueueShow(env=environment, display=display)
     check_queue_controller = CheckQueueController(
-        slurm_queue_show=slurm_queue_show, state_updater=state_updater, repo=data_repo
+        slurm_queue_show=slurm_queue_show,
+        state_updater=state_updater,
+        repo=data_repo,
     )
     job_kill_controller = JobKillController(
         env=environment,
