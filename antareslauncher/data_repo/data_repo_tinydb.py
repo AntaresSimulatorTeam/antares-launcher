@@ -16,7 +16,7 @@ class DataRepoTinydb(IDataRepo):
         self.db_primary_key = db_primary_key
 
     @property
-    def db(self):
+    def db(self) -> tinydb.database.TinyDB:
         return TinyDB(self.database_name, sort_keys=True, indent=4)
 
     @staticmethod
@@ -98,3 +98,7 @@ class DataRepoTinydb(IDataRepo):
                 f"Inserting new study with {self.db_primary_key}: {study.__getattribute__(self.db_primary_key)} inside database"
             )
             self.db.insert(study.__dict__)
+
+    def remove_study(self, study_name: str) -> None:
+        self.logger.info(f"Removing study with {self.db_primary_key}:{study_name}")
+        self.db.remove(where(self.db_primary_key) == study_name)
