@@ -34,6 +34,6 @@ if __name__ == "__main__":
         db_primary_key=definitions.DB_PRIMARY_KEY,
     )
 
-    main.run_with(input_arguments, main_parameters)
+    main.run_with(arguments=input_arguments, parameters=main_parameters, show_banner=True)
     if not len(sys.argv) > 1:
         input("Press ENTER to exit.")

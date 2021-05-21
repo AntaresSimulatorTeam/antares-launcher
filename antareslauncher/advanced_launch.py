@@ -33,6 +33,6 @@ if __name__ == "__main__":
         db_primary_key=definitions.DB_PRIMARY_KEY,
     )
 
-    run_with(arguments, main_parameters)
+    run_with(arguments=arguments, parameters=main_parameters, show_banner=True)
     if not len(sys.argv) > 1:
         input("Press ENTER to exit.")
