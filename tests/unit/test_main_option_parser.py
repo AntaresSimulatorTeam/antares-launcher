@@ -19,8 +19,8 @@ class TestMainOptionParser:
             log_dir="log_dir",
             finished_dir="finished_dir",
             ssh_config_file_is_required=True,
-            ssh_configfile_path_prod_cwd=Path("ssh_configfile_path_prod_cwd"),
-            ssh_configfile_path_prod_user=Path("ssh_configfile_path_prod_user"),
+            ssh_configfile_path_alternate1=Path("ssh_configfile_path_prod_cwd"),
+            ssh_configfile_path_alternate2=Path("ssh_configfile_path_prod_user"),
         )
 
         self.DEFAULT_VALUES = {
