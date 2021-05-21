@@ -15,8 +15,8 @@ class MainOptionsParameters:
     log_dir: str
     finished_dir: str
     ssh_config_file_is_required: bool
-    ssh_configfile_path_prod_cwd: Optional[pathlib.Path]
-    ssh_configfile_path_prod_user: Optional[pathlib.Path]
+    ssh_configfile_path_alternate1: Optional[pathlib.Path]
+    ssh_configfile_path_alternate2: Optional[pathlib.Path]
 
 
 class MainOptionParser:
@@ -195,8 +195,8 @@ class MainOptionParser:
             help=f"Path to the configuration file for the ssh connection.\n"
             f"If no value is given, "
             f"it will look for it in default location with this order:\n"
-            f"1st: {self.parameters.ssh_configfile_path_prod_cwd}\n"
-            f"2nd: {self.parameters.ssh_configfile_path_prod_user}\n"
+            f"1st: {self.parameters.ssh_configfile_path_alternate1}\n"
+            f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n"
             f"3rd: default configuration for Windows.\n",
         )
 
@@ -211,15 +211,15 @@ def look_for_default_ssh_conf_file(
     """
     ssh_conf_file: pathlib.Path
     if (
-        parameters.ssh_configfile_path_prod_cwd
-        and parameters.ssh_configfile_path_prod_cwd.is_file()
+        parameters.ssh_configfile_path_alternate1
+        and parameters.ssh_configfile_path_alternate1.is_file()
     ):
-        ssh_conf_file = parameters.ssh_configfile_path_prod_cwd
+        ssh_conf_file = parameters.ssh_configfile_path_alternate1
     elif (
-        parameters.ssh_configfile_path_prod_user
-        and parameters.ssh_configfile_path_prod_user.is_file()
+        parameters.ssh_configfile_path_alternate2
+        and parameters.ssh_configfile_path_alternate2.is_file()
     ):
-        ssh_conf_file = parameters.ssh_configfile_path_prod_user
+        ssh_conf_file = parameters.ssh_configfile_path_alternate2
     else:
         ssh_conf_file = None
     return ssh_conf_file
