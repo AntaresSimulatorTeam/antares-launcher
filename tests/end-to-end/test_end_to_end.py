@@ -59,8 +59,8 @@ class TestEndToEnd:
             log_dir=definitions.LOG_DIR,
             finished_dir=definitions.FINISHED_DIR,
             ssh_config_file_is_required=definitions.SSH_CONFIG_FILE_IS_REQUIRED,
-            ssh_configfile_path_prod_cwd=definitions.SSH_CONFIGFILE_PATH_PROD_CWD,
-            ssh_configfile_path_prod_user=definitions.SSH_CONFIGFILE_PATH_PROD_USER,
+            ssh_configfile_path_alternate1=definitions.SSH_CONFIGFILE_PATH_ALTERNATE1,
+            ssh_configfile_path_alternate2=definitions.SSH_CONFIGFILE_PATH_ALTERNATE2,
         )
         self.parser: MainOptionParser = MainOptionParser(
             main_options_parameters=main_options_parameters

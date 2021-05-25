@@ -68,8 +68,8 @@ for key, value in yaml_content.items():
         exec(f"{key} = {value.__repr__()}")
 
 
-SSH_CONFIGFILE_PATH_PROD_CWD = Path.cwd() / DEFAULT_SSH_CONFIGFILE_NAME
-SSH_CONFIGFILE_PATH_PROD_USER = (
+SSH_CONFIGFILE_PATH_ALTERNATE1 = Path.cwd() / DEFAULT_SSH_CONFIGFILE_NAME
+SSH_CONFIGFILE_PATH_ALTERNATE2 = (
     Path.home() / "antares_launcher_settings" / DEFAULT_SSH_CONFIGFILE_NAME
 )
 
