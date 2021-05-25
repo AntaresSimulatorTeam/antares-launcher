@@ -8,6 +8,7 @@ from antareslauncher.main_option_parser import (
 )
 
 if __name__ == "__main__":
+
     main_options_parameters = MainOptionsParameters(
         default_wait_time=definitions.DEFAULT_WAIT_TIME,
         default_time_limit=definitions.DEFAULT_TIME_LIMIT,

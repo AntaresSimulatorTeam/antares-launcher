@@ -200,7 +200,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
             GetJobStateErrorException if the job_state has not been obtained
         """
         command = self._compose_command_to_get_state_as_one_word(job_id)
-        max_number_of_tries = 3
+        max_number_of_tries = 5
         for _ in range(max_number_of_tries):
             output, error = self.connection.execute_command(command)
             if error:
@@ -208,7 +208,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
             stdout = str(output).split()
             if stdout:
                 return stdout[0]
-            time.sleep(0.5)
+            time.sleep(1.0)
 
         raise GetJobStateOutputException
 
