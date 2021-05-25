@@ -29,14 +29,22 @@ class TestRetrieveController:
     @pytest.fixture(scope="function")
     def my_running_study(self):
         study = antareslauncher.study_dto.StudyDTO(
-            job_id=42, started=True, finished=False, with_error=False, path="path"
+            job_id=42,
+            started=True,
+            finished=False,
+            with_error=False,
+            path="path",
         )
         return study
 
     @pytest.fixture(scope="function")
     def my_finished_study(self):
         study = antareslauncher.study_dto.StudyDTO(
-            job_id=42, started=True, finished=True, with_error=False, path="path"
+            job_id=42,
+            started=True,
+            finished=True,
+            with_error=False,
+            path="path",
         )
         return study
 

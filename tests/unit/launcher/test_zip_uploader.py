@@ -5,7 +5,9 @@ from unittest.mock import call
 import pytest
 
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.iremote_environment import IRemoteEnvironment
+from antareslauncher.remote_environnement.iremote_environment import (
+    IRemoteEnvironment,
+)
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_zip_uploader import (
     StudyZipfileUploader,
@@ -35,7 +37,9 @@ class TestZipfileUploader:
         self.display_mock.show_message.assert_has_calls(calls)
 
     @pytest.mark.unit_test
-    def test_upload_study_shows_error_if_upload_fails_and_exception_is_raised(self):
+    def test_upload_study_shows_error_if_upload_fails_and_exception_is_raised(
+        self,
+    ):
         self.remote_env.upload_file = mock.Mock(return_value=False)
         study = StudyDTO(path="hello")
 

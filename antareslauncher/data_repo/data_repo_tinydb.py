@@ -5,18 +5,18 @@ import tinydb
 from tinydb import TinyDB, where
 
 from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.definitions import DB_PRIMARY_KEY
 from antareslauncher.study_dto import StudyDTO
 
 
 class DataRepoTinydb(IDataRepo):
-    def __init__(self, database_name):
+    def __init__(self, database_name, db_primary_key: str):
         super(DataRepoTinydb, self).__init__()
         self.database_name = database_name
         self.logger = logging.getLogger(__name__ + "." + __class__.__name__)
+        self.db_primary_key = db_primary_key
 
     @property
-    def db(self):
+    def db(self) -> tinydb.database.TinyDB:
         return TinyDB(self.database_name, sort_keys=True, indent=4)
 
     @staticmethod
@@ -42,7 +42,7 @@ class DataRepoTinydb(IDataRepo):
         Returns:
             True if the study has been found and is unique inside the database, False otherwise
         """
-        key = DB_PRIMARY_KEY
+        key = self.db_primary_key
         value = study.__getattribute__(key)
         self.logger.info(f"Checking if study {study.path}: is inside database")
 
@@ -86,14 +86,19 @@ class DataRepoTinydb(IDataRepo):
         if self.is_study_inside_database(study=study):
             self.logger.info(
                 f"Updating study already existing inside database with"
-                f"{DB_PRIMARY_KEY}: {study.__getattribute__(DB_PRIMARY_KEY)}"
+                f"{self.db_primary_key}: {study.__getattribute__(self.db_primary_key)}"
             )
             self.db.update(
                 study.__dict__,
-                where(DB_PRIMARY_KEY) == study.__getattribute__(DB_PRIMARY_KEY),
+                where(self.db_primary_key)
+                == study.__getattribute__(self.db_primary_key),
             )
         else:
             self.logger.info(
-                f"Inserting new study with {DB_PRIMARY_KEY}: {study.__getattribute__(DB_PRIMARY_KEY)} inside database"
+                f"Inserting new study with {self.db_primary_key}: {study.__getattribute__(self.db_primary_key)} inside database"
             )
             self.db.insert(study.__dict__)
+
+    def remove_study(self, study_name: str) -> None:
+        self.logger.info(f"Removing study with {self.db_primary_key}:{study_name}")
+        self.db.remove(where(self.db_primary_key) == study_name)

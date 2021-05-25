@@ -7,7 +7,9 @@ from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
     CheckQueueController,
 )
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
+    SlurmQueueShow,
+)
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
 
@@ -76,7 +78,9 @@ class TestCheckQueueController:
         self.state_updater.run_on_list.assert_called_once_with(study_list)
 
     @pytest.mark.unit_test
-    def test_given_two_studies_in_repo_check_queue_controller_calls_updater_twice(self):
+    def test_given_two_studies_in_repo_check_queue_controller_calls_updater_twice(
+        self,
+    ):
         # given
         study_list = [StudyDTO(""), StudyDTO("")]
         self.slurm_queue_show.run = mock.Mock()

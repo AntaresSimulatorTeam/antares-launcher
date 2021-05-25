@@ -5,7 +5,6 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher import definitions
 from antareslauncher.remote_environnement.iremote_environment import (
     NoRemoteBaseDirException,
     NoLaunchScriptFoundException,
@@ -60,7 +59,7 @@ class TestRemoteEnvironmentWithSlurm:
         remote_home_dir = "remote_home_dir"
         connection = mock.Mock()
         connection.home_dir = remote_home_dir
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
     @pytest.mark.unit_test
@@ -80,7 +79,7 @@ class TestRemoteEnvironmentWithSlurm:
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -92,7 +91,7 @@ class TestRemoteEnvironmentWithSlurm:
     ):
         # given
         connection = mock.Mock()
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         # when
         connection.make_dir = mock.Mock(return_value=False)
         # then
@@ -107,11 +106,11 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock()
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
-        remote_script_antares = definitions.SLURM_SCRIPT_PATH
+        remote_script_antares = "slurm_script_path"
         connection.check_file_not_empty.assert_called_with(remote_script_antares)
 
     @pytest.mark.unit_test
@@ -123,7 +122,7 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock()
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures()
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         # when
         connection.check_file_not_empty = mock.Mock(return_value=False)
         # then
@@ -860,7 +859,12 @@ class TestRemoteEnvironmentWithSlurm:
     )
     @pytest.mark.unit_test
     def test_compose_launch_command(
-        self, my_remote_env_with_slurm_mock, job_type, mode, post_processing, study
+        self,
+        my_remote_env_with_slurm_mock,
+        job_type,
+        mode,
+        post_processing,
+        study,
     ):
         # given
         filename_launch_script = (

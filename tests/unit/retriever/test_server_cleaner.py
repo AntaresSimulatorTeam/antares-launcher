@@ -73,7 +73,9 @@ class TestServerCleaner:
         assert new_study == study
 
     @pytest.mark.unit_test
-    def test_remote_environment_not_called_if_remote_server_is_already_clean(self):
+    def test_remote_environment_not_called_if_remote_server_is_already_clean(
+        self,
+    ):
         self.remote_env_mock.clean_remote_server = mock.Mock()
         study = StudyDTO(path="hello")
         study.local_final_zipfile_path = "hello.zip"

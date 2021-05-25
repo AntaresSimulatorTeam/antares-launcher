@@ -13,15 +13,17 @@ from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.remote_environnement import iremote_environment
-from antareslauncher.remote_environnement.iremote_environment import IRemoteEnvironment
+from antareslauncher.remote_environnement.iremote_environment import (
+    IRemoteEnvironment,
+)
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch import launch_controller
-from antareslauncher.use_cases.launch.launch_controller import (
-    StudyLauncher,
-)
+from antareslauncher.use_cases.launch.launch_controller import StudyLauncher
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 from antareslauncher.use_cases.launch.study_zip_cleaner import StudyZipCleaner
-from antareslauncher.use_cases.launch.study_zip_uploader import StudyZipfileUploader
+from antareslauncher.use_cases.launch.study_zip_uploader import (
+    StudyZipfileUploader,
+)
 from antareslauncher.use_cases.launch.study_zipper import StudyZipper
 
 
@@ -73,7 +75,7 @@ class TestStudyLauncher:
 
 class TestLauncherController:
     def setup_method(self):
-        self.data_repo = DataRepoTinydb("")
+        self.data_repo = DataRepoTinydb("", "name")
         self.data_repo.save_study = mock.Mock()
         self.display = mock.Mock()
 

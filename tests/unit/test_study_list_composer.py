@@ -1,17 +1,33 @@
 from pathlib import Path
 from unittest import mock
+from unittest.mock import call
 
 import pytest
 
-from antareslauncher import definitions
+from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.study_dto import Modes
-from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer
+from antareslauncher.study_dto import Modes, StudyDTO
+from antareslauncher.use_cases.create_list.study_list_composer import (
+    StudyListComposer,
+    StudyListComposerParameters,
+)
 
 DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
 
 
 class TestStudyListComposer:
+    def setup_method(self):
+        self.parameters = StudyListComposerParameters(
+            studies_in_dir=None,
+            time_limit=None,
+            n_cpu=None,
+            log_dir="job_log_dir",
+            xpansion_mode=False,
+            output_dir="output_dir",
+            post_processing=False,
+            antares_versions_on_remote_server=["610", "700", "800"],
+        )
+
     @pytest.fixture(scope="function")
     def study_mock(self):
         study = mock.Mock()
@@ -21,6 +37,7 @@ class TestStudyListComposer:
     def test_given_repo_when_get_list_of_studies_called_then_repo_get_list_of_studies_is_called(
         self,
     ):
+
         # given
         repo_mock = mock.Mock()
         repo_mock.get_list_of_studies = mock.Mock()
@@ -28,13 +45,7 @@ class TestStudyListComposer:
             repo=repo_mock,
             file_manager=None,
             display=None,
-            studies_in_dir=None,
-            time_limit=None,
-            n_cpu=None,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         # when
         study_list_composer.get_list_of_studies()
@@ -46,19 +57,14 @@ class TestStudyListComposer:
         self,
     ):
         # given
+
         repo_mock = mock.Mock()
         repo_mock.get_list_of_studies = mock.Mock()
         study_list_composer = StudyListComposer(
             repo=repo_mock,
             file_manager=None,
             display=None,
-            studies_in_dir=None,
-            time_limit=None,
-            n_cpu=None,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         # when
         study_list_composer.get_list_of_studies()
@@ -70,19 +76,14 @@ class TestStudyListComposer:
         self,
     ):
         # given
+
         dir_path = "dir_path"
         expected_config_file_path = Path(dir_path) / "study.antares"
         study_list_composer = StudyListComposer(
             repo=None,
             file_manager=mock.Mock(),
             display=None,
-            studies_in_dir=None,
-            time_limit=None,
-            n_cpu=None,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         # when
         study_list_composer._file_manager.get_config_from_file = mock.Mock(
@@ -100,19 +101,14 @@ class TestStudyListComposer:
         self,
     ):
         # given
+
         dir_path = "dir_path"
         expected_config_file_path = Path(dir_path) / "study.antares"
         study_list_composer = StudyListComposer(
             repo=None,
             file_manager=mock.Mock(),
             display=None,
-            studies_in_dir=None,
-            time_limit=None,
-            n_cpu=None,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         # when
         study_list_composer._file_manager.get_config_from_file = mock.Mock(
@@ -126,19 +122,17 @@ class TestStudyListComposer:
         assert return_value
 
     @pytest.mark.unit_test
-    def test_given_existing_db_when_no_new_study_then_do_nothing_and_show_message(self):
+    def test_given_existing_db_when_no_new_study_then_do_nothing_and_show_message(
+        self,
+    ):
         # given
+        self.parameters.studies_in_dir = "studies_in_dir"
+
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=None,
-            n_cpu=None,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         study_list_composer.get_ls_of_studiesin_dir = mock.Mock(return_value=["study"])
         study_list_composer.get_antares_version = mock.Mock(return_value=True)
@@ -156,30 +150,41 @@ class TestStudyListComposer:
     def test_given_existing_db_when_new_study_then_save_new_study_and_show_message(
         self,
     ):
+        self.parameters.studies_in_dir = "studies_in_dir"
+        self.parameters.time_limit = 24
+        self.parameters.n_cpu = 42
+        file_manager = mock.create_autospec(FileManager)
+        file_manager.file_exists = mock.create_autospec(
+            FileManager.file_exists, return_value=False
+        )
+        repo = mock.create_autospec(IDataRepo, instance=True)
+        repo.is_study_inside_database = mock.Mock(return_value=False)
         # given
         study_list_composer = StudyListComposer(
-            repo=mock.Mock(),
-            file_manager=mock.Mock(),
+            repo=repo,
+            file_manager=file_manager,
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
-        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(return_value=["study"])
+        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(
+            return_value=["study_path"]
+        )
         study_list_composer.get_antares_version = mock.Mock(return_value="700")
-        study_list_composer._repo.is_study_inside_database = mock.Mock(
-            return_value=False
-        )
         study_list_composer._file_manager.is_dir = mock.Mock(return_value=True)
+        expected_save_study = StudyDTO(
+            path=str(Path(self.parameters.studies_in_dir) / "study_path"),
+            antares_version="700",
+            job_log_dir=str(Path(self.parameters.log_dir) / "JOB_LOGS"),
+            output_dir=self.parameters.output_dir,
+            time_limit=self.parameters.time_limit,
+            n_cpu=self.parameters.n_cpu,
+        )
         # when
         study_list_composer.update_study_database()
 
         # then
-        study_list_composer._repo.save_study.assert_called_once()
+        calls = study_list_composer._repo.save_study.call_args_list
+        assert calls[0] == call(expected_save_study)
         assert study_list_composer._display.show_message.call_count == 2
 
     @pytest.mark.unit_test
@@ -191,13 +196,7 @@ class TestStudyListComposer:
             repo=None,
             file_manager=None,
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         study_list_composer.get_ls_of_studiesin_dir = mock.Mock(return_value=[])
         # when
@@ -210,17 +209,12 @@ class TestStudyListComposer:
         self,
     ):
         # given
+        self.parameters.studies_in_dir = "studies_in_dir"
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         study_list_composer.get_ls_of_studiesin_dir = mock.Mock(
             return_value=["study1", "study2"]
@@ -240,17 +234,12 @@ class TestStudyListComposer:
         self,
     ):
         # given
+        self.parameters.studies_in_dir = "studies_in_dir"
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
 
         study_dir = study_list_composer._studies_in_dir
@@ -279,13 +268,7 @@ class TestStudyListComposer:
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         antares_version_700 = "700"
         wrong_antares_version = "137"
@@ -315,13 +298,7 @@ class TestStudyListComposer:
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=display_mock,
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         display_mock.show_message = mock.Mock()
         antares_version = None
@@ -343,17 +320,11 @@ class TestStudyListComposer:
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=display_mock,
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         display_mock.show_message = mock.Mock()
         antares_version = "600"
-        message = f"... Antares version ({antares_version}) is not supported (supported versions: {definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER})"
+        message = f"... Antares version ({antares_version}) is not supported (supported versions: {self.parameters.antares_versions_on_remote_server})"
         # when
         is_antares_study = study_list_composer._is_valid_antares_study(antares_version)
         # then
@@ -369,13 +340,7 @@ class TestStudyListComposer:
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         xpansion_study_path = Path("xpansion_study_path")
         study_list_composer._is_there_candidates_file = mock.Mock(return_value=True)
@@ -393,13 +358,7 @@ class TestStudyListComposer:
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=False,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
 
         study_dir = study_list_composer._studies_in_dir
@@ -418,17 +377,12 @@ class TestStudyListComposer:
         self,
     ):
         # given
+        self.parameters.xpansion_mode = True
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=True,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
 
         study_dir = study_list_composer._studies_in_dir
@@ -446,17 +400,12 @@ class TestStudyListComposer:
         self,
     ):
         # given
+        self.parameters.xpansion_mode = True
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=True,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
         study_list_composer._update_database_with_study = mock.Mock()
         study_list_composer.get_antares_version = mock.Mock(return_value="610")
@@ -488,13 +437,7 @@ class TestStudyListComposer:
             repo=mock.Mock(),
             file_manager=file_manager,
             display=mock.Mock(),
-            studies_in_dir="studies_in_dir",
-            time_limit=24,
-            n_cpu=42,
-            log_dir="job_log_dir",
-            xpansion_mode=True,
-            output_dir="output_dir",
-            post_processing=False,
+            parameters=self.parameters,
         )
 
         # when

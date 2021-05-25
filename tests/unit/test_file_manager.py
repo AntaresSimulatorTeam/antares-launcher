@@ -1,6 +1,5 @@
 import os
 import shutil
-from functools import reduce
 from pathlib import Path
 from unittest import mock
 
@@ -17,12 +16,14 @@ DIR_REF = DATA_4_TEST_DIR / "reference-without-output" / "to-zip"
 
 
 def get_dict_from_path(path):
-    d = {'name': os.path.basename(path)}
+    d = {"name": os.path.basename(path)}
     if os.path.isdir(path):
-        d['type'] = "directory"
-        d['children'] = [get_dict_from_path(os.path.join(path, x)) for x in os.listdir(path)]
+        d["type"] = "directory"
+        d["children"] = [
+            get_dict_from_path(os.path.join(path, x)) for x in os.listdir(path)
+        ]
     else:
-        d['type'] = "file"
+        d["type"] = "file"
     return d
 
 

@@ -2,7 +2,9 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
+    SlurmQueueShow,
+)
 
 
 @pytest.mark.unit_test

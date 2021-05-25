@@ -2,7 +2,9 @@ import copy
 from pathlib import Path
 
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.iremote_environment import IRemoteEnvironment
+from antareslauncher.remote_environnement.iremote_environment import (
+    IRemoteEnvironment,
+)
 from antareslauncher.study_dto import StudyDTO
 
 

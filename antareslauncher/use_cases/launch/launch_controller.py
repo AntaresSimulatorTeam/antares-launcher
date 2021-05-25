@@ -2,11 +2,15 @@ from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement.iremote_environment import IRemoteEnvironment
+from antareslauncher.remote_environnement.iremote_environment import (
+    IRemoteEnvironment,
+)
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 from antareslauncher.use_cases.launch.study_zip_cleaner import StudyZipCleaner
-from antareslauncher.use_cases.launch.study_zip_uploader import StudyZipfileUploader
+from antareslauncher.use_cases.launch.study_zip_uploader import (
+    StudyZipfileUploader,
+)
 from antareslauncher.use_cases.launch.study_zipper import StudyZipper
 
 
@@ -70,7 +74,11 @@ class LaunchController:
         zipfile_cleaner = StudyZipCleaner(file_manager, display)
         study_submitter = StudySubmitter(env, display)
         self.study_launcher = StudyLauncher(
-            zipper, study_uploader, zipfile_cleaner, study_submitter, DataReporter(repo)
+            zipper,
+            study_uploader,
+            zipfile_cleaner,
+            study_submitter,
+            DataReporter(repo),
         )
 
     def launch_all_studies(self):

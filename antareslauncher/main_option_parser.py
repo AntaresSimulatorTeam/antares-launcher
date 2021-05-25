@@ -2,29 +2,42 @@ import argparse
 import getpass
 import pathlib
 from argparse import RawTextHelpFormatter
-from typing import List
+from dataclasses import dataclass
+from typing import List, Optional
 
-from antareslauncher import definitions
+
+@dataclass
+class MainOptionsParameters:
+    default_wait_time: int
+    default_time_limit: int
+    default_n_cpu: int
+    studies_in_dir: str
+    log_dir: str
+    finished_dir: str
+    ssh_config_file_is_required: bool
+    ssh_configfile_path_alternate1: Optional[pathlib.Path]
+    ssh_configfile_path_alternate2: Optional[pathlib.Path]
 
 
 class MainOptionParser:
-    def __init__(self) -> None:
+    def __init__(self, main_options_parameters: MainOptionsParameters) -> None:
         self.parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
         self.default_argument_values = {}
+        self.parameters = main_options_parameters
         self._set_default_argument_values()
 
     def _set_default_argument_values(self) -> None:
         """Fills the "default_argument_values" dictionary"""
         self.default_argument_values = {
             "wait_mode": False,
-            "wait_time": definitions.DEFAULT_WAIT_TIME,
-            "studies_in": str(definitions.STUDIES_IN_DIR),
-            "output_dir": str(definitions.FINISHED_DIR),
+            "wait_time": self.parameters.default_wait_time,
+            "studies_in": str(self.parameters.studies_in_dir),
+            "output_dir": str(self.parameters.finished_dir),
             "check_queue": False,
-            "time_limit": definitions.DEFAULT_TIME_LIMIT,
-            "json_ssh_config": look_for_default_ssh_conf_file(),
-            "log_dir": str(definitions.LOG_DIR),
-            "n_cpu": definitions.DEFAULT_N_CPU,
+            "time_limit": self.parameters.default_time_limit,
+            "json_ssh_config": look_for_default_ssh_conf_file(self.parameters),
+            "log_dir": str(self.parameters.log_dir),
+            "n_cpu": self.parameters.default_n_cpu,
             "job_id_to_kill": None,
             "xpansion_mode": False,
             "version": False,
@@ -109,7 +122,7 @@ class MainOptionParser:
             help="Time limit in seconds of a single job.\n"
             "If nothing is specified here and"
             "if the study is not initialised with a specific value,\n"
-            f"the default value will be used: {definitions.DEFAULT_TIME_LIMIT}={int(definitions.DEFAULT_TIME_LIMIT/3600)}h.",
+            f"the default value will be used: {self.parameters.default_time_limit}={int(self.parameters.default_time_limit/3600)}h.",
         )
 
         self.parser.add_argument(
@@ -163,7 +176,7 @@ class MainOptionParser:
             help=f"Number of cores to be used for a single job.\n"
             f"If nothing is specified here and "
             f"if the study is not initialised with a specific value,\n"
-            f"the default value will be used: n_cpu=={definitions.DEFAULT_N_CPU}",
+            f"the default value will be used: n_cpu=={self.parameters.default_n_cpu}",
         )
 
         self.parser.add_argument(
@@ -178,27 +191,35 @@ class MainOptionParser:
             "--ssh-settings-file",
             dest="json_ssh_config",
             default=self.default_argument_values["json_ssh_config"],
-            required=definitions.SSH_CONFIG_FILE_IS_REQUIRED,
+            required=self.parameters.ssh_config_file_is_required,
             help=f"Path to the configuration file for the ssh connection.\n"
             f"If no value is given, "
             f"it will look for it in default location with this order:\n"
-            f"1st: {definitions.SSH_CONFIGFILE_PATH_PROD_CWD}\n"
-            f"2nd: {definitions.SSH_CONFIGFILE_PATH_PROD_USER}\n"
+            f"1st: {self.parameters.ssh_configfile_path_alternate1}\n"
+            f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n"
             f"3rd: default configuration for Windows.\n",
         )
 
 
-def look_for_default_ssh_conf_file() -> pathlib.Path:
+def look_for_default_ssh_conf_file(
+    parameters: MainOptionsParameters,
+) -> pathlib.Path:
     """Checks if the ssh config file exists.
 
     Returns:
         path to the ssh config file is it exists, None otherwise
     """
     ssh_conf_file: pathlib.Path
-    if definitions.SSH_CONFIGFILE_PATH_PROD_CWD.is_file():
-        ssh_conf_file = definitions.SSH_CONFIGFILE_PATH_PROD_CWD
-    elif definitions.SSH_CONFIGFILE_PATH_PROD_USER.is_file():
-        ssh_conf_file = definitions.SSH_CONFIGFILE_PATH_PROD_USER
+    if (
+        parameters.ssh_configfile_path_alternate1
+        and parameters.ssh_configfile_path_alternate1.is_file()
+    ):
+        ssh_conf_file = parameters.ssh_configfile_path_alternate1
+    elif (
+        parameters.ssh_configfile_path_alternate2
+        and parameters.ssh_configfile_path_alternate2.is_file()
+    ):
+        ssh_conf_file = parameters.ssh_configfile_path_alternate2
     else:
         ssh_conf_file = None
     return ssh_conf_file

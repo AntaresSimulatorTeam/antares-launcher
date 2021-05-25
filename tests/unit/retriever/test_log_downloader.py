@@ -7,9 +7,7 @@ import pytest
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.remote_environnement import iremote_environment
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.retrieve.log_downloader import (
-    LogDownloader,
-)
+from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 
 
 class TestLogDownloader:
@@ -38,7 +36,9 @@ class TestLogDownloader:
             expected_message, mock.ANY
         )
 
-    def test_download_shows_error_if_fails_and_only_study_logdir_is_changed(self, started_study):
+    def test_download_shows_error_if_fails_and_only_study_logdir_is_changed(
+        self, started_study
+    ):
         self.remote_env_mock.download_logs = mock.Mock(return_value=False)
         log_dir_name = f"{started_study.name}_{started_study.job_id}"
         expected_job_log_dir = str(Path(started_study.job_log_dir) / log_dir_name)

@@ -15,27 +15,27 @@ class StudyDTO:
 
     path: str
     name: str = field(init=False)
-    zipfile_path: Optional[str] = ""
-    zip_is_sent: Optional[bool] = False
-    started: Optional[bool] = False
-    finished: Optional[bool] = False
-    with_error: Optional[bool] = False
-    local_final_zipfile_path: Optional[str] = ""
-    input_zipfile_removed: Optional[bool] = False
-    logs_downloaded: Optional[bool] = False
-    job_log_dir: Optional[str] = ""
-    output_dir: Optional[str] = ""
-    remote_server_is_clean: Optional[bool] = False
-    final_zip_extracted: Optional[bool] = False
-    done: Optional[bool] = False
+    zipfile_path: str = ""
+    zip_is_sent: bool = False
+    started: bool = False
+    finished: bool = False
+    with_error: bool = False
+    local_final_zipfile_path: str = ""
+    input_zipfile_removed: bool = False
+    logs_downloaded: bool = False
+    job_log_dir: str = ""
+    output_dir: str = ""
+    remote_server_is_clean: bool = False
+    final_zip_extracted: bool = False
+    done: bool = False
     job_id: Optional[int] = None
-    job_state: Optional[str] = ""
+    job_state: str = ""
     time_limit: Optional[int] = None
     n_cpu: Optional[int] = None
-    antares_version: Optional[int] = None
-    xpansion_study: Optional[bool] = False
-    run_mode: Optional[Modes] = Modes.antares
-    post_processing: Optional[bool] = False
+    antares_version: Optional[str] = None
+    xpansion_study: bool = False
+    run_mode: Modes = Modes.antares
+    post_processing: bool = False
 
     def __post_init__(self):
         self.name = Path(self.path).name

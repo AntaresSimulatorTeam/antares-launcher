@@ -10,7 +10,9 @@ from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
 
 class TestWaitController:
     @pytest.mark.unit_test
-    def test_countdown_calls_display_message_5_times_if_it_waits_2_seconds(self):
+    def test_countdown_calls_display_message_5_times_if_it_waits_2_seconds(
+        self,
+    ):
         display = IDisplay
         display.show_message = mock.Mock()
         display.show_message_no_newline = mock.Mock()
