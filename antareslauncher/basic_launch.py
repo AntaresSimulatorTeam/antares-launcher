@@ -31,10 +31,12 @@ if __name__ == "__main__":
         default_json_db_name=definitions.DEFAULT_JSON_DB_NAME,
         slurm_script_path=definitions.SLURM_SCRIPT_PATH,
         antares_versions_on_remote_server=definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER,
-        default_ssh_dict_from_embedded_json=definitions.DEFAULT_SSH_DICT_FROM_EMBEDDED_JSON,
+        default_ssh_dict=definitions.DEFAULT_SSH_DICT_FROM_EMBEDDED_JSON,
         db_primary_key=definitions.DB_PRIMARY_KEY,
     )
 
-    main.run_with(arguments=input_arguments, parameters=main_parameters, show_banner=True)
+    main.run_with(
+        arguments=input_arguments, parameters=main_parameters, show_banner=True
+    )
     if not len(sys.argv) > 1:
         input("Press ENTER to exit.")

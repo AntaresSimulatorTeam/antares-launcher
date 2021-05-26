@@ -71,7 +71,7 @@ class MainParameters:
     default_json_db_name: str
     slurm_script_path: str
     antares_versions_on_remote_server: List[str]
-    default_ssh_dict_from_embedded_json: Dict
+    default_ssh_dict: Dict
     db_primary_key: str
 
 
@@ -100,12 +100,16 @@ def run_with(arguments, parameters: MainParameters, show_banner=False):
 
     tree_structure_initializer.init_tree_structure()
     logger_initializer = LoggerInitializer(
-        Path(arguments.log_dir) / "antares_launcher.log"
+        str(Path(arguments.log_dir) / "antares_launcher.log")
     )
     logger_initializer.init_logger()
 
     # connection
-    ssh_dict = get_ssh_config_dict(file_manager, arguments.json_ssh_config, parameters)
+    ssh_dict = get_ssh_config_dict(
+        file_manager,
+        arguments.json_ssh_config,
+        parameters.default_ssh_dict,
+    )
     connection = ssh_connection.SshConnection(config=ssh_dict)
     verify_connection(connection, display)
 
@@ -178,9 +182,9 @@ def verify_connection(connection, display):
     display.show_message("Ssh connection established", __name__)
 
 
-def get_ssh_config_dict(file_manager, json_ssh_config, parameters: MainParameters):
+def get_ssh_config_dict(file_manager, json_ssh_config, ssh_dict: dict):
     if json_ssh_config is None:
-        ssh_dict = parameters.default_ssh_dict_from_embedded_json
+        ssh_dict = ssh_dict
     else:
         ssh_dict = file_manager.convert_json_file_to_dict(json_ssh_config)
     if ssh_dict is None:
