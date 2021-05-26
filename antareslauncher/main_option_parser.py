@@ -112,7 +112,7 @@ class MainOptionParser:
             "If the option is used, it will override the standard execution.\n"
             "It can be overridden by the kill job option (-k).",
         )
-
+        seconds_in_hour = 3600
         self.parser.add_argument(
             "-t",
             "--time-limit",
@@ -122,7 +122,7 @@ class MainOptionParser:
             help="Time limit in seconds of a single job.\n"
             "If nothing is specified here and"
             "if the study is not initialised with a specific value,\n"
-            f"the default value will be used: {self.parameters.default_time_limit}={int(self.parameters.default_time_limit/3600)}h.",
+            f"the default value will be used: {self.parameters.default_time_limit}={int(self.parameters.default_time_limit / seconds_in_hour)}h.",
         )
 
         self.parser.add_argument(
