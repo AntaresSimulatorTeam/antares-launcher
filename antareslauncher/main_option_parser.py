@@ -196,8 +196,7 @@ class MainOptionParser:
             f"If no value is given, "
             f"it will look for it in default location with this order:\n"
             f"1st: {self.parameters.ssh_configfile_path_alternate1}\n"
-            f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n"
-            f"3rd: default configuration for Windows.\n",
+            f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n",
         )
 
 
