@@ -4,14 +4,14 @@ import pytest
 
 from antareslauncher.main_option_parser import (
     MainOptionParser,
-    MainOptionsParameters,
+    ParserParameters,
 )
 from antareslauncher.main_option_parser import look_for_default_ssh_conf_file
 
 
 class TestMainOptionParser:
     def setup_method(self):
-        self.main_options_parameters = MainOptionsParameters(
+        self.main_options_parameters = ParserParameters(
             default_wait_time=23,
             default_time_limit=24,
             default_n_cpu=42,
