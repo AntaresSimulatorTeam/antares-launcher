@@ -49,8 +49,7 @@ class TestEndToEnd:
         )
         parser_parameters: ParserParameters = param_reader.get_parser_parameters()
         self.parser: MainOptionParser = MainOptionParser(parameters=parser_parameters)
-        self.parser.add_basic_arguments()
-        self.parser.add_advanced_arguments()
+        self.parser.add_basic_arguments().add_advanced_arguments()
         self.main_parameters: MainParameters = param_reader.get_main_parameters()
 
     def teardown_method(self):

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import getpass
 import pathlib
@@ -62,7 +64,7 @@ class MainOptionParser:
                 setattr(output, key, value)
         return output
 
-    def add_basic_arguments(self) -> None:
+    def add_basic_arguments(self) -> MainOptionParser:
         """Adds to the parser all the arguments for the light mode"""
         self.parser.add_argument(
             "-w",
@@ -164,8 +166,9 @@ class MainOptionParser:
             f"the JobID can be retrieved with option -q to show the queue."
             f"If option is given it overrides the -q and the standard execution.",
         )
+        return self
 
-    def add_advanced_arguments(self) -> None:
+    def add_advanced_arguments(self) -> MainOptionParser:
         """Adds to the parser all the arguments for the advanced mode"""
         self.parser.add_argument(
             "-n",
@@ -198,6 +201,7 @@ class MainOptionParser:
             f"1st: {self.parameters.ssh_configfile_path_alternate1}\n"
             f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n",
         )
+        return self
 
 
 def look_for_default_ssh_conf_file(
