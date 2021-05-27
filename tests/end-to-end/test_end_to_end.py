@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from antareslauncher import main, definitions
+from antareslauncher import main
 from antareslauncher.main import MainParameters
 from antareslauncher.main_option_parser import (
     MainOptionParser,
@@ -20,6 +20,8 @@ from antareslauncher.parameters_reader import ParametersReader
 DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
 ANTARES_STUDY = DATA_4_TEST_DIR / "one_node_v7"
 EXAMPLE_STUDIES_IN = DATA_4_TEST_DIR / "STUDIES-IN-FOR-TEST"
+SSH_JSON_FILE = DATA_4_TEST_DIR / "sshconfig.json"
+YAML_CONF_FILE = DATA_4_TEST_DIR / "configuration.yaml"
 
 
 def is_empty(directory):
@@ -42,16 +44,14 @@ class TestEndToEnd:
         except FileNotFoundError:
             pass
 
-        self.ssh_config_file_path = DATA_4_TEST_DIR / "sshconfig.json"
-        yaml_file_path = DATA_4_TEST_DIR / "configuration.yaml"
         param_reader = ParametersReader(
-            json_ssh_conf=self.ssh_config_file_path, yaml_filepath=yaml_file_path
+            json_ssh_conf=SSH_JSON_FILE, yaml_filepath=YAML_CONF_FILE
         )
-        self.main_parameters = param_reader.get_main_parameters()
-        parser_parameters = param_reader.get_parser_parameters()
+        parser_parameters: ParserParameters = param_reader.get_parser_parameters()
         self.parser: MainOptionParser = MainOptionParser(parameters=parser_parameters)
         self.parser.add_basic_arguments()
         self.parser.add_advanced_arguments()
+        self.main_parameters: MainParameters = param_reader.get_main_parameters()
 
     def teardown_method(self):
         shutil.rmtree(self.finished_path)
@@ -62,11 +62,7 @@ class TestEndToEnd:
     def test_when_run_on_an_empty_directory_the_tree_structure_is_initialised(
         self,
     ):
-        arg_ssh_config = [
-            "--ssh-settings-file",
-            f"{str(self.ssh_config_file_path)}",
-        ]
-        input_arguments = self.parser.parse_args()
+        input_arguments = self.parser.parse_args([])
 
         main.run_with(input_arguments, self.main_parameters)
 
@@ -77,17 +73,11 @@ class TestEndToEnd:
 
     @pytest.mark.end_to_end_test
     def test_one_study_is_correctly_processed(self):
-        arg_ssh_config = [
-            "--ssh-settings-file",
-            f"{str(self.ssh_config_file_path)}",
-        ]
         arg_wait_mode = ["-w"]
         arg_wait_time = ["--wait-time", "2"]
         arg_2_cpu = ["-n", "2"]
         arg_studies_in = ["-i", f"{str(EXAMPLE_STUDIES_IN)}"]
-        arguments = (
-            arg_ssh_config + arg_wait_mode + arg_wait_time + arg_2_cpu + arg_studies_in
-        )
+        arguments = arg_wait_mode + arg_wait_time + arg_2_cpu + arg_studies_in
         input_arguments = self.parser.parse_args(arguments)
 
         main.run_with(input_arguments, self.main_parameters)
@@ -97,22 +87,13 @@ class TestEndToEnd:
 
     @pytest.mark.end_to_end_test
     def test_one_xpansion_study_is_correctly_processed(self):
-        arg_ssh_config = [
-            "--ssh-settings-file",
-            f"{str(self.ssh_config_file_path)}",
-        ]
         arg_xpansion = ["-x"]
         arg_wait_mode = ["-w"]
         arg_wait_time = ["--wait-time", "2"]
         arg_2_cpu = ["-n", "2"]
         arg_studies_in = ["-i", f"{str(EXAMPLE_STUDIES_IN)}"]
         arguments = (
-            arg_ssh_config
-            + arg_xpansion
-            + arg_wait_mode
-            + arg_wait_time
-            + arg_2_cpu
-            + arg_studies_in
+            arg_xpansion + arg_wait_mode + arg_wait_time + arg_2_cpu + arg_studies_in
         )
         input_arguments = self.parser.parse_args(arguments)
 
