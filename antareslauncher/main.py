@@ -1,3 +1,4 @@
+import argparse
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -75,7 +76,7 @@ class MainParameters:
     db_primary_key: str
 
 
-def run_with(arguments, parameters: MainParameters, show_banner=False):
+def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_banner=False):
     """Instantiates all the objects necessary to antares-launcher, and runs the program"""
     if arguments.version:
         print(f"Antares_Launcher v{VERSION}")
@@ -84,11 +85,10 @@ def run_with(arguments, parameters: MainParameters, show_banner=False):
     if show_banner:
         print(ANTARES_LAUNCHER_BANNER)
 
-    studies_in = Path(arguments.studies_in).resolve()
     display = DisplayTerminal()
     file_manager = FileManager(display)
 
-    json_file_name = parameters.json_dir / parameters.default_json_db_name
+    db_json_file_path = parameters.json_dir / parameters.default_json_db_name
 
     tree_structure_initializer = TreeStructureInitializer(
         display,
@@ -116,7 +116,7 @@ def run_with(arguments, parameters: MainParameters, show_banner=False):
     slurm_script_features = SlurmScriptFeatures(parameters.slurm_script_path)
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
     data_repo = DataRepoTinydb(
-        database_name=json_file_name, db_primary_key=parameters.db_primary_key
+        database_file_path=db_json_file_path, db_primary_key=parameters.db_primary_key
     )
     study_list_composer = StudyListComposer(
         repo=data_repo,
