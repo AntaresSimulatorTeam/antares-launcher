@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 import getpass
 from antareslauncher.main import MainParameters
-from antareslauncher.main_option_parser import MainOptionsParameters
+from antareslauncher.main_option_parser import ParserParameters
 
 ALT2_PARENT = Path.home() / "antares_launcher_settings"
 ALT1_PARENT = Path.cwd()
@@ -48,9 +48,9 @@ class ParametersReader:
             "DEFAULT_JSON_DB_NAME", DEFAULT_JSON_DB_NAME
         )
 
-    def get_option_parameters(self):
+    def get_parser_parameters(self):
 
-        options = MainOptionsParameters(
+        options = ParserParameters(
             default_wait_time=self._wait_time,
             default_time_limit=self.time_limit,
             default_n_cpu=self.n_cpu,

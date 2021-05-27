@@ -7,7 +7,7 @@ from typing import List, Optional
 
 
 @dataclass
-class MainOptionsParameters:
+class ParserParameters:
     default_wait_time: int
     default_time_limit: int
     default_n_cpu: int
@@ -20,10 +20,10 @@ class MainOptionsParameters:
 
 
 class MainOptionParser:
-    def __init__(self, main_options_parameters: MainOptionsParameters) -> None:
+    def __init__(self, parameters: ParserParameters) -> None:
         self.parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
         self.default_argument_values = {}
-        self.parameters = main_options_parameters
+        self.parameters = parameters
         self._set_default_argument_values()
 
     def _set_default_argument_values(self) -> None:
@@ -201,7 +201,7 @@ class MainOptionParser:
 
 
 def look_for_default_ssh_conf_file(
-    parameters: MainOptionsParameters,
+    parameters: ParserParameters,
 ) -> pathlib.Path:
     """Checks if the ssh config file exists.
 

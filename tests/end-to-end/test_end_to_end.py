@@ -13,8 +13,9 @@ from antareslauncher import main, definitions
 from antareslauncher.main import MainParameters
 from antareslauncher.main_option_parser import (
     MainOptionParser,
-    MainOptionsParameters,
+    ParserParameters,
 )
+from antareslauncher.parameters_reader import ParametersReader
 
 DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
 ANTARES_STUDY = DATA_4_TEST_DIR / "one_node_v7"
@@ -36,35 +37,19 @@ class TestEndToEnd:
         self.json_db_file_path = (
             Path.cwd() / f"{getpass.getuser()}_antares_launcher_db.json"
         )
-        self.main_parameters = MainParameters(
-            json_dir=definitions.JSON_DIR,
-            default_json_db_name=definitions.DEFAULT_JSON_DB_NAME,
-            slurm_script_path=definitions.SLURM_SCRIPT_PATH,
-            antares_versions_on_remote_server=definitions.ANTARES_VERSIONS_ON_REMOTE_SERVER,
-            default_ssh_dict=definitions.DEFAULT_SSH_DICT_FROM_EMBEDDED_JSON,
-            db_primary_key=definitions.DB_PRIMARY_KEY,
-        )
         try:
             self.json_db_file_path.unlink()
         except FileNotFoundError:
             pass
 
         self.ssh_config_file_path = DATA_4_TEST_DIR / "sshconfig.json"
-
-        main_options_parameters = MainOptionsParameters(
-            default_wait_time=definitions.DEFAULT_WAIT_TIME,
-            default_time_limit=definitions.DEFAULT_TIME_LIMIT,
-            default_n_cpu=definitions.DEFAULT_N_CPU,
-            studies_in_dir=definitions.STUDIES_IN_DIR,
-            log_dir=definitions.LOG_DIR,
-            finished_dir=definitions.FINISHED_DIR,
-            ssh_config_file_is_required=definitions.SSH_CONFIG_FILE_IS_REQUIRED,
-            ssh_configfile_path_alternate1=definitions.SSH_CONFIGFILE_PATH_ALTERNATE1,
-            ssh_configfile_path_alternate2=definitions.SSH_CONFIGFILE_PATH_ALTERNATE2,
+        yaml_file_path = DATA_4_TEST_DIR / "configuration.yaml"
+        param_reader = ParametersReader(
+            json_ssh_conf=self.ssh_config_file_path, yaml_filepath=yaml_file_path
         )
-        self.parser: MainOptionParser = MainOptionParser(
-            main_options_parameters=main_options_parameters
-        )
+        self.main_parameters = param_reader.get_main_parameters()
+        parser_parameters = param_reader.get_parser_parameters()
+        self.parser: MainOptionParser = MainOptionParser(parameters=parser_parameters)
         self.parser.add_basic_arguments()
         self.parser.add_advanced_arguments()
 
@@ -81,7 +66,7 @@ class TestEndToEnd:
             "--ssh-settings-file",
             f"{str(self.ssh_config_file_path)}",
         ]
-        input_arguments = self.parser.parse_args(arg_ssh_config)
+        input_arguments = self.parser.parse_args()
 
         main.run_with(input_arguments, self.main_parameters)
 

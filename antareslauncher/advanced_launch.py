@@ -4,11 +4,11 @@ from antareslauncher import definitions
 from antareslauncher.main import run_with, MainParameters
 from antareslauncher.main_option_parser import (
     MainOptionParser,
-    MainOptionsParameters,
+    ParserParameters,
 )
 
 if __name__ == "__main__":
-    main_options_parameters = MainOptionsParameters(
+    main_options_parameters = ParserParameters(
         default_wait_time=definitions.DEFAULT_WAIT_TIME,
         default_time_limit=definitions.DEFAULT_TIME_LIMIT,
         default_n_cpu=definitions.DEFAULT_N_CPU,
