@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import getpass
 import pathlib
@@ -7,7 +9,7 @@ from typing import List, Optional
 
 
 @dataclass
-class MainOptionsParameters:
+class ParserParameters:
     default_wait_time: int
     default_time_limit: int
     default_n_cpu: int
@@ -20,10 +22,10 @@ class MainOptionsParameters:
 
 
 class MainOptionParser:
-    def __init__(self, main_options_parameters: MainOptionsParameters) -> None:
+    def __init__(self, parameters: ParserParameters) -> None:
         self.parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
         self.default_argument_values = {}
-        self.parameters = main_options_parameters
+        self.parameters = parameters
         self._set_default_argument_values()
 
     def _set_default_argument_values(self) -> None:
@@ -62,7 +64,7 @@ class MainOptionParser:
                 setattr(output, key, value)
         return output
 
-    def add_basic_arguments(self) -> None:
+    def add_basic_arguments(self) -> MainOptionParser:
         """Adds to the parser all the arguments for the light mode"""
         self.parser.add_argument(
             "-w",
@@ -112,7 +114,7 @@ class MainOptionParser:
             "If the option is used, it will override the standard execution.\n"
             "It can be overridden by the kill job option (-k).",
         )
-
+        seconds_in_hour = 3600
         self.parser.add_argument(
             "-t",
             "--time-limit",
@@ -122,7 +124,7 @@ class MainOptionParser:
             help="Time limit in seconds of a single job.\n"
             "If nothing is specified here and"
             "if the study is not initialised with a specific value,\n"
-            f"the default value will be used: {self.parameters.default_time_limit}={int(self.parameters.default_time_limit/3600)}h.",
+            f"the default value will be used: {self.parameters.default_time_limit}={int(self.parameters.default_time_limit / seconds_in_hour)}h.",
         )
 
         self.parser.add_argument(
@@ -164,8 +166,9 @@ class MainOptionParser:
             f"the JobID can be retrieved with option -q to show the queue."
             f"If option is given it overrides the -q and the standard execution.",
         )
+        return self
 
-    def add_advanced_arguments(self) -> None:
+    def add_advanced_arguments(self) -> MainOptionParser:
         """Adds to the parser all the arguments for the advanced mode"""
         self.parser.add_argument(
             "-n",
@@ -196,13 +199,13 @@ class MainOptionParser:
             f"If no value is given, "
             f"it will look for it in default location with this order:\n"
             f"1st: {self.parameters.ssh_configfile_path_alternate1}\n"
-            f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n"
-            f"3rd: default configuration for Windows.\n",
+            f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n",
         )
+        return self
 
 
 def look_for_default_ssh_conf_file(
-    parameters: MainOptionsParameters,
+    parameters: ParserParameters,
 ) -> pathlib.Path:
     """Checks if the ssh config file exists.
 

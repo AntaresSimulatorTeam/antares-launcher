@@ -281,7 +281,7 @@ class TestRemoteEnvironmentWithSlurm:
         )
 
     @pytest.mark.unit_test
-    def test_given_a_submitted_study_when_execute_command_returns_empty_output_then_an_exception_is_raised(
+    def test_given_submitted_study__when_check_job_state_gets_empty_output_it_tries_5_times_then_raises_exception(
         self, my_remote_env_with_slurm_mock, study
     ):
         # given
@@ -296,6 +296,10 @@ class TestRemoteEnvironmentWithSlurm:
         # then
         with pytest.raises(GetJobStateOutputException):
             my_remote_env_with_slurm_mock.get_job_state_flags(study)
+        tries_number = (
+            my_remote_env_with_slurm_mock.connection.execute_command.call_count
+        )
+        assert tries_number == 5
 
     @pytest.mark.unit_test
     def test_given_a_submitted_study_when_execute_command_returns_an_error_then_an_exception_is_raised(

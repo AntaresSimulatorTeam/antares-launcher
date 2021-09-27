@@ -9,15 +9,15 @@ from antareslauncher.study_dto import StudyDTO
 
 
 class DataRepoTinydb(IDataRepo):
-    def __init__(self, database_name, db_primary_key: str):
+    def __init__(self, database_file_path, db_primary_key: str):
         super(DataRepoTinydb, self).__init__()
-        self.database_name = database_name
+        self.database_file_path = database_file_path
         self.logger = logging.getLogger(__name__ + "." + __class__.__name__)
         self.db_primary_key = db_primary_key
 
     @property
     def db(self) -> tinydb.database.TinyDB:
-        return TinyDB(self.database_name, sort_keys=True, indent=4)
+        return TinyDB(self.database_file_path, sort_keys=True, indent=4)
 
     @staticmethod
     def doc_to_study(doc: tinydb.database.Document):

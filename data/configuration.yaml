@@ -12,4 +12,7 @@ SLURM_SCRIPT_PATH : "/path/to/launchAntares_v1.1.3.sh"
 ANTARES_VERSIONS_ON_REMOTE_SERVER :
   - "610"
   - "700"
+  - "710"
+  - "720"
   - "800"
+
