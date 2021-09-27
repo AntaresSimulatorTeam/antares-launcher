@@ -174,7 +174,7 @@ def run_with(arguments, parameters: MainParameters, show_banner=False):
 
 def verify_connection(connection, display):
     if not connection.test_connection():
-        sys.exit("Could not establish ssh connection")
+        raise Exception("Could not establish ssh connection")
     display.show_message("Ssh connection established", __name__)
 
 
@@ -184,5 +184,5 @@ def get_ssh_config_dict(file_manager, json_ssh_config, parameters: MainParameter
     else:
         ssh_dict = file_manager.convert_json_file_to_dict(json_ssh_config)
     if ssh_dict is None:
-        sys.exit("Could not find any ssh configuration file")
+        raise Exception("Could not find any ssh configuration file")
     return ssh_dict
