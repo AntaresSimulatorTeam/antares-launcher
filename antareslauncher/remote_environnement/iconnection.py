@@ -18,10 +18,6 @@ class IConnection(ABC):
         return self.__home_dir
 
     @abstractmethod
-    def _connect(self):
-        raise NotImplementedError
-
-    @abstractmethod
     def execute_command(self, command):
         """Execute a command on the remote host
         put stderr and stout in self.error and self.output respectively
