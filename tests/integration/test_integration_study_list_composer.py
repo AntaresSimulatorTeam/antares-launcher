@@ -20,7 +20,7 @@ class TestIntegrationStudyListComposer:
                 time_limit=42,
                 n_cpu=24,
                 log_dir="job_log_dir",
-                xpansion_mode=False,
+                xpansion_mode=None,
                 output_dir="output_dir",
                 post_processing=False,
                 antares_versions_on_remote_server=["700"],

@@ -21,7 +21,8 @@ class SlurmScriptFeatures:
     def __init__(self, slurm_script_path: str):
         self.JOB_TYPE_PLACEHOLDER = "TO_BE_REPLACED_WITH_JOB_TYPE"
         self.JOB_TYPE_ANTARES = "ANTARES"
-        self.JOB_TYPE_XPANSION = "ANTARES_XPANSION"
+        self.JOB_TYPE_XPANSION_R = "ANTARES_XPANSION_R"
+        self.JOB_TYPE_XPANSION_CPP = "ANTARES_XPANSION_CPP"
         self.solver_script_path = slurm_script_path
         self._script_params = None
         self._remote_launch_dir = None
@@ -50,9 +51,13 @@ class SlurmScriptFeatures:
             complete_command = complete_command.replace(
                 self.JOB_TYPE_PLACEHOLDER, self.JOB_TYPE_ANTARES
             )
-        else:
+        elif script_params.run_mode == Modes.xpansion_r:
             complete_command = complete_command.replace(
-                self.JOB_TYPE_PLACEHOLDER, self.JOB_TYPE_XPANSION
+                self.JOB_TYPE_PLACEHOLDER, self.JOB_TYPE_XPANSION_R
+            )
+        elif script_params.run_mode == Modes.xpansion_cpp:
+            complete_command = complete_command.replace(
+                self.JOB_TYPE_PLACEHOLDER, self.JOB_TYPE_XPANSION_CPP
             )
 
         return complete_command
@@ -116,7 +121,7 @@ class SlurmScriptFeatures:
         """
         if run_mode == Modes.antares:
             final_zip_name = f"finished_{study_name}_{job_id}.zip"
-        elif run_mode == Modes.xpansion:
+        elif run_mode in [Modes.xpansion_r, Modes.xpansion_cpp]:
             final_zip_name = f"finished_XPANSION_{study_name}_{job_id}.zip"
         else:
             raise ValueError

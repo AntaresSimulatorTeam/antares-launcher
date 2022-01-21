@@ -855,9 +855,11 @@ class TestRemoteEnvironmentWithSlurm:
     @pytest.mark.parametrize(
         "job_type,mode,post_processing",
         [
-            ("ANTARES_XPANSION", Modes.xpansion, True),
+            ("ANTARES_XPANSION_R", Modes.xpansion_r, True),
+            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, True),
             ("ANTARES", Modes.antares, True),
-            ("ANTARES_XPANSION", Modes.xpansion, False),
+            ("ANTARES_XPANSION_R", Modes.xpansion_r, False),
+            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, False),
             ("ANTARES", Modes.antares, False),
         ],
     )

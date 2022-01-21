@@ -26,7 +26,7 @@ class TestAntaresLauncher:
             wait_controller=dummy,
             wait_mode=False,
             wait_time=42,
-            xpansion_mode=False,
+            xpansion_mode=None,
             job_id_to_kill=job_id_to_kill,
             check_queue_bool=False,
         )
@@ -52,7 +52,7 @@ class TestAntaresLauncher:
             wait_controller=dummy,
             wait_mode=False,
             wait_time=42,
-            xpansion_mode=False,
+            xpansion_mode=None,
             check_queue_bool=True,
         )
         # when

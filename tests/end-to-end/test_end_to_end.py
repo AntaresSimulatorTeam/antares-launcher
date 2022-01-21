@@ -86,7 +86,7 @@ class TestEndToEnd:
 
     @pytest.mark.end_to_end_test
     def test_one_xpansion_study_is_correctly_processed(self):
-        arg_xpansion = ["-x"]
+        arg_xpansion = ["-x", "r"]
         arg_wait_mode = ["-w"]
         arg_wait_time = ["--wait-time", "2"]
         arg_2_cpu = ["-n", "2"]

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
@@ -14,7 +14,7 @@ class StudyListComposerParameters:
     time_limit: int
     log_dir: str
     n_cpu: int
-    xpansion_mode: bool
+    xpansion_mode: Optional[str]
     output_dir: str
     post_processing: bool
     antares_versions_on_remote_server: List[str]
@@ -62,9 +62,11 @@ class StudyListComposer:
         ls_of_dir = self._file_manager.listdir_of(self._studies_in_dir)
         return ls_of_dir
 
-    def _create_study(self, path, antares_version, xpansion_study):
-        if self.xpansion_mode:
-            run_mode = Modes.xpansion
+    def _create_study(self, path, antares_version, xpansion_mode: str):
+        if self.xpansion_mode == "r":
+            run_mode = Modes.xpansion_r
+        elif self.xpansion_mode == "cpp":
+            run_mode = Modes.xpansion_cpp
         else:
             run_mode = Modes.antares
 
@@ -75,7 +77,7 @@ class StudyListComposer:
             antares_version=antares_version,
             job_log_dir=self.DEFAULT_JOB_LOG_DIR_PATH,
             output_dir=str(self.output_dir),
-            xpansion_study=xpansion_study,
+            xpansion_mode=xpansion_mode,
             run_mode=run_mode,
             post_processing=self.post_processing,
         )
@@ -146,9 +148,7 @@ class StudyListComposer:
 
     def _show_welcome_message(self):
         if self.xpansion_mode:
-            message = (
-                "Updating current database... New studies will be ran in xpansion mode"
-            )
+            message = f"Updating current database... New studies will be ran in xpansion mode {self.xpansion_mode}"
         else:
             message = "Updating current database..."
         self._display.show_message(
@@ -157,10 +157,10 @@ class StudyListComposer:
         )
 
     def _update_database_with_new_study(
-        self, antares_version, directory_path, is_xpansion_study
+        self, antares_version, directory_path, xpansion_mode: str
     ):
         buffer_study = self._create_study(
-            directory_path, antares_version, is_xpansion_study
+            directory_path, antares_version, xpansion_mode
         )
         self._update_database_with_study(buffer_study)
 
@@ -168,13 +168,16 @@ class StudyListComposer:
         antares_version = self.get_antares_version(directory_path)
         if self._is_valid_antares_study(antares_version):
             is_xpansion_study = self._is_xpansion_study(directory_path)
+            xpansion_mode = self.xpansion_mode if is_xpansion_study else None
 
-            valid_xpansion_candidate = self.xpansion_mode and is_xpansion_study
-            valid_antares_candidate = not self.xpansion_mode
+            valid_xpansion_candidate = (
+                self.xpansion_mode in ["r", "cpp"] and is_xpansion_study
+            )
+            valid_antares_candidate = self.xpansion_mode is None
 
             if valid_antares_candidate or valid_xpansion_candidate:
                 self._update_database_with_new_study(
-                    antares_version, directory_path, is_xpansion_study
+                    antares_version, directory_path, xpansion_mode
                 )
 
     def _update_database_with_study(self, buffer_study):
