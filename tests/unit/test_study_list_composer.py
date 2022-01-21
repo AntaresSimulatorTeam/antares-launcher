@@ -22,7 +22,7 @@ class TestStudyListComposer:
             time_limit=None,
             n_cpu=None,
             log_dir="job_log_dir",
-            xpansion_mode=False,
+            xpansion_mode=None,
             output_dir="output_dir",
             post_processing=False,
             antares_versions_on_remote_server=["610", "700", "800"],
@@ -245,7 +245,7 @@ class TestStudyListComposer:
         study_dir = study_list_composer._studies_in_dir
         antares_version = 700
 
-        is_xpansion_study = False
+        is_xpansion_study = None
         # when
         new_study_dto = study_list_composer._create_study(
             study_dir, antares_version, is_xpansion_study
@@ -364,20 +364,20 @@ class TestStudyListComposer:
         study_dir = study_list_composer._studies_in_dir
         antares_version = 700
 
-        is_xpansion_study = True
+        is_xpansion_study = "r"
         # when
         new_study_dto = study_list_composer._create_study(
             study_dir, antares_version, is_xpansion_study
         )
         # then
-        assert new_study_dto.xpansion_study == True
+        assert new_study_dto.xpansion_mode == "r"
 
     @pytest.mark.unit_test
     def test_given_xpansion_mode_option_when_create_study_is_called_then_run_mode_value_of_dto_is_xpansion_mode(
         self,
     ):
         # given
-        self.parameters.xpansion_mode = True
+        self.parameters.xpansion_mode = "r"
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),
@@ -387,20 +387,20 @@ class TestStudyListComposer:
 
         study_dir = study_list_composer._studies_in_dir
         antares_version = 700
-        is_xpansion_study = True
+        is_xpansion_study = "r"
         # when
         new_study_dto = study_list_composer._create_study(
             study_dir, antares_version, is_xpansion_study
         )
         # then
-        assert new_study_dto.run_mode == Modes.xpansion
+        assert new_study_dto.run_mode == Modes.xpansion_r
 
     @pytest.mark.unit_test
     def test_given_xpansion_mode_option_when_update_study_only_xpansion_studies_are_saved_in_database(
         self,
     ):
         # given
-        self.parameters.xpansion_mode = True
+        self.parameters.xpansion_mode = "r"
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
             file_manager=mock.Mock(),

@@ -41,7 +41,7 @@ class MainOptionParser:
             "log_dir": str(self.parameters.log_dir),
             "n_cpu": self.parameters.default_n_cpu,
             "job_id_to_kill": None,
-            "xpansion_mode": False,
+            "xpansion_mode": None,
             "version": False,
             "post_processing": False,
         }
@@ -130,12 +130,12 @@ class MainOptionParser:
         self.parser.add_argument(
             "-x",
             "--xpansion-mode",
-            action="store_true",
             dest="xpansion_mode",
-            default=False,
+            default=None,
             help="Activate the xpansion mode:\n"
             "Antares_Launcher will launch all the new studies in xpansion mode if\n"
-            "the studies contains the information necessary for AntaresXpansion",
+            "the studies contains the information necessary for AntaresXpansion.\n"
+            'if rhe flag is set to "r", the xpansion mode will be activated with the R version.\n',
         )
 
         self.parser.add_argument(

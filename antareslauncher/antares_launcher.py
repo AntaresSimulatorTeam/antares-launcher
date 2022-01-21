@@ -29,7 +29,7 @@ class AntaresLauncher:
     wait_controller: WaitController
     wait_mode: bool
     wait_time: int
-    xpansion_mode: bool
+    xpansion_mode: Optional[str]
     check_queue_bool: bool
     job_id_to_kill: Optional[int] = None
 

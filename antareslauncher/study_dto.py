@@ -6,7 +6,8 @@ from typing import Optional
 
 class Modes(IntEnum):
     antares = 1
-    xpansion = 2
+    xpansion_r = 2
+    xpansion_cpp = 3
 
 
 @dataclass
@@ -33,7 +34,7 @@ class StudyDTO:
     time_limit: Optional[int] = None
     n_cpu: Optional[int] = None
     antares_version: Optional[str] = None
-    xpansion_study: bool = False
+    xpansion_mode: Optional[str] = None
     run_mode: Modes = Modes.antares
     post_processing: bool = False
 
