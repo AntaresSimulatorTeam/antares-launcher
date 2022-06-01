@@ -8,6 +8,8 @@ INPUT_ZIPNAME=$1
 ANTARES_VERSION=$2
 JOB_TYPE=$3
 POST_PROCESSING=$4
+OTHER_OPTIONS=$5
+
 # Set Variables and load modules
 # ==============================
 

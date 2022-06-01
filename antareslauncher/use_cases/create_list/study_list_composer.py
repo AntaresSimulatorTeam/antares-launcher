@@ -18,6 +18,7 @@ class StudyListComposerParameters:
     output_dir: str
     post_processing: bool
     antares_versions_on_remote_server: List[str]
+    other_options: Optional[str]
 
 
 @dataclass
@@ -39,6 +40,7 @@ class StudyListComposer:
         self.xpansion_mode = parameters.xpansion_mode
         self.output_dir = parameters.output_dir
         self.post_processing = parameters.post_processing
+        self.other_options = parameters.other_options
         self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
         self.ANTARES_VERSIONS_ON_REMOTE_SERVER = (
@@ -80,6 +82,7 @@ class StudyListComposer:
             xpansion_mode=xpansion_mode,
             run_mode=run_mode,
             post_processing=self.post_processing,
+            other_options=self.other_options,
         )
 
         return new_study

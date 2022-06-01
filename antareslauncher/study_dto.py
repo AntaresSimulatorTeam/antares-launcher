@@ -37,6 +37,7 @@ class StudyDTO:
     xpansion_mode: Optional[str] = None
     run_mode: Modes = Modes.antares
     post_processing: bool = False
+    other_options: Optional[str] = None
 
     def __post_init__(self):
         self.name = Path(self.path).name
