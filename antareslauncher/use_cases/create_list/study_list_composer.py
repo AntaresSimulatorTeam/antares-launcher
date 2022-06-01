@@ -99,7 +99,8 @@ class StudyListComposer:
         file_path = Path(directory_path) / "study.antares"
         config = self._file_manager.get_config_from_file(file_path)
         if "antares" in config:
-            return config["antares"].get("version", None)
+            solver_version = config["antares"].get("solver_version", None)
+            return solver_version or config["antares"].get("version", None)
 
     def _is_valid_antares_study(self, antares_version):
         if antares_version is None:
