@@ -12,6 +12,7 @@ class ScriptParametersDTO:
     antares_version: int
     run_mode: Modes
     post_processing: bool
+    other_options: str
 
 
 class SlurmScriptFeatures:
@@ -67,11 +68,13 @@ class SlurmScriptFeatures:
         option2_antares_version = f" {self._script_params.antares_version}"
         option3_job_type = f" {self.JOB_TYPE_PLACEHOLDER}"
         option4_post_processing = f" {self._script_params.post_processing}"
+        option5_other_options = f" '{self._script_params.other_options}'"
         bash_options = (
             option1_zipfile_name
             + option2_antares_version
             + option3_job_type
             + option4_post_processing
+            + option5_other_options
         )
         return bash_options
 

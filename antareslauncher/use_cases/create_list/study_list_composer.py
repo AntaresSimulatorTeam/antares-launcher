@@ -18,6 +18,7 @@ class StudyListComposerParameters:
     output_dir: str
     post_processing: bool
     antares_versions_on_remote_server: List[str]
+    other_options: Optional[str]
 
 
 @dataclass
@@ -39,6 +40,7 @@ class StudyListComposer:
         self.xpansion_mode = parameters.xpansion_mode
         self.output_dir = parameters.output_dir
         self.post_processing = parameters.post_processing
+        self.other_options = parameters.other_options
         self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
         self.ANTARES_VERSIONS_ON_REMOTE_SERVER = (
@@ -80,6 +82,7 @@ class StudyListComposer:
             xpansion_mode=xpansion_mode,
             run_mode=run_mode,
             post_processing=self.post_processing,
+            other_options=self.other_options,
         )
 
         return new_study
@@ -99,7 +102,8 @@ class StudyListComposer:
         file_path = Path(directory_path) / "study.antares"
         config = self._file_manager.get_config_from_file(file_path)
         if "antares" in config:
-            return config["antares"].get("version", None)
+            solver_version = config["antares"].get("solver_version", None)
+            return solver_version or config["antares"].get("version", None)
 
     def _is_valid_antares_study(self, antares_version):
         if antares_version is None:

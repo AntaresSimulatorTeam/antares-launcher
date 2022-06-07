@@ -44,6 +44,7 @@ class MainOptionParser:
             "xpansion_mode": None,
             "version": False,
             "post_processing": False,
+            "other_options": None,
         }
 
     def parse_args(self, args: List[str] = None) -> argparse.Namespace:
@@ -154,6 +155,12 @@ class MainOptionParser:
             dest="post_processing",
             default=False,
             help='Enables the post processing of the antares study by executing the "post_processing.R" file',
+        )
+
+        self.parser.add_argument(
+            "--other-options",
+            dest="other_options",
+            help='Other options to pass to the antares launcher script',
         )
 
         self.parser.add_argument(

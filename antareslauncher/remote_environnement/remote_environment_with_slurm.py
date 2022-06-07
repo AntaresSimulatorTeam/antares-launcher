@@ -135,6 +135,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
             antares_version=my_study.antares_version,
             run_mode=my_study.run_mode,
             post_processing=my_study.post_processing,
+            other_options=my_study.other_options or ""
         )
         command = self.compose_launch_command(script_params)
         output, error = self.connection.execute_command(command)
