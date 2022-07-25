@@ -19,7 +19,7 @@ elif [ "$ANTARES_VERSION" = "700" ]; then
     export ANTARES_SOLVER_BIN="/path/to/antares/solver/700/antares-7.0-solver"
 fi
 
-module load xpress/xpress8.8.0
+module load xpress/xpress8.13.0
 module load ampl/ampl
 module load R/R-3.6.2
 # Load module xpansion and R_libraries TODO
