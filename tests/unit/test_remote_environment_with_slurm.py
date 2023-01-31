@@ -72,11 +72,7 @@ class TestRemoteEnvironmentWithSlurm:
         # given
         remote_home_dir = "remote_home_dir"
         remote_base_dir = (
-            str(remote_home_dir)
-            + "/REMOTE_"
-            + getpass.getuser()
-            + "_"
-            + socket.gethostname()
+            f"{str(remote_home_dir)}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
         )
         connection = mock.Mock()
         connection.home_dir = remote_home_dir
@@ -720,6 +716,7 @@ class TestRemoteEnvironmentWithSlurm:
         # when
         my_remote_env_with_slurm_mock.remove_input_zipfile(study)
         # then
+        # noinspection PyUnresolvedReferences
         my_remote_env_with_slurm_mock.connection.remove_file.assert_called_once_with(
             command
         )
@@ -753,6 +750,7 @@ class TestRemoteEnvironmentWithSlurm:
         # when
         my_remote_env_with_slurm_mock.remove_remote_final_zipfile(study)
         # then
+        # noinspection PyUnresolvedReferences
         my_remote_env_with_slurm_mock.connection.remove_file.assert_called_once_with(
             command
         )
@@ -891,11 +889,23 @@ class TestRemoteEnvironmentWithSlurm:
             antares_version=study.antares_version,
             run_mode=study.run_mode,
             post_processing=study.post_processing,
+            other_options="",
         )
         command = my_remote_env_with_slurm_mock.compose_launch_command(script_params)
         # then
         change_dir = f"cd {my_remote_env_with_slurm_mock.remote_base_path}"
-        reference_submit_command = f'sbatch --job-name="{Path(study.path).name}" --time={study.time_limit//60} --cpus-per-task={study.n_cpu} {filename_launch_script} "{Path(study.zipfile_path).name}" {study.antares_version} {job_type} {post_processing}'
+        reference_submit_command = (
+            f"sbatch"
+            f' --job-name="{Path(study.path).name}"'
+            f" --time={study.time_limit//60}"
+            f" --cpus-per-task={study.n_cpu}"
+            f" {filename_launch_script}"
+            f' "{Path(study.zipfile_path).name}"'
+            f" {study.antares_version}"
+            f" {job_type}"
+            f" {post_processing}"
+            f" ''"
+        )
         reference_command = change_dir + " && " + reference_submit_command
         assert command.split() == reference_command.split()
         assert command == reference_command
