@@ -11,8 +11,7 @@ from antareslauncher.use_cases.create_list.study_list_composer import (
     StudyListComposer,
     StudyListComposerParameters,
 )
-
-DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
+from tests.data import DATA_DIR
 
 
 class TestStudyListComposer:
@@ -433,7 +432,7 @@ class TestStudyListComposer:
         self,
     ):
         # given
-        directory_path = Path.joinpath(DATA_4_TEST_DIR, "xpansion-reference")
+        directory_path = DATA_DIR.joinpath("xpansion-reference")
         file_manager = FileManager(display_terminal=mock.Mock())
         my_study_list_composer = StudyListComposer(
             repo=mock.Mock(),

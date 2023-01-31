@@ -11,17 +11,14 @@ import pytest
 
 from antareslauncher import main
 from antareslauncher.main import MainParameters
-from antareslauncher.main_option_parser import (
-    MainOptionParser,
-    ParserParameters,
-)
+from antareslauncher.main_option_parser import MainOptionParser, ParserParameters
 from antareslauncher.parameters_reader import ParametersReader
+from tests.data import DATA_DIR
 
-DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
-ANTARES_STUDY = DATA_4_TEST_DIR / "one_node_v7"
-EXAMPLE_STUDIES_IN = DATA_4_TEST_DIR / "STUDIES-IN-FOR-TEST"
-SSH_JSON_FILE = DATA_4_TEST_DIR / "sshconfig.json"
-YAML_CONF_FILE = DATA_4_TEST_DIR / "configuration.yaml"
+ANTARES_STUDY = DATA_DIR / "one_node_v7"
+EXAMPLE_STUDIES_IN = DATA_DIR / "STUDIES-IN-FOR-TEST"
+SSH_JSON_FILE = DATA_DIR / "sshconfig.json"
+YAML_CONF_FILE = DATA_DIR / "configuration.yaml"
 
 
 def is_empty(directory):
