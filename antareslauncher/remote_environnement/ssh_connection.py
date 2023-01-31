@@ -7,6 +7,20 @@ from os.path import expanduser
 import paramiko
 
 
+class SshConnectionError(Exception):
+    """
+    SSH Connection Error
+    """
+
+
+class InvalidConfigError(SshConnectionError):
+    def __init__(self, config, msg=""):
+        err_msg = f"Invalid configuration error {config}"
+        if msg:
+            err_msg += f": {msg}"
+        super().__init__(err_msg)
+
+
 class SshConnection:
     """Class to _connect to remote server"""
 
@@ -35,7 +49,9 @@ class SshConnection:
             self.logger.info("Loading ssh connection from config dictionary")
             self.__init_from_config(config)
         else:
-            raise IOError
+            error = InvalidConfigError(config, "missing values: 'hostname', 'username', 'password'...")
+            self.logger.debug(str(error))
+            raise error
         self.initialize_home_dir()
         self.logger.info(
             f"Connection created with host = {self.host} and username = {self.username}"
@@ -78,10 +94,9 @@ class SshConnection:
                 key_file_name=key_file_path, key_password=key_password
             )
         elif self.password is None:
-            self.logger.debug(
-                "self.password is None, no key found, now password was given"
-            )
-            raise ValueError
+            error = InvalidConfigError(config, "missing 'password'")
+            self.logger.debug(str(error))
+            raise error
 
     def initialize_home_dir(self):
         """Initializes self.__home_dir with the home directory retrieved by started "echo $HOME" connecting to the
@@ -159,7 +174,6 @@ class SshConnection:
             error: The standard error of the command
         """
         output = None
-        error = None
         self.logger.info(f"Executing command on remote server: {command}")
         try:
             with self.ssh_client() as client:
@@ -344,9 +358,8 @@ class SshConnection:
             True if file is successfully removed, False otherwise
 
         Raises:
-            IOError if path exists and it is a directory
+            IOError if path exists, and it is a directory
         """
-        result_flag: bool = False
         try:
             with self.ssh_client() as client:
                 sftp_client = client.open_sftp()
@@ -381,9 +394,8 @@ class SshConnection:
             True if the directory is successfully removed, False otherwise
 
         Raises:
-            IOError if path exists and it is a file
+            IOError if path exists, and it is a file
         """
-        result_flag: bool = False
         try:
             with self.ssh_client() as client:
                 sftp_client = client.open_sftp()
@@ -410,7 +422,7 @@ class SshConnection:
 
     def test_connection(self):
         try:
-            with self.ssh_client() as client:
+            with self.ssh_client():
                 return True
         except SshConnection.ConnectionFailedException:
             self.logger.error(f"Failed to connect to remote host")
