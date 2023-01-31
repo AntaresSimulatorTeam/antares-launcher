@@ -9,7 +9,7 @@ class ScriptParametersDTO:
     input_zipfile_name: str
     time_limit: int
     n_cpu: int
-    antares_version: int
+    antares_version: str
     run_mode: Modes
     post_processing: bool
     other_options: str

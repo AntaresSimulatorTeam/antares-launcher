@@ -6,19 +6,19 @@ from unittest import mock
 import pytest
 
 from antareslauncher.remote_environnement.iremote_environment import (
-    NoRemoteBaseDirException,
-    NoLaunchScriptFoundException,
-    KillJobErrorException,
-    SubmitJobErrorException,
     GetJobStateErrorException,
     GetJobStateOutputException,
+    KillJobErrorException,
+    NoLaunchScriptFoundException,
+    NoRemoteBaseDirException,
+    SubmitJobErrorException,
 )
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
 from antareslauncher.remote_environnement.slurm_script_features import (
-    SlurmScriptFeatures,
     ScriptParametersDTO,
+    SlurmScriptFeatures,
 )
 from antareslauncher.study_dto import Modes, StudyDTO
 
@@ -29,12 +29,15 @@ class TestRemoteEnvironmentWithSlurm:
 
     Test the get_all_job_state_flags() method:
 
-    2 given a study the output obtained from the SLURM command should be correctly interpreted (different tests should be
-     created, one for each treated state): the return values of the methods should be correct
+    2 given a study the output obtained from the SLURM command should be correctly interpreted
+      (different tests should be created, one for each treated state): the return values
+      of the methods should be correct
 
-    3 given a study an exception should be raised (to be created in iremote_environment.py) if the execute_command fails
+    3 given a study an exception should be raised (to be created in `iremote_environment.py`)
+      if the execute_command fails
 
-    4 given a study where study.submitted is not True we should define a return value (for example (false, false, false))
+    4 given a study where `study.submitted` is not True we should define a return value
+      (for example (false, false, false))
 
     5 given a study, if execute_command return an error then an exception should be raised
 
@@ -48,7 +51,7 @@ class TestRemoteEnvironmentWithSlurm:
             path="study path",
             n_cpu=42,
             zipfile_path="zipfile_path",
-            antares_version=700,
+            antares_version="700",
             local_final_zipfile_path="local_final_zipfile_path",
             run_mode=Modes.antares,
         )
@@ -220,6 +223,7 @@ class TestRemoteEnvironmentWithSlurm:
             antares_version=study.antares_version,
             run_mode=study.run_mode,
             post_processing=study.post_processing,
+            other_options="",
         )
         command = (
             my_remote_env_with_slurm_mock.slurm_script_features.compose_launch_command(
