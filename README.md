@@ -14,7 +14,7 @@ A schema of the main workflow is as follow
 
 ### Requirements
 see [Requirements file](./requirements.txt)
-minimum version : python 3.6
+minimum version : python 3.8
 
 paramiko, pytest, pytest-cov, pytest-ordering, tinydb, black, pyinstaller, setuptools==44.1.1, tqdm
 pytest for the tests
