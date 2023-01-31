@@ -133,7 +133,7 @@ def run_with(
             output_dir=arguments.output_dir,
             post_processing=arguments.post_processing,
             antares_versions_on_remote_server=parameters.antares_versions_on_remote_server,
-            other_options=arguments.other_options,
+            other_options=arguments.other_options or "",
         ),
     )
     launch_controller = LaunchController(

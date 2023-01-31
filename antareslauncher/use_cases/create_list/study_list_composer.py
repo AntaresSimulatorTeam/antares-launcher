@@ -18,7 +18,7 @@ class StudyListComposerParameters:
     output_dir: str
     post_processing: bool
     antares_versions_on_remote_server: List[str]
-    other_options: Optional[str]
+    other_options: str
 
 
 @dataclass

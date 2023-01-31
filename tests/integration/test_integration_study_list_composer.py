@@ -24,6 +24,7 @@ class TestIntegrationStudyListComposer:
                 output_dir="output_dir",
                 post_processing=False,
                 antares_versions_on_remote_server=["700"],
+                other_options="",
             ),
         )
 

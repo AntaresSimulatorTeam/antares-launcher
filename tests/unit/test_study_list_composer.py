@@ -18,14 +18,15 @@ DATA_4_TEST_DIR = Path(__file__).parent.parent / "data"
 class TestStudyListComposer:
     def setup_method(self):
         self.parameters = StudyListComposerParameters(
-            studies_in_dir=None,
-            time_limit=None,
-            n_cpu=None,
+            studies_in_dir="",
+            time_limit=0,
+            n_cpu=1,
             log_dir="job_log_dir",
             xpansion_mode=None,
             output_dir="output_dir",
             post_processing=False,
             antares_versions_on_remote_server=["610", "700", "800"],
+            other_options="",
         )
 
     @pytest.fixture(scope="function")
@@ -178,6 +179,7 @@ class TestStudyListComposer:
             output_dir=self.parameters.output_dir,
             time_limit=self.parameters.time_limit,
             n_cpu=self.parameters.n_cpu,
+            other_options="",
         )
         # when
         study_list_composer.update_study_database()
