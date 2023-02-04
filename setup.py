@@ -3,7 +3,7 @@ import pathlib
 
 from setuptools import setup, find_packages
 
-from antareslauncher import DESCRIPTION, PROJECT_NAME, VERSION
+from antareslauncher import __author__, __project_name__, __version__
 
 # Dependencies required to install the application in "production" or "development" mode.
 # Use `pip install -e .` to install in "development" mode.
@@ -28,12 +28,12 @@ test_requires = [
 ]
 
 setup(
-    name=PROJECT_NAME,
-    version=VERSION,
-    description=DESCRIPTION,
+    name=__project_name__,
+    version=__version__,
+    description="Antares_Launcher to run Antares on a remote linux machine",
     long_description=pathlib.Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
-    author="RTE, SGATTONI Andrea, MOZGAWA Marc, BION Charly",
+    author=__author__,
     author_email="andrea.sgattoni@rte-france.com",
     url="https://devin-source.rte-france.com/antares/Antares_Launcher.git",
     packages=find_packages(exclude=["tests*"]),
