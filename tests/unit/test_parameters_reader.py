@@ -54,12 +54,12 @@ class TestParametersReader:
             "key_password": self.KEY_PSWD,
         }
 
-    @pytest.mark.unit
+    @pytest.mark.unit_test
     def test_ParametersReader_raises_exception_with_no_file(self, tmp_path):
         with pytest.raises(FileNotFoundError):
             ParametersReader(Path(tmp_path), Path("empty.yaml"))
 
-    @pytest.mark.unit
+    @pytest.mark.unit_test
     def test_get_option_parameters_raises_exception_with_empty_file(self, tmp_path):
         empty_json = tmp_path / "dummy.json"
         empty_yaml = tmp_path / "empty.yaml"
@@ -67,7 +67,7 @@ class TestParametersReader:
         with pytest.raises(ParametersReader.MissingValueException):
             ParametersReader(empty_json, empty_yaml).get_parser_parameters()
 
-    @pytest.mark.unit
+    @pytest.mark.unit_test
     def test_get_main_parameters_raises_exception_with_empty_file(self, tmp_path):
         empty_json = tmp_path / "dummy.json"
         empty_yaml = tmp_path / "empty.yaml"
@@ -75,7 +75,7 @@ class TestParametersReader:
         with pytest.raises(ParametersReader.MissingValueException):
             ParametersReader(empty_json, empty_yaml).get_main_parameters()
 
-    @pytest.mark.unit
+    @pytest.mark.unit_test
     def test_get_option_parameters_raises_exception_if_params_are_missing(
         self, tmp_path
     ):
@@ -91,7 +91,7 @@ class TestParametersReader:
         with pytest.raises(ParametersReader.MissingValueException):
             ParametersReader(empty_json, config_yaml).get_parser_parameters()
 
-    @pytest.mark.unit
+    @pytest.mark.unit_test
     def test_get_main_parameters_raises_exception_if_params_are_missing(self, tmp_path):
         empty_json = tmp_path / "dummy.json"
         config_yaml = tmp_path / "empty.yaml"
@@ -105,7 +105,7 @@ class TestParametersReader:
         with pytest.raises(ParametersReader.MissingValueException):
             ParametersReader(empty_json, config_yaml).get_main_parameters()
 
-    @pytest.mark.unit
+    @pytest.mark.unit_test
     def test_get_option_parameters_initializes_parameters_correctly(self, tmp_path):
         empty_json = tmp_path / "dummy.json"
         config_yaml = tmp_path / "empty.yaml"
@@ -130,7 +130,7 @@ class TestParametersReader:
         assert options_parameters.ssh_configfile_path_alternate1 == alternate1
         assert options_parameters.ssh_configfile_path_alternate2 == alternate2
 
-    @pytest.mark.unit
+    @pytest.mark.unit_test
     def test_get_main_parameters_initializes_parameters_correctly(self, tmp_path):
         yaml_name = "dummy.yaml"
         config_yaml = tmp_path / yaml_name
@@ -152,7 +152,7 @@ class TestParametersReader:
             == self.ANTARES_SUPPORTED_VERSIONS
         )
 
-    @pytest.mark.unit
+    @pytest.mark.unit_test
     def test_get_main_parameters_initializes_default_ssh_dict_correctly(self, tmp_path):
         config_yaml = tmp_path / "dummy.yaml"
         config_yaml.write_text(self.yaml_compulsory_content)
