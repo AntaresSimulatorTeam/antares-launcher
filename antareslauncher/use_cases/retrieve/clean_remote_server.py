@@ -31,9 +31,9 @@ class RemoteServerCleaner:
             self._current_study.remote_server_is_clean is False
         ) and self._final_zip_downloaded()
 
-    def _final_zip_downloaded(self):
+    def _final_zip_downloaded(self) -> bool:
         if isinstance(self._current_study.local_final_zipfile_path, str):
-            return self._current_study.local_final_zipfile_path is not ""
+            return bool(self._current_study.local_final_zipfile_path)
         else:
             return False
 
