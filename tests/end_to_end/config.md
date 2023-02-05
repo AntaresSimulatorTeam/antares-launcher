@@ -20,7 +20,7 @@ To run the end-to-end test, you can do:
 
 ```shell
 cd ~/workspace/antares-launcher
-pytest -v tests/end_to_end/
+pytest -v --basetemp=target/pytest/ tests/end_to_end/
 ```
 
 ## Custom configuration directory
@@ -33,7 +33,7 @@ In this situation, to run the end-to-end test, you can do:
 ```shell
 export ANTARES_LAUNCHER_CONFIG_PATH=target/config_dir/configuration.yaml
 cd ~/workspace/antares-launcher
-pytest -v tests/end_to_end/
+pytest -v --basetemp=target/pytest/ tests/end_to_end/
 ```
 
 > **NOTE:** if the configuration file is not found, end-to-end tests are ignored
