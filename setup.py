@@ -19,13 +19,38 @@ install_requires = [
     "tqdm < 4.65",
 ]
 
-# Dependencies used for testing in "development" mode.
+# Extra dependencies used for testing in "development" mode.
 # Use `pip install -e .[test]` to install.
 test_requires = [
     "pytest ~= 7.2.1",
     "pytest-cov ~= 4.0.0",
     "pytest-xdist ~= 3.1.0",
 ]
+
+# Extra dependencies used for developing.
+# Use `pip install -e .[dev]` to install.
+dev_requires = [
+    "black",
+    "check-manifest",
+    "isort",
+    "mypy",
+]
+
+# Extra dependencies used for documentation generation.
+# Use `pip install -e .[docs]` to install.
+docs_requires = [
+    "m2r",
+    "recommonmark",
+    "sphinx",
+    "sphinx_rtd_theme",
+]
+
+# Extra dependencies used to create the executable package.
+# Use `pip install -e .[pyinstaller]` to install.
+pyinstaller_requires = [
+    "pyinstaller",
+]
+
 
 setup(
     name=__project_name__,
@@ -35,11 +60,14 @@ setup(
     long_description_content_type="text/markdown",
     author=__author__,
     author_email="andrea.sgattoni@rte-france.com",
-    url="https://devin-source.rte-france.com/antares/Antares_Launcher.git",
+    url="https://github.com/AntaresSimulatorTeam/antares-launcher.git",
     packages=find_packages(exclude=["tests*"]),
     install_requires=install_requires,
     extras_require={
         "test": test_requires,
+        "dev": dev_requires,
+        "docs": docs_requires,
+        "pyinstaller": pyinstaller_requires,
     },
     license="Apache Software License",
     platforms=[
