@@ -1,8 +1,8 @@
 import getpass
-import ntpath
 import socket
 import time
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+from typing import List
 
 from antareslauncher.remote_environnement.iremote_environment import (
     GetJobStateErrorException,
@@ -245,28 +245,15 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         dst = f"{self.remote_base_path}/{Path(src).name}"
         return self.connection.upload_file(src, dst)
 
-    def _list_remote_logs(self, job_id: int):
+    def _list_remote_logs(self, job_id: int) -> List[str]:
         """Lists the logs related to the job
 
         Returns:
-            List containing the files name, empty if none is present
+            List containing the file names, empty if none is present
         """
-
-        logs_path_signature = self.slurm_script_features.get_logs_path_signature(
-            self.remote_base_path, job_id
-        )
-        command = f"ls  " + logs_path_signature
+        command = f"/usr/bin/ls -1  {self.remote_base_path}/*{job_id}*.txt"
         output, error = self.connection.execute_command(command)
-
-        def path_leaf(path):
-            head, tail = ntpath.split(path)
-            return tail or ntpath.basename(head)
-
-        list_of_files = []
-        if output and not error:
-            list_of_files = [path_leaf(Path(file)) for file in output.splitlines()]
-
-        return list_of_files
+        return [] if error else [PurePosixPath(f).name for f in output.splitlines()]
 
     def download_logs(self, study: StudyDTO):
         """Download the slurm logs of a given study

@@ -95,21 +95,6 @@ class SlurmScriptFeatures:
         return complete_command
 
     @staticmethod
-    def get_logs_path_signature(remote_launch_dir, job_id):
-        """
-
-        Args:
-            remote_launch_dir:  remote directory where the SLURM script is launched
-            job_id: slurm job id whom logs need to be listed
-
-        Returns:
-            the logfiles' signature in order to execute an ls command
-            ex: remote_base_path/job*jobid*.txt
-
-        """
-        return f"{remote_launch_dir}/*{job_id}*.txt"
-
-    @staticmethod
     def get_final_zip_name(study_name: str, job_id: int, run_mode: int):
         """Compose and return the name of the finished-job zipfile of the Antares Solver simulation
 
