@@ -4,20 +4,20 @@ import socket
 import time
 from pathlib import Path
 
-from antareslauncher.remote_environnement import iconnection
 from antareslauncher.remote_environnement.iremote_environment import (
-    IRemoteEnvironment,
-    NoRemoteBaseDirException,
-    NoLaunchScriptFoundException,
-    KillJobErrorException,
-    SubmitJobErrorException,
     GetJobStateErrorException,
     GetJobStateOutputException,
+    IRemoteEnvironment,
+    KillJobErrorException,
+    NoLaunchScriptFoundException,
+    NoRemoteBaseDirException,
+    SubmitJobErrorException,
 )
 from antareslauncher.remote_environnement.slurm_script_features import (
-    SlurmScriptFeatures,
     ScriptParametersDTO,
+    SlurmScriptFeatures,
 )
+from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
 
 SLURM_STATE_FAILED = "FAILED"
@@ -32,7 +32,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
 
     def __init__(
         self,
-        _connection: iconnection.IConnection,
+        _connection: SshConnection,
         slurm_script_features: SlurmScriptFeatures,
     ):
         super(RemoteEnvironmentWithSlurm, self).__init__(_connection=_connection)
@@ -135,7 +135,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
             antares_version=my_study.antares_version,
             run_mode=my_study.run_mode,
             post_processing=my_study.post_processing,
-            other_options=my_study.other_options or ""
+            other_options=my_study.other_options or "",
         )
         command = self.compose_launch_command(script_params)
         output, error = self.connection.execute_command(command)

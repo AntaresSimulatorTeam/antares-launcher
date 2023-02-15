@@ -1,15 +1,13 @@
+import contextlib
 import logging
 import socket
 import stat
-from contextlib import contextmanager
 from os.path import expanduser
 
 import paramiko
 
-from antareslauncher.remote_environnement.iconnection import IConnection
 
-
-class SshConnection(IConnection):
+class SshConnection:
     """Class to _connect to remote server"""
 
     class ConnectionFailedException(Exception):
@@ -23,7 +21,7 @@ class SshConnection(IConnection):
             "password" (not compulsory if private_key_file is given), "private_key_file": path to private rsa key
         """
         super(SshConnection, self).__init__()
-        self.logger = logging.getLogger(__name__ + "." + __class__.__name__)
+        self.logger = logging.getLogger(f"{__name__}.{__class__.__name__}")
         self.__client = None
         self.__home_dir = None
         self.timeout = 10
@@ -101,7 +99,7 @@ class SshConnection(IConnection):
         """
         return self.__home_dir
 
-    @contextmanager
+    @contextlib.contextmanager
     def ssh_client(self):
         client = paramiko.SSHClient()
         try:

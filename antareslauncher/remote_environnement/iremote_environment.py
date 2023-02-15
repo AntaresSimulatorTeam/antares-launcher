@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from antareslauncher.remote_environnement import iconnection
+from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
 
 NOT_SUBMITTED_STATE = "not_submitted"
@@ -37,7 +37,7 @@ class GetJobStateOutputException(Exception):
 class IRemoteEnvironment(ABC):
     """Class that represents the remote environment"""
 
-    def __init__(self, _connection: iconnection.IConnection):
+    def __init__(self, _connection: SshConnection):
         self.connection = _connection
         self.remote_base_path = None
 
