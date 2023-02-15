@@ -85,10 +85,9 @@ class SshConnection:
         self.host = config.get("hostname", "")
         self.username = config.get("username", "")
         self.port = config.get("port", 22)
-        self.password = config.get("password", None)
-        key_password = config.get("key_password", None)
-        key_file = config.get("private_key_file", None)
-        if key_file:
+        self.password = config.get("password")
+        key_password = config.get("key_password")
+        if key_file := config.get("private_key_file"):
             key_file_path = expanduser(key_file)
             self.__initialise_public_key(
                 key_file_name=key_file_path, key_password=key_password
@@ -120,7 +119,8 @@ class SshConnection:
         try:
             try:
                 # Paramiko.SSHClient can be used to make connections to the remote server and transfer files
-                # Parsing an instance of the AutoAddPolicy to set_missing_host_key_policy() changes it to allow any host.
+                # Parsing an instance of the AutoAddPolicy to set_missing_host_key_policy()
+                # changes it to allow any host.
                 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 # Connect to the server
                 if self.private_key:
@@ -147,15 +147,15 @@ class SshConnection:
                 self.logger.exception(
                     f"paramiko.AuthenticationException: {paramiko.AuthenticationException}"
                 )
-            except paramiko.SSHException:
+            except paramiko.SSHException as e:
                 self.logger.exception(f"paramiko.SSHException: {paramiko.SSHException}")
-                raise SshConnection.ConnectionFailedException()
-            except socket.timeout:
+                raise SshConnection.ConnectionFailedException() from e
+            except socket.timeout as e:
                 self.logger.exception(f"socket.timeout: {socket.timeout}")
-                raise SshConnection.ConnectionFailedException()
-            except socket.error:
+                raise SshConnection.ConnectionFailedException() from e
+            except socket.error as e:
                 self.logger.exception(f"socket.error: {socket.error}")
-                raise SshConnection.ConnectionFailedException()
+                raise SshConnection.ConnectionFailedException() from e
 
             yield client
         finally:
@@ -209,13 +209,13 @@ class SshConnection:
                 sftp_client.put(src, dst)
                 sftp_client.close()
         except paramiko.SSHException:
-            self.logger.debug("Paramiko SSH Exception")
+            self.logger.debug("Paramiko SSH Exception", exc_info=True)
             result_flag = False
         except IOError:
-            self.logger.debug("IO Error")
+            self.logger.debug("IO Error", exc_info=True)
             result_flag = False
         except SshConnection.ConnectionFailedException:
-            self.logger.error(f"Failed to connect to remote host")
+            self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -240,10 +240,10 @@ class SshConnection:
                 sftp_client.close()
                 result_flag = True
         except paramiko.SSHException:
-            self.logger.error("Paramiko SSH Exception")
+            self.logger.error("Paramiko SSH Exception", exc_info=True)
             result_flag = False
         except SshConnection.ConnectionFailedException:
-            self.logger.error(f"Failed to connect to remote host")
+            self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -271,10 +271,10 @@ class SshConnection:
                 else:
                     raise IOError
         except FileNotFoundError:
-            self.logger.debug("FileNotFoundError")
+            self.logger.debug("FileNotFoundError", exc_info=True)
             result_flag = False
         except SshConnection.ConnectionFailedException:
-            self.logger.error(f"Failed to connect to remote host")
+            self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -288,7 +288,7 @@ class SshConnection:
             True if file exists and is not empty, False otherwise
 
         Raises:
-            IOError if path exists and it is a directory
+            IOError if path exists, and it is a directory
         """
         result_flag = False
         try:
@@ -298,17 +298,14 @@ class SshConnection:
                 sftp_stat = sftp_client.stat(file_path)
                 sftp_client.close()
                 if stat.S_ISREG(sftp_stat.st_mode):
-                    if sftp_stat.st_size > 0:
-                        result_flag = True
-                    else:
-                        result_flag = False
+                    result_flag = sftp_stat.st_size > 0
                 else:
-                    raise IOError
+                    raise IOError(f"Not a regular file: '{file_path}'")
         except FileNotFoundError:
-            self.logger.debug("FileNotFoundError")
+            self.logger.debug("FileNotFoundError", exc_info=True)
             result_flag = False
         except SshConnection.ConnectionFailedException:
-            self.logger.error(f"Failed to connect to remote host")
+            self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -330,10 +327,7 @@ class SshConnection:
                 try:
                     self.logger.info(f"Checking if remote directory {dir_path} exists")
                     sftp_stat = sftp_client.stat(dir_path)
-                    if stat.S_ISDIR(sftp_stat.st_mode):
-                        result_flag = True
-                    else:
-                        result_flag = False
+                    result_flag = stat.S_ISDIR(sftp_stat.st_mode)
                 except FileNotFoundError:
                     self.logger.info(f"Creating remote directory {dir_path}")
                     sftp_client.mkdir(dir_path)
@@ -341,10 +335,10 @@ class SshConnection:
                 finally:
                     sftp_client.close()
         except paramiko.SSHException:
-            self.logger.debug("Paramiko SSHException")
+            self.logger.debug("Paramiko SSHException", exc_info=True)
             result_flag = False
         except SshConnection.ConnectionFailedException:
-            self.logger.error(f"Failed to connect to remote host")
+            self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -366,21 +360,18 @@ class SshConnection:
                 try:
                     self.logger.info(f"Removing remote file {file_path}")
                     sftp_stat = sftp_client.stat(file_path)
-                    if stat.S_ISREG(sftp_stat.st_mode):
-                        try:
-                            sftp_client.remove(file_path)
-                        except IOError:
-                            pass
-                        result_flag = True
-                    else:
-                        raise IOError
+                    if not stat.S_ISREG(sftp_stat.st_mode):
+                        raise IOError(f"Not a regular file: '{file_path}'")
+                    with contextlib.suppress(IOError):
+                        sftp_client.remove(file_path)
+                    result_flag = True
                 except FileNotFoundError:
-                    self.logger.debug("FileNotFound nothing to remove")
+                    self.logger.debug("FileNotFound nothing to remove", exc_info=True)
                     result_flag = True
                 finally:
                     sftp_client.close()
         except SshConnection.ConnectionFailedException:
-            self.logger.error(f"Failed to connect to remote host")
+            self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -402,21 +393,18 @@ class SshConnection:
                 try:
                     self.logger.info(f"Removing remote directory {dir_path}")
                     sftp_stat = sftp_client.stat(dir_path)
-                    if stat.S_ISDIR(sftp_stat.st_mode):
-                        try:
-                            sftp_client.rmdir(dir_path)
-                        except IOError:
-                            pass
-                        result_flag = True
-                    else:
-                        raise IOError
+                    if not stat.S_ISDIR(sftp_stat.st_mode):
+                        raise IOError(f"Not a directory: '{dir_path}'")
+                    with contextlib.suppress(IOError):
+                        sftp_client.rmdir(dir_path)
+                    result_flag = True
                 except FileNotFoundError:
-                    self.logger.debug("DirNotFound nothing to remove")
+                    self.logger.debug("DirNotFound nothing to remove", exc_info=True)
                     result_flag = True
                 finally:
                     sftp_client.close()
         except SshConnection.ConnectionFailedException:
-            self.logger.error(f"Failed to connect to remote host")
+            self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -425,5 +413,5 @@ class SshConnection:
             with self.ssh_client():
                 return True
         except SshConnection.ConnectionFailedException:
-            self.logger.error(f"Failed to connect to remote host")
+            self.logger.error("Failed to connect to remote host", exc_info=True)
             return False
