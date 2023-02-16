@@ -1,8 +1,9 @@
 import getpass
 import socket
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import List
 from unittest import mock
+from unittest.mock import call
 
 import pytest
 
@@ -321,149 +322,56 @@ class TestRemoteEnvironmentWithSlurm:
         assert with_error is expected_with_error
 
     @pytest.mark.unit_test
-    def test_given_a_not_started_study_when_list_remote_logs_is_called_then_returns_empty_list(
-        self, remote_env, study
-    ):
-        # given
-        study.started = False
-        remote_env.connection.execute_command = mock.Mock(return_value=("", ""))
-
-        # when
-        output = remote_env._list_remote_logs(study)
-
-        # then
-        assert output == []
-
     @pytest.mark.parametrize(
-        "output, error, expected",
+        "remote_files, local_files, expected",
         [
-            pytest.param("", "", [], id="empty-output-ok"),
-            pytest.param("", "error", [], id="error"),
-            pytest.param("foo\nbar\nfoobar", "error", [], id="output-but-error"),
             pytest.param(
-                "workspace/antares-out-108.txt",
-                "",
-                ["antares-out-108.txt"],
-                id="one-file-ok",
+                # list of files in the remote server
+                [
+                    "antares-err-999999999.txt",
+                    "antares-out-999999999.txt",
+                    "0372c064-66db-4dd6-a05f-74f0753340b4_job_data_999999999.txt",
+                    "antares-err-123456789.txt",
+                    "antares-out-123456789.txt",
+                    "364ef7a8-e110-4a3c-a345-58640c5885b1_job_data_123456789.txt",
+                ],
+                # expected list of downloaded files
+                [
+                    "antares-err-999999999.txt",
+                    "antares-out-999999999.txt",
+                ],
+                # expected return value: True => OK, False => error
+                True,
+                id="nominal-case",
             ),
-            pytest.param(
-                "workspace/antares-err-108.txt\nworkspace/antares-out-108.txt",
-                "",
-                ["antares-err-108.txt", "antares-out-108.txt"],
-                id="two-files-ok",
-            ),
+            pytest.param([], [], True, id="no-log-file-OK"),
+            pytest.param([], [], False, id="no-log-file-ERROR"),
         ],
     )
-    @pytest.mark.unit_test
-    def test_list_remote_logs__empty_list(
-        self, remote_env, study, output: str, error: str, expected: List[str]
+    def test_download_logs(
+        self,
+        remote_env,
+        study,
+        remote_files: List[str],
+        local_files: List[str],
+        expected: bool,
     ):
         # given
-        study.job_id = 108
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
+        study.job_id = 999999999
+        study.job_log_dir = "/path/to/LOGS"
+        remote_env.connection.download_files = mock.Mock(return_value=expected)
 
         # when
-        actual = remote_env._list_remote_logs(study.job_id)
+        actual = remote_env.download_logs(study)
 
         # then
         assert actual == expected
-        command = f"/usr/bin/ls -1  {remote_env.remote_base_path}/*{study.job_id}*.txt"
-        remote_env.connection.execute_command.assert_called_once_with(command)
 
-    @pytest.mark.unit_test
-    def test_given_a_started_study_when_list_remote_logs_is_called_and_execute_command_produces_no_output_then_returns_empty_list(
-        self, remote_env, study
-    ):
-        # given
-        study.started = True
-        remote_env.connection.execute_command = mock.Mock(return_value=("", ""))
-
-        # when
-        output = remote_env._list_remote_logs(study)
-
-        # then
-        assert output == []
-
-    @pytest.mark.unit_test
-    def test_given_a_started_study_when_list_remote_logs_is_called_then_returns_not_empty_list(
-        self, remote_env, study
-    ):
-        # given
-        study.started = True
-        remote_env.connection.execute_command = mock.Mock(return_value=("output", ""))
-
-        # when
-        output = remote_env._list_remote_logs(study)
-
-        # then
-        assert output
-
-    @pytest.mark.unit_test
-    def test_given_a_study_when_download_logs_is_called_then_list_remote_logs_is_called(
-        self, remote_env, study
-    ):
-        # given
-        remote_env._list_remote_logs = mock.Mock(return_value=[])
-
-        # when
-        remote_env.download_logs(study)
-
-        # then
-        remote_env._list_remote_logs.assert_called_once_with(study.job_id)
-
-    @pytest.mark.unit_test
-    def test_given_an_empty_file_list_when_download_logs_is_called_then_connection_download_files_is_not_called(
-        self, remote_env, study
-    ):
-        # given
-        remote_env._list_remote_logs = mock.Mock(return_value=[])
-        remote_env.connection.download_file = mock.Mock()
-
-        # when
-        return_flag = remote_env.download_logs(study)
-
-        # then
-        remote_env.connection.download_file.assert_not_called()
-        assert return_flag is False
-
-    @pytest.mark.unit_test
-    def test_given_a_file_list_when_download_logs_is_called_then_connection_download_files_is_called_with_correct_arguments(
-        self, remote_env, study
-    ):
-        # given
-        study.job_log_dir = "job_log_dir"
-        file_path = "file"
-        remote_env._list_remote_logs = mock.Mock(return_value=[file_path])
-        remote_env.connection.download_file = mock.Mock()
-
-        src = remote_env.remote_base_path + "/" + file_path
-        dst = str(Path(study.job_log_dir) / file_path)
-
-        # when
-        remote_env.download_logs(study)
-
-        # then
-        remote_env.connection.download_file.assert_called_once_with(src, dst)
-
-    @pytest.mark.unit_test
-    def test_given_a_not_clean_study_and_a_file_list_with_two_elements_when_download_logs_is_called_then_connection_download_files_is_called_twice(
-        self, remote_env, study
-    ):
-        # given
-        study.remote_server_is_clean = False
-        study.job_log_dir = "job_log_dir"
-        remote_env._list_remote_logs = mock.Mock(
-            return_value=["file_path", "file_path2"]
-        )
-        remote_env.connection.download_file = mock.Mock(return_value=True)
-
-        # when
-        return_flag = remote_env.download_logs(study)
-
-        # then
-        remote_env.connection.download_file.assert_called()
-        assert remote_env.connection.download_file.call_count == 2
-        assert return_flag is True
+        src_dir = PurePosixPath(remote_env.remote_base_path)
+        dst_dir = Path(study.job_log_dir)
+        assert remote_env.connection.download_files.mock_calls == [
+            call(src_dir, dst_dir, "*999999999*.txt")
+        ]
 
     @pytest.mark.unit_test
     def test_given_a_not_finished_study_when_check_final_zip_not_empty_then_returns_false(

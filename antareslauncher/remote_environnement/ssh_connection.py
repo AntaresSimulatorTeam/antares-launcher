@@ -1,10 +1,25 @@
 import contextlib
+import fnmatch
 import logging
 import socket
 import stat
+import time
 from os.path import expanduser
+from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING, Tuple
 
 import paramiko
+
+if TYPE_CHECKING:  # pragma: no cover
+    try:
+        # noinspection PyUnresolvedReferences
+        from typing import TypeAlias
+    except ImportError:
+        RemotePath = PurePosixPath
+        LocalPath = Path
+    else:
+        RemotePath: TypeAlias = PurePosixPath
+        LocalPath: TypeAlias = Path
 
 
 class SshConnectionError(Exception):
@@ -21,9 +36,45 @@ class InvalidConfigError(SshConnectionError):
         super().__init__(err_msg)
 
 
+class DownloadMonitor:
+    def __init__(self, total_size: int, msg: str = "", logger=None) -> None:
+        self.total_size = total_size
+        self.msg = msg or "Downloading..."
+        self.logger = logger or logging.getLogger(__name__)
+        self._start_time = time.time()
+        self._size = 0
+        self._progress: int = 0
+
+    def __call__(self, transferred: int, subtotal: int) -> None:
+        if not self.total_size:
+            return
+        self._size += transferred
+        # Avoid emitting too many messages
+        rate = self._size / self.total_size
+        if self._progress != int(rate * 10):
+            self._progress = int(rate * 10)
+            self.logger.info(str(self))
+
+    def __str__(self):
+        rate = self._size / self.total_size
+        if self._size:
+            # Calculate ETA and progress rate
+            # 0        curr_size                   total_size
+            # |----------->|--------------------------->|
+            # 0        duration                    total_duration
+            # 0%       percent                         100%
+            duration = time.time() - self._start_time
+            eta = int(duration * (self.total_size - self._size) / self._size)
+            return f"{self.msg:<20} ETA: {eta}s [{rate:.0%}]"
+        return f"{self.msg:<20} ETA: ??? [{rate:.0%}]"
+
+
 class SshConnection:
     """Class to _connect to remote server"""
 
+    # fixme: `ConnectionFailedException` should be moved from the `SshConnection` class
+    #  to the module (like other exception classes). It must inherit `SshConnectionError`.
+    #  The constructor must have at least a `msg: str` parameter. Documentation is missing.
     class ConnectionFailedException(Exception):
         pass
 
@@ -49,7 +100,9 @@ class SshConnection:
             self.logger.info("Loading ssh connection from config dictionary")
             self.__init_from_config(config)
         else:
-            error = InvalidConfigError(config, "missing values: 'hostname', 'username', 'password'...")
+            error = InvalidConfigError(
+                config, "missing values: 'hostname', 'username', 'password'..."
+            )
             self.logger.debug(str(error))
             raise error
         self.initialize_home_dir()
@@ -114,7 +167,7 @@ class SshConnection:
         return self.__home_dir
 
     @contextlib.contextmanager
-    def ssh_client(self):
+    def ssh_client(self) -> paramiko.SSHClient:
         client = paramiko.SSHClient()
         try:
             try:
@@ -230,11 +283,9 @@ class SshConnection:
         Returns:
             True if the file has been downloaded, False otherwise
         """
+        self.logger.info(f'Downloading remote file "{src}" to directory "{dst}"')
         try:
             with self.ssh_client() as client:
-                self.logger.info(
-                    f'Downloading remote file "{src}" to directory "{dst}"'
-                )
                 sftp_client = client.open_sftp()
                 sftp_client.get(src, dst)
                 sftp_client.close()
@@ -246,6 +297,64 @@ class SshConnection:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
+
+    def download_files(
+        self,
+        src_dir: "RemotePath",
+        dst_dir: "LocalPath",
+        pattern: str,
+        *patterns: str,
+    ) -> bool:
+        """
+        Downloads files from remote server to the specified local directory,
+        and remove them when the download is finished
+        Returns:
+            A boolean value indicating whether the download operation was successful or not.
+        """
+        try:
+            self._download_files(src_dir, dst_dir, (pattern,) + patterns)
+            return True
+        except TimeoutError as exc:
+            self.logger.error(f"Timeout: {exc}", exc_info=True)
+            return False
+        except paramiko.SSHException:
+            self.logger.error("Paramiko SSH Exception", exc_info=True)
+            return False
+        except SshConnection.ConnectionFailedException:
+            self.logger.error("Failed to connect to remote host", exc_info=True)
+            return False
+
+    def _download_files(
+        self,
+        src_dir: "RemotePath",
+        dst_dir: "LocalPath",
+        patterns: Tuple[str],
+    ):
+        with self.ssh_client() as client:
+            with contextlib.closing(
+                client.open_sftp()
+            ) as sftp:  # type: paramiko.sftp_client.SFTPClient
+                # Get list of files to download
+                remote_attrs = sftp.listdir_attr(str(src_dir))
+                remote_files = [file_attr.filename for file_attr in remote_attrs]
+                total_size = sum((file_attr.st_size or 0) for file_attr in remote_attrs)
+                files_to_download = [
+                    f
+                    for f in remote_files
+                    if any(fnmatch.fnmatch(f, pattern) for pattern in patterns)
+                ]
+                # Monitor the download progression
+                monitor = DownloadMonitor(total_size, logger=self.logger)
+                # First get all, then delete all (for reentrancy)
+                count = len(files_to_download)
+                for no, filename in enumerate(files_to_download, 1):
+                    monitor.msg = f"Downloading '{filename}' [{no}/{count}]..."
+                    src_path = src_dir.joinpath(filename)
+                    dst_path = dst_dir.joinpath(filename)
+                    sftp.get(str(src_path), str(dst_path), monitor)
+                for filename in files_to_download:
+                    src_path = src_dir.joinpath(filename)
+                    sftp.remove(str(src_path))
 
     def check_remote_dir_exists(self, dir_path):
         """Checks if a remote path is a directory

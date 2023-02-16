@@ -2,7 +2,6 @@ import getpass
 import socket
 import time
 from pathlib import Path, PurePosixPath
-from typing import List
 
 from antareslauncher.remote_environnement.iremote_environment import (
     GetJobStateErrorException,
@@ -245,16 +244,6 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         dst = f"{self.remote_base_path}/{Path(src).name}"
         return self.connection.upload_file(src, dst)
 
-    def _list_remote_logs(self, job_id: int) -> List[str]:
-        """Lists the logs related to the job
-
-        Returns:
-            List containing the file names, empty if none is present
-        """
-        command = f"/usr/bin/ls -1  {self.remote_base_path}/*{job_id}*.txt"
-        output, error = self.connection.execute_command(command)
-        return [] if error else [PurePosixPath(f).name for f in output.splitlines()]
-
     def download_logs(self, study: StudyDTO):
         """Download the slurm logs of a given study
 
@@ -265,16 +254,9 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
             True if all the logs have been downloaded, False if all the logs have not been downloaded or if there are
             no files to download
         """
-        file_list = self._list_remote_logs(study.job_id)
-        if file_list:
-            return_flag = True
-            for file in file_list:
-                src = self.remote_base_path + "/" + file
-                dst = str(Path(study.job_log_dir) / file)
-                return_flag = return_flag and self.connection.download_file(src, dst)
-        else:
-            return_flag = False
-        return return_flag
+        src_dir = PurePosixPath(self.remote_base_path)
+        dst_dir = Path(study.job_log_dir)
+        return self.connection.download_files(src_dir, dst_dir, f"*{study.job_id}*.txt")
 
     def check_final_zip_not_empty(self, study: StudyDTO, final_zip_name: str):
         """Checks if finished-job.zip is not empty
