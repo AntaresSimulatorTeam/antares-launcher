@@ -75,7 +75,7 @@ class TestRemoteEnvironmentWithSlurm:
         # given
         remote_home_dir = "remote_home_dir"
         remote_base_dir = (
-            f"{str(remote_home_dir)}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
+            f"{remote_home_dir}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
         )
         connection = mock.Mock()
         connection.home_dir = remote_home_dir
@@ -120,7 +120,7 @@ class TestRemoteEnvironmentWithSlurm:
         self,
     ):
         # given
-        remote_home_dir = "/applis/antares/"
+        remote_home_dir = "/applications/antares/"
         connection = mock.Mock()
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
@@ -146,7 +146,7 @@ class TestRemoteEnvironmentWithSlurm:
         # when
         remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
         # then
-        assert remote_env.get_queue_info() == f"{username}@{host}\n" + output
+        assert remote_env.get_queue_info() == f"{username}@{host}\n{output}"
         remote_env.connection.execute_command.assert_called_with(command)
 
     @pytest.mark.unit_test
@@ -161,8 +161,9 @@ class TestRemoteEnvironmentWithSlurm:
         error = "error"
         remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
         # then
-        assert remote_env.get_queue_info() is "error"
+        assert remote_env.get_queue_info() == "error"
 
+    # noinspection SpellCheckingInspection
     @pytest.mark.unit_test
     def test_kill_remote_job_execute_scancel_command(self, remote_env):
         job_id = 42
@@ -198,7 +199,7 @@ class TestRemoteEnvironmentWithSlurm:
         script_params = ScriptParametersDTO(
             study_dir_name=Path(study.path).name,
             input_zipfile_name=Path(study.zipfile_path).name,
-            time_limit=60 // 60,
+            time_limit=1,
             n_cpu=study.n_cpu,
             antares_version=study.antares_version,
             run_mode=study.run_mode,
@@ -246,6 +247,7 @@ class TestRemoteEnvironmentWithSlurm:
         # when
         remote_env.get_job_state_flags(study)
         # then
+        # noinspection SpellCheckingInspection
         expected_command = (
             f"sacct -j {study.job_id} -n --format=state | head -1 "
             + "| awk -F\" \" '{print $1}'"
@@ -284,6 +286,7 @@ class TestRemoteEnvironmentWithSlurm:
         with pytest.raises(GetJobStateErrorException):
             remote_env.get_job_state_flags(study)
 
+    # noinspection SpellCheckingInspection
     @pytest.mark.unit_test
     @pytest.mark.parametrize(
         "output,expected_started, expected_finished, expected_with_error",
@@ -323,7 +326,7 @@ class TestRemoteEnvironmentWithSlurm:
 
     @pytest.mark.unit_test
     @pytest.mark.parametrize(
-        "remote_files, local_files, expected",
+        "remote_files, local_files",
         [
             pytest.param(
                 # list of files in the remote server
@@ -340,12 +343,11 @@ class TestRemoteEnvironmentWithSlurm:
                     "antares-err-999999999.txt",
                     "antares-out-999999999.txt",
                 ],
-                # expected return value: True => OK, False => error
-                True,
+                # expected return value: list of downloaded files
                 id="nominal-case",
             ),
-            pytest.param([], [], True, id="no-log-file-OK"),
-            pytest.param([], [], False, id="no-log-file-ERROR"),
+            pytest.param([], [], id="no-log-file-OK"),
+            pytest.param([], [], id="no-log-file-ERROR"),
         ],
     )
     def test_download_logs(
@@ -354,18 +356,18 @@ class TestRemoteEnvironmentWithSlurm:
         study,
         remote_files: List[str],
         local_files: List[str],
-        expected: bool,
     ):
         # given
         study.job_id = 999999999
         study.job_log_dir = "/path/to/LOGS"
-        remote_env.connection.download_files = mock.Mock(return_value=expected)
+        downloaded = [Path(study.job_log_dir).joinpath(f) for f in local_files]
+        remote_env.connection.download_files = mock.Mock(return_value=downloaded)
 
         # when
         actual = remote_env.download_logs(study)
 
         # then
-        assert actual == expected
+        assert actual == downloaded
 
         src_dir = PurePosixPath(remote_env.remote_base_path)
         dst_dir = Path(study.job_log_dir)
@@ -374,153 +376,66 @@ class TestRemoteEnvironmentWithSlurm:
         ]
 
     @pytest.mark.unit_test
-    def test_given_a_not_finished_study_when_check_final_zip_not_empty_then_returns_false(
-        self, remote_env, study
+    @pytest.mark.parametrize(
+        "remote_files, downloaded_file",
+        [
+            pytest.param(
+                # list of files in the remote server
+                [
+                    "finished_364ef7a8-e110-4a3c-a345-58640c5885b1_999999999.zip",
+                    "antares-err-123456789.txt",
+                    "antares-out-123456789.txt",
+                    "364ef7a8-e110-4a3c-a345-58640c5885b1_job_data_123456789.txt",
+                ],
+                # the downloaded file
+                "finished_364ef7a8-e110-4a3c-a345-58640c5885b1_999999999.zip",
+                # expected return value: list of downloaded files
+                id="nominal-case",
+            ),
+            pytest.param(
+                # list of files in the remote server
+                [
+                    "finished_XPANSION_364ef7a8-e110-4a3c-a345-58640c5885b1_999999999.zip",
+                    "antares-err-123456789.txt",
+                    "antares-out-123456789.txt",
+                    "364ef7a8-e110-4a3c-a345-58640c5885b1_job_data_123456789.txt",
+                ],
+                # the downloaded file
+                "finished_XPANSION_364ef7a8-e110-4a3c-a345-58640c5885b1_999999999.zip",
+                # expected return value: list of downloaded files
+                id="xpansion-case",
+            ),
+            pytest.param([], "", id="no-log-file-OK"),
+            pytest.param([], "", id="no-log-file-ERROR"),
+        ],
+    )
+    def test_download_final_zip(
+        self,
+        remote_env,
+        study,
+        tmp_path,
+        remote_files: List[str],
+        downloaded_file: str,
     ):
-        # given
-        study.finished = False
-        final_zip_name = "final_zip_name"
-        # when
-        return_flag = remote_env.check_final_zip_not_empty(study, final_zip_name)
-        # then
-        assert return_flag is False
+        # noinspection PyUnusedLocal
+        def my_download_files(*args, **kwargs):
+            if downloaded_file:
+                tmp_path.joinpath(downloaded_file).touch()
+                return [tmp_path.joinpath(downloaded_file)]
+            return []
 
-    @pytest.mark.unit_test
-    def test_given_a_finished_study_when_check_final_zip_not_empty_then_check_file_not_empty_is_called(
-        self, remote_env, study
-    ):
         # given
-        study.finished = True
-        final_zip_name = "final_zip_name"
-        remote_env.connection.check_file_not_empty = mock.Mock()
-        # when
-        remote_env.check_final_zip_not_empty(study, final_zip_name)
-        # then
-        remote_env.connection.check_file_not_empty.assert_called_once()
+        study.job_id = 999999999
+        study.output_dir = str(tmp_path)
+        study.local_final_zipfile_path = ""  # not yet downloaded
+        remote_env.connection.download_files = my_download_files
 
-    @pytest.mark.unit_test
-    def test_given_a_finished_study_with_empty_file_when_check_final_zip_not_empty_then_return_false(
-        self, remote_env, study
-    ):
-        # given
-        study.finished = True
-        final_zip_name = "final_zip_name"
-        remote_env.connection.check_file_not_empty = mock.Mock(return_value=False)
         # when
-        return_flag = remote_env.check_final_zip_not_empty(study, final_zip_name)
-        # then
-        assert return_flag is False
+        actual = remote_env.download_final_zip(study)
 
-    @pytest.mark.unit_test
-    def test_given_a_finished_study_with_not_empty_file_when_check_final_zip_not_empty_then_return_true(
-        self, remote_env, study
-    ):
-        # given
-        study.finished = True
-        final_zip_name = "final_zip_name"
-        remote_env.connection.check_file_not_empty = mock.Mock(return_value=True)
-        # when
-        return_flag = remote_env.check_final_zip_not_empty(study, final_zip_name)
         # then
-        assert return_flag is True
-
-    @pytest.mark.unit_test
-    def test_given_a_study_when_download_final_zip_is_called_then_check_final_zip_not_empty_is_called_with_correct_argument(
-        self, remote_env, study
-    ):
-        # given
-        study.path = "path"
-        study.job_id = 1234
-        final_zip_name = "finished_" + study.name + "_" + str(study.job_id) + ".zip"
-        remote_env.check_final_zip_not_empty = mock.Mock()
-        # when
-        remote_env.download_final_zip(study)
-        # then
-        remote_env.check_final_zip_not_empty.assert_called_once_with(
-            study, final_zip_name
-        )
-
-    @pytest.mark.unit_test
-    def test_given_a_study_with_empty_final_zip_when_download_final_zip_is_called_then_return_none(
-        self, study, remote_env
-    ):
-        # given
-        study.path = "path"
-        study.job_id = 1234
-        remote_env.connection.check_file_not_empty = mock.Mock(return_value=False)
-        # when
-        return_value = remote_env.download_final_zip(study)
-        # then
-        assert return_value is None
-
-    @pytest.mark.unit_test
-    def test_given_a_study_with_final_zip_already_downloaded_when_download_final_zip_is_called_then_return_local_final_zipfile_path(
-        self, study, remote_env
-    ):
-        # given
-        study.path = "path"
-        study.job_id = 1234
-        study.local_final_zipfile_path = "local_final_zipfile_path"
-        remote_env.check_final_zip_not_empty = mock.Mock(return_value=True)
-        # when
-        return_value = remote_env.download_final_zip(study)
-        # then
-        assert return_value == study.local_final_zipfile_path
-
-    @pytest.mark.unit_test
-    def test_given_a_study_with_final_zip_when_download_final_zip_is_called_then_download_file_is_called_with_correct_argument(
-        self, study, remote_env
-    ):
-        # given
-        study.finished = True
-        study.job_id = 1234
-        study.local_final_zipfile_path = ""
-        final_zip_name = (
-            "finished_" + Path(study.path).name + "_" + str(study.job_id) + ".zip"
-        )
-        remote_env.connection.check_file_not_empty = mock.Mock(return_value=True)
-        remote_env.connection.download_file = mock.Mock()
-        local_final_zipfile_path = str(Path(study.output_dir) / final_zip_name)
-        src = remote_env.remote_base_path + "/" + final_zip_name
-        dst = str(local_final_zipfile_path)
-        # when
-        remote_env.download_final_zip(study)
-        # then
-        remote_env.connection.download_file.assert_called_once_with(src, dst)
-
-    @pytest.mark.unit_test
-    def test_given_a_study_with_final_zip_when_download_final_zip_is_called_and_file_is_not_downloaded_then_returns_none(
-        self, study, remote_env
-    ):
-        # given
-        study.path = "path"
-        study.job_id = 1234
-        study.local_final_zipfile_path = ""
-        remote_env.check_file_not_empty = mock.Mock(return_value=True)
-        remote_env.connection.download_file = mock.Mock(return_value=False)
-        # when
-        return_value = remote_env.download_final_zip(study)
-        # then
-        assert return_value is None
-
-    @pytest.mark.unit_test
-    def test_given_a_study_with_final_zip_when_download_final_zip_is_called_and_file_is_downloaded_then_returns_local_zipfile_path(
-        self, study, remote_env
-    ):
-        # given
-        study.finished = True
-        study.job_id = 1234
-        final_zip_name = (
-            "finished_" + Path(study.path).name + "_" + str(study.job_id) + ".zip"
-        )
-        local_final_zipfile_path = str(Path(study.output_dir) / final_zip_name)
-        study.local_final_zipfile_path = ""
-        remote_env.connection.check_file_not_empty = mock.Mock(return_value=True)
-        remote_env.connection.download_file = mock.Mock(return_value=True)
-        # when
-        return_value = remote_env.download_final_zip(study)
-        # then
-        assert return_value == local_final_zipfile_path
+        expected = tmp_path.joinpath(downloaded_file) if downloaded_file else None
+        assert actual == expected
 
     @pytest.mark.unit_test
     def test_given_a_study_with_input_zipfile_removed_when_remove_input_zipfile_then_return_true(
@@ -703,6 +618,6 @@ class TestRemoteEnvironmentWithSlurm:
             f" {post_processing}"
             f" ''"
         )
-        reference_command = change_dir + " && " + reference_submit_command
+        reference_command = f"{change_dir} && {reference_submit_command}"
         assert command.split() == reference_command.split()
         assert command == reference_command

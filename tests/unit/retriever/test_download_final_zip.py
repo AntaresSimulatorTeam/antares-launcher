@@ -26,14 +26,13 @@ class TestFinalZipDownloader:
 
     @pytest.fixture(scope="function")
     def successfully_finished_zip_study(self):
-        study = StudyDTO(
-            path=Path("path") / "hello",
+        return StudyDTO(
+            path="path/hello",
             started=True,
             finished=True,
             with_error=False,
             job_id=42,
         )
-        return study
 
     @pytest.mark.unit_test
     def test_download_study_shows_message_if_succeeds(
@@ -43,8 +42,8 @@ class TestFinalZipDownloader:
         self.remote_env.download_final_zip = mock.Mock(return_value=final_zipfile_path)
 
         self.final_zip_downloader.download(successfully_finished_zip_study)
-        expected_message1 = f'"hello": downloading final zip...'
-        expected_message2 = f'"hello": Final zip downloaded'
+        expected_message1 = '"hello": downloading final zip...'
+        expected_message2 = '"hello": Final zip downloaded'
         calls = [
             call(expected_message1, mock.ANY),
             call(expected_message2, mock.ANY),
@@ -60,8 +59,8 @@ class TestFinalZipDownloader:
         with pytest.raises(FinalZipNotDownloadedException):
             self.final_zip_downloader.download(successfully_finished_zip_study)
 
-        expected_welcome_message = f'"hello": downloading final zip...'
-        expected_error_message = f'"hello": Final zip not downloaded'
+        expected_welcome_message = '"hello": downloading final zip...'
+        expected_error_message = '"hello": Final zip not downloaded'
         self.display_mock.show_message.assert_called_once_with(
             expected_welcome_message, mock.ANY
         )
@@ -104,9 +103,7 @@ class TestFinalZipDownloader:
         self, successfully_finished_zip_study
     ):
         final_zipfile_path = "results.zip"
-        self.remote_env.download_final_zip = mock.Mock(return_value=final_zipfile_path)
-        expected_final_study = copy(successfully_finished_zip_study)
-        expected_final_study.local_final_zipfile_path = final_zipfile_path
+        self.remote_env.download_final_zip = mock.Mock(return_value=Path(final_zipfile_path))
 
         new_study = self.final_zip_downloader.download(successfully_finished_zip_study)
 
@@ -114,4 +111,7 @@ class TestFinalZipDownloader:
         first_call = self.remote_env.download_final_zip.call_args_list[0]
         first_argument = first_call[0][0]
         assert first_argument == successfully_finished_zip_study
+
+        expected_final_study = copy(successfully_finished_zip_study)
+        expected_final_study.local_final_zipfile_path = final_zipfile_path
         assert new_study == expected_final_study

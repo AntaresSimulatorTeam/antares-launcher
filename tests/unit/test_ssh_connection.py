@@ -90,7 +90,7 @@ class TestSshConnection:
 
         # ensure that no error is reported
         assert not caplog.text, caplog.text
-        assert actual is True
+        assert actual == [Path('/path/to/study/foo.txt'), Path('/path/to/study/bar.zip'),]
         assert sftp.get.mock_calls == [
             call("/workspace/foo.txt", "/path/to/study/foo.txt", ANY),
             call("/workspace/bar.zip", "/path/to/study/bar.zip", ANY),
@@ -128,7 +128,7 @@ class TestSshConnection:
 
         # ensure that no error is reported
         assert "an error occurs" in caplog.text, caplog.text
-        assert actual is False
+        assert not actual
         assert sftp.get.mock_calls == [
             call("/workspace/foo.txt", "/path/to/study/foo.txt", ANY),
         ]

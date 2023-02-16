@@ -6,20 +6,19 @@ import stat
 import time
 from os.path import expanduser
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING, Tuple
+from typing import Tuple, List
 
 import paramiko
 
-if TYPE_CHECKING:  # pragma: no cover
-    try:
-        # noinspection PyUnresolvedReferences
-        from typing import TypeAlias
-    except ImportError:
-        RemotePath = PurePosixPath
-        LocalPath = Path
-    else:
-        RemotePath: TypeAlias = PurePosixPath
-        LocalPath: TypeAlias = Path
+try:
+    # noinspection PyUnresolvedReferences
+    from typing import TypeAlias
+except ImportError:
+    RemotePath = PurePosixPath
+    LocalPath = Path
+else:
+    RemotePath: TypeAlias = PurePosixPath
+    LocalPath: TypeAlias = Path
 
 
 class SshConnectionError(Exception):
@@ -300,36 +299,60 @@ class SshConnection:
 
     def download_files(
         self,
-        src_dir: "RemotePath",
-        dst_dir: "LocalPath",
+        src_dir: RemotePath,
+        dst_dir: LocalPath,
         pattern: str,
         *patterns: str,
-    ) -> bool:
+    ) -> List[LocalPath]:
         """
-        Downloads files from remote server to the specified local directory,
-        and remove them when the download is finished
+        Download files matching the specified patterns from the remote
+        source directory to the local destination directory,
+        and remove them when the download is finished.
+
+        Args:
+            src_dir: Remote source directory.
+
+            dst_dir: Local destination directory.
+
+            pattern: Unix shell-style wildcards to match the files to download.
+
+            patterns: Additional Unix shell-style wildcards.
+
         Returns:
-            A boolean value indicating whether the download operation was successful or not.
+            The paths of the downloaded files on the local filesystem.
         """
         try:
-            self._download_files(src_dir, dst_dir, (pattern,) + patterns)
-            return True
+            return self._download_files(src_dir, dst_dir, (pattern,) + patterns)
         except TimeoutError as exc:
             self.logger.error(f"Timeout: {exc}", exc_info=True)
-            return False
+            return []
         except paramiko.SSHException:
             self.logger.error("Paramiko SSH Exception", exc_info=True)
-            return False
+            return []
         except SshConnection.ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
-            return False
+            return []
 
     def _download_files(
         self,
-        src_dir: "RemotePath",
-        dst_dir: "LocalPath",
+        src_dir: RemotePath,
+        dst_dir: LocalPath,
         patterns: Tuple[str],
-    ):
+    ) -> List[LocalPath]:
+        """
+        Download files matching the specified patterns from the remote
+        source directory to the local destination directory.
+
+        Args:
+            src_dir: Remote source directory.
+
+            dst_dir: Local destination directory.
+
+            patterns: A tuple of Unix shell-style wildcards to match the files to download.
+
+        Returns:
+            The paths of the downloaded files on the local filesystem.
+        """
         with self.ssh_client() as client:
             with contextlib.closing(
                 client.open_sftp()
@@ -355,6 +378,7 @@ class SshConnection:
                 for filename in files_to_download:
                     src_path = src_dir.joinpath(filename)
                     sftp.remove(str(src_path))
+                return [dst_dir.joinpath(filename) for filename in files_to_download]
 
     def check_remote_dir_exists(self, dir_path):
         """Checks if a remote path is a directory

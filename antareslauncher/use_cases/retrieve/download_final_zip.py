@@ -20,49 +20,67 @@ class FinalZipDownloader(object):
         self._current_study = None
 
     def download(self, study: StudyDTO):
+        """
+        Download the final ZIP file for the specified study, if it has finished
+        (without error) and has not been downloaded yet.
+
+        Args:
+            study: A data transfer object representing the study to download.
+
+        Returns:
+            The updated data transfer object, with its `local_final_zipfile_path`
+            attribute set if the download was successful.
+
+        Raises:
+            FinalZipNotDownloadedException: If the download fails or no files are found.
+        """
         self._current_study = copy.copy(study)
-        if self._should_download_final_zip():
+        if (
+            self._current_study.finished
+            and not self._current_study.with_error
+            and not self._current_study.local_final_zipfile_path
+        ):
             self._do_download()
         return self._current_study
 
-    def _should_download_final_zip(self):
-        return (
-            self._study_successfully_finished()
-            and self._study_final_zip_not_yet_downloaded()
-        )
-
-    def _study_successfully_finished(self):
-        return self._current_study.finished and not self._current_study.with_error
-
-    def _study_final_zip_not_yet_downloaded(self):
-        return not self._current_study.local_final_zipfile_path
-
     def _do_download(self):
-        self._display_welcome_message()
-        local_final_zipfile_path = self._env.download_final_zip(
+        """
+        Perform the download of the final ZIP file for the current study,
+        and update its `local_final_zipfile_path` attribute.
+
+        Raises:
+            FinalZipNotDownloadedException: If the download fails or no files are found.
+
+        Note:
+            This function delegates the download operation to the
+            `_env.download_final_zip` method, which is assumed to return
+            the path to the downloaded zip file on the local filesystem
+            or `None` if the download fails or no files are found.
+
+            If the download succeeds, the `local_final_zipfile_path` attribute
+            of the `_current_study` object is updated with the path to the
+            downloaded file, and a success message is displayed.
+
+            If the download fails, an error message is displayed and a
+            `FinalZipNotDownloadedException` exception is raised.
+        """
+        self._display.show_message(
+            f'"{self._current_study.name}": downloading final ZIP...',
+            f"{__name__}.{__class__.__name__}",
+        )
+        if local_final_zipfile_path := self._env.download_final_zip(
             copy.copy(self._current_study)
-        )
-        if local_final_zipfile_path:
-            self._current_study.local_final_zipfile_path = local_final_zipfile_path
-            self._display_success_message()
+        ):
+            self._current_study.local_final_zipfile_path = str(local_final_zipfile_path)
+            self._display.show_message(
+                f'"{self._current_study.name}": Final ZIP downloaded',
+                f"{__name__}.{__class__.__name__}",
+            )
         else:
-            self._display_failure_error()
-            raise FinalZipNotDownloadedException
-
-    def _display_failure_error(self):
-        self._display.show_error(
-            f'"{self._current_study.name}": Final zip not downloaded',
-            __name__ + "." + __class__.__name__,
-        )
-
-    def _display_success_message(self):
-        self._display.show_message(
-            f'"{self._current_study.name}": Final zip downloaded',
-            __name__ + "." + __class__.__name__,
-        )
-
-    def _display_welcome_message(self):
-        self._display.show_message(
-            f'"{self._current_study.name}": downloading final zip...',
-            __name__ + "." + __class__.__name__,
-        )
+            self._display.show_error(
+                f'"{self._current_study.name}": Final ZIP not downloaded',
+                f"{__name__}.{__class__.__name__}",
+            )
+            raise FinalZipNotDownloadedException(
+                self._current_study.local_final_zipfile_path
+            )

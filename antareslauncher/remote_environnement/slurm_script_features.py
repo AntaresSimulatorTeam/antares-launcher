@@ -93,25 +93,3 @@ class SlurmScriptFeatures:
         submit_command = slurm_options + " " + self.solver_script_path + bash_options
         complete_command = change_dir + " && " + submit_command
         return complete_command
-
-    @staticmethod
-    def get_final_zip_name(study_name: str, job_id: int, run_mode: int):
-        """Compose and return the name of the finished-job zipfile of the Antares Solver simulation
-
-        Args:
-            run_mode:
-            study_name: name of the study
-            job_id: SLURM job_id
-
-        Returns:
-            the name of the zip file containing the finished job
-
-        """
-        if run_mode == Modes.antares:
-            final_zip_name = f"finished_{study_name}_{job_id}.zip"
-        elif run_mode in [Modes.xpansion_r, Modes.xpansion_cpp]:
-            final_zip_name = f"finished_XPANSION_{study_name}_{job_id}.zip"
-        else:
-            raise ValueError
-
-        return final_zip_name
