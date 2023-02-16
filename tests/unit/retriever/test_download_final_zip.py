@@ -42,8 +42,8 @@ class TestFinalZipDownloader:
         self.remote_env.download_final_zip = mock.Mock(return_value=final_zipfile_path)
 
         self.final_zip_downloader.download(successfully_finished_zip_study)
-        expected_message1 = '"hello": downloading final zip...'
-        expected_message2 = '"hello": Final zip downloaded'
+        expected_message1 = '"hello": downloading final ZIP...'
+        expected_message2 = '"hello": Final ZIP downloaded'
         calls = [
             call(expected_message1, mock.ANY),
             call(expected_message2, mock.ANY),
@@ -59,8 +59,8 @@ class TestFinalZipDownloader:
         with pytest.raises(FinalZipNotDownloadedException):
             self.final_zip_downloader.download(successfully_finished_zip_study)
 
-        expected_welcome_message = '"hello": downloading final zip...'
-        expected_error_message = '"hello": Final zip not downloaded'
+        expected_welcome_message = '"hello": downloading final ZIP...'
+        expected_error_message = '"hello": Final ZIP not downloaded'
         self.display_mock.show_message.assert_called_once_with(
             expected_welcome_message, mock.ANY
         )

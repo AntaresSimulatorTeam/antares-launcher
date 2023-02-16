@@ -11,7 +11,7 @@ from paramiko.sftp_attr import SFTPAttributes
 
 from antareslauncher.remote_environnement.ssh_connection import (
     DownloadMonitor,
-    SshConnection,
+    SshConnection, ConnectionFailedException,
 )
 
 LOGGER = DownloadMonitor.__module__
@@ -105,7 +105,7 @@ class TestSshConnection:
         [
             TimeoutError("an error occurs"),
             paramiko.SSHException("an error occurs"),
-            SshConnection.ConnectionFailedException("an error occurs"),
+            ConnectionFailedException("hostname", 21, "an error occurs"),
         ],
     )
     def test_download_files__timeout(self, remote_attrs, ssh_mock, exception, caplog):

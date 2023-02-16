@@ -35,6 +35,20 @@ class InvalidConfigError(SshConnectionError):
         super().__init__(err_msg)
 
 
+class ConnectionFailedException(SshConnectionError):
+    def __init__(self, hostname: str, port: int, username: str):
+        msg = (
+            f"Unable to connect to {hostname} on port {port} with username {username}."
+            f" Please ensure that the hostname, port, and username are correct, and"
+            f" that the server is reachable and accepting SSH connections."
+            f" If you are using a password to authenticate, please double-check that"
+            f" the password is correct. If you are using a private key, please ensure"
+            f" that the key is in the correct format and that you have specified"
+            f" the correct path to the key file."
+        )
+        super().__init__(msg)
+
+
 class DownloadMonitor:
     def __init__(self, total_size: int, msg: str = "", logger=None) -> None:
         self.total_size = total_size
@@ -71,14 +85,9 @@ class DownloadMonitor:
 class SshConnection:
     """Class to _connect to remote server"""
 
-    # fixme: `ConnectionFailedException` should be moved from the `SshConnection` class
-    #  to the module (like other exception classes). It must inherit `SshConnectionError`.
-    #  The constructor must have at least a `msg: str` parameter. Documentation is missing.
-    class ConnectionFailedException(Exception):
-        pass
-
     def __init__(self, config: dict = None):
         """
+        Initialize the SSH connection.
 
         Args:
             config: Dictionary containing the "hostname" (name or IP), "username", "port" (default is 22),
@@ -195,19 +204,28 @@ class SshConnection:
                         allow_agent=False,
                         look_for_keys=False,
                     )
-            except paramiko.AuthenticationException:
+            except paramiko.AuthenticationException as e:
                 self.logger.exception(
                     f"paramiko.AuthenticationException: {paramiko.AuthenticationException}"
                 )
+                raise ConnectionFailedException(
+                    self.host, self.port, self.username
+                ) from e
             except paramiko.SSHException as e:
                 self.logger.exception(f"paramiko.SSHException: {paramiko.SSHException}")
-                raise SshConnection.ConnectionFailedException() from e
+                raise ConnectionFailedException(
+                    self.host, self.port, self.username
+                ) from e
             except socket.timeout as e:
                 self.logger.exception(f"socket.timeout: {socket.timeout}")
-                raise SshConnection.ConnectionFailedException() from e
+                raise ConnectionFailedException(
+                    self.host, self.port, self.username
+                ) from e
             except socket.error as e:
                 self.logger.exception(f"socket.error: {socket.error}")
-                raise SshConnection.ConnectionFailedException() from e
+                raise ConnectionFailedException(
+                    self.host, self.port, self.username
+                ) from e
 
             yield client
         finally:
@@ -236,7 +254,7 @@ class SshConnection:
             error = f"Command timed out: {command}"
         except paramiko.SSHException:
             error = f"Failed to execute {command}"
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             error = f"Failed to connect to remote host and execute {command}"
 
         self.logger.info(f"Command output:\nOutput: {output}\nError: {error}")
@@ -266,7 +284,7 @@ class SshConnection:
         except IOError:
             self.logger.debug("IO Error", exc_info=True)
             result_flag = False
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
@@ -292,7 +310,7 @@ class SshConnection:
         except paramiko.SSHException:
             self.logger.error("Paramiko SSH Exception", exc_info=True)
             result_flag = False
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
@@ -329,7 +347,7 @@ class SshConnection:
         except paramiko.SSHException:
             self.logger.error("Paramiko SSH Exception", exc_info=True)
             return []
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             return []
 
@@ -406,7 +424,7 @@ class SshConnection:
         except FileNotFoundError:
             self.logger.debug("FileNotFoundError", exc_info=True)
             result_flag = False
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
@@ -437,7 +455,7 @@ class SshConnection:
         except FileNotFoundError:
             self.logger.debug("FileNotFoundError", exc_info=True)
             result_flag = False
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
@@ -470,7 +488,7 @@ class SshConnection:
         except paramiko.SSHException:
             self.logger.debug("Paramiko SSHException", exc_info=True)
             result_flag = False
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
@@ -503,7 +521,7 @@ class SshConnection:
                     result_flag = True
                 finally:
                     sftp_client.close()
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
@@ -536,7 +554,7 @@ class SshConnection:
                     result_flag = True
                 finally:
                     sftp_client.close()
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             result_flag = False
         return result_flag
@@ -545,6 +563,6 @@ class SshConnection:
         try:
             with self.ssh_client():
                 return True
-        except SshConnection.ConnectionFailedException:
+        except ConnectionFailedException:
             self.logger.error("Failed to connect to remote host", exc_info=True)
             return False
