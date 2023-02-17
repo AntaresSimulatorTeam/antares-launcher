@@ -40,6 +40,7 @@ I actually copied it from the source: PEP 20 -- The Zen of Python
 DATA_DIR = Path(__file__).parent.resolve() / ".." / "data"
 
 # YAML:
+JSON_DIR = None
 LOG_DIR = None
 STUDIES_IN_DIR = None
 FINISHED_DIR = None
@@ -52,14 +53,13 @@ ANTARES_VERSIONS_ON_REMOTE_SERVER = None
 DEFAULT_SSH_CONFIGFILE_NAME = None
 SSH_CONFIG_FILE_IS_REQUIRED = None
 DEFAULT_JSON_DB_NAME = f"{getpass.getuser()}_antares_launcher_db.json"
-JSON_DIR = Path.cwd()
 
 
 def _load_config(mod, config_path: Path) -> None:
     with config_path.open() as yaml_file:
         data: Dict[str, Any] = yaml.load(yaml_file, Loader=yaml.FullLoader)
     for key, value in data.items():
-        if key in ["STUDIES_IN_DIR", "FINISHED_DIR", "LOG_DIR"]:
+        if key in ["STUDIES_IN_DIR", "FINISHED_DIR", "LOG_DIR", "JSON_DIR"]:
             path = Path(value).expanduser()
             setattr(mod, key, path)
         else:

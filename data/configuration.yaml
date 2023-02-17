@@ -1,4 +1,5 @@
 LOG_DIR : "~/Projects/antares-launcher/data/LOGS"
+JSON_DIR : "~/Projects/antares-launcher/data/LOGS"
 STUDIES_IN_DIR : "~/Projects/antares-launcher/data/STUDIES-IN"
 FINISHED_DIR : "~/Projects/antares-launcher/data/FINISHED"
 DEFAULT_TIME_LIMIT : 172800

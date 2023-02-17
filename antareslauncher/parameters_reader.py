@@ -11,7 +11,6 @@ from antareslauncher.main_option_parser import ParserParameters
 ALT2_PARENT = Path.home() / "antares_launcher_settings"
 ALT1_PARENT = Path.cwd()
 DEFAULT_JSON_DB_NAME = f"{getpass.getuser()}_antares_launcher_db.json"
-DEFAULT_JSON_DIR = Path.cwd()
 
 
 class ParametersReader:
@@ -45,7 +44,7 @@ class ParametersReader:
             "ANTARES_VERSIONS_ON_REMOTE_SERVER"
         )
         self.db_primary_key = self._get_compulsory_value("DB_PRIMARY_KEY")
-        self.json_dir = Path(self.yaml_content.get("JSON_DIR", DEFAULT_JSON_DIR))
+        self.json_dir = Path(self._get_compulsory_value("JSON_DIR")).expanduser()
         self.json_db_name = self.yaml_content.get(
             "DEFAULT_JSON_DB_NAME", DEFAULT_JSON_DB_NAME
         )
