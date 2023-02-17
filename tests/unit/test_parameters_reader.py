@@ -19,10 +19,12 @@ class TestParametersReader:
         self.FINISHED_DIR = "FINISHED"
         self.STUDIES_IN_DIR = "STUDIES-IN"
         self.LOG_DIR = "LOGS"
+        self.JSON_DIR = "JSON"
         self.ANTARES_SUPPORTED_VERSIONS = ["610", "700"]
 
         self.yaml_compulsory_content = (
             f'LOG_DIR : "{self.LOG_DIR}"\n'
+            f'JSON_DIR : "{self.JSON_DIR}"\n'
             f'STUDIES_IN_DIR : "{self.STUDIES_IN_DIR}"\n'
             f'FINISHED_DIR : "{self.FINISHED_DIR}"\n'
             f"DEFAULT_TIME_LIMIT : {self.DEFAULT_TIME_LIMIT}\n"
@@ -36,10 +38,8 @@ class TestParametersReader:
             f'  - "{self.ANTARES_SUPPORTED_VERSIONS[0]}"\n'
             f'  - "{self.ANTARES_SUPPORTED_VERSIONS[1]}"\n'
         )
-        self.DEFAULT_JSON_DIR = "log_path"
         self.DEFAULT_JSON_DB_NAME = "db_file.json"
         self.yaml_opt_content = (
-            f'JSON_DIR : "{self.DEFAULT_JSON_DIR}\n'
             f'DEFAULT_JSON_DB_NAME : "{self.DEFAULT_JSON_DB_NAME}\n'
             f'DEFAULT_SSH_CONFIGFILE_NAME: "{self.DEFAULT_SSH_CONFIGFILE_NAME}"\n'
         )
@@ -83,6 +83,7 @@ class TestParametersReader:
         config_yaml = tmp_path / "empty.yaml"
         config_yaml.write_text(
             'LOG_DIR : "LOGS"\n'
+            'JSON_DIR : "JSON"\n'
             'STUDIES_IN_DIR : "STUDIES-IN"\n'
             'FINISHED_DIR : "FINISHED"\n'
             "DEFAULT_TIME_LIMIT : 172800\n"
@@ -97,6 +98,7 @@ class TestParametersReader:
         config_yaml = tmp_path / "empty.yaml"
         config_yaml.write_text(
             'LOG_DIR : "LOGS"\n'
+            'JSON_DIR : "JSON"\n'
             'STUDIES_IN_DIR : "STUDIES-IN"\n'
             'FINISHED_DIR : "FINISHED"\n'
             "DEFAULT_TIME_LIMIT : 172800\n"
@@ -108,6 +110,7 @@ class TestParametersReader:
     @pytest.mark.unit_test
     def test_get_option_parameters_initializes_parameters_correctly(self, tmp_path):
         empty_json = tmp_path / "dummy.json"
+        empty_json.write_text("{}")
         config_yaml = tmp_path / "empty.yaml"
         config_yaml.write_text(self.yaml_compulsory_content)
         options_parameters = ParametersReader(
@@ -136,17 +139,18 @@ class TestParametersReader:
         config_yaml = tmp_path / yaml_name
         config_yaml.write_text(self.yaml_compulsory_content)
         empty_json = tmp_path / "dummy.json"
+        empty_json.write_text("{}")
         main_parameters = ParametersReader(
             empty_json, config_yaml
         ).get_main_parameters()
-        assert main_parameters.json_dir == Path.cwd()
+        assert main_parameters.json_dir == Path(self.JSON_DIR)
         assert main_parameters.slurm_script_path == self.SLURM_SCRIPT_PATH
         assert (
             main_parameters.default_json_db_name
             == f"{getpass.getuser()}_antares_launcher_db.json"
         )
         assert main_parameters.db_primary_key == self.DB_PRIMARY_KEY
-        assert main_parameters.default_ssh_dict is None
+        assert not main_parameters.default_ssh_dict
         assert (
             main_parameters.antares_versions_on_remote_server
             == self.ANTARES_SUPPORTED_VERSIONS
