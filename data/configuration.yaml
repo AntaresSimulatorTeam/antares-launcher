@@ -5,7 +5,7 @@ DEFAULT_TIME_LIMIT : 172800
 DEFAULT_N_CPU : 12
 DEFAULT_WAIT_TIME : 900
 DB_PRIMARY_KEY : "name"
-DEFAULT_SSH_CONFIGFILE_NAME: "~/Projects/antares-launcher/data/ssh_config.json"
+DEFAULT_SSH_CONFIGFILE_NAME: "ssh_config.json"
 SSH_CONFIG_FILE_IS_REQUIRED : False
 SLURM_SCRIPT_PATH : "/path/to/launchAntares_v1.1.3.sh"
 

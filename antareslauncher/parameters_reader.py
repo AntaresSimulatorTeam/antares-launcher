@@ -1,5 +1,7 @@
 import json
+import os.path
 from pathlib import Path
+from typing import Dict, Any
 
 import yaml
 import getpass
@@ -28,9 +30,9 @@ class ParametersReader:
         self._wait_time = self._get_compulsory_value("DEFAULT_WAIT_TIME")
         self.time_limit = self._get_compulsory_value("DEFAULT_TIME_LIMIT")
         self.n_cpu = self._get_compulsory_value("DEFAULT_N_CPU")
-        self.studies_in_dir = self._get_compulsory_value("STUDIES_IN_DIR")
-        self.log_dir = self._get_compulsory_value("LOG_DIR")
-        self.finished_dir = self._get_compulsory_value("FINISHED_DIR")
+        self.studies_in_dir = os.path.expanduser(self._get_compulsory_value("STUDIES_IN_DIR"))
+        self.log_dir = os.path.expanduser(self._get_compulsory_value("LOG_DIR"))
+        self.finished_dir = os.path.expanduser(self._get_compulsory_value("FINISHED_DIR"))
         self.ssh_conf_file_is_required = self._get_compulsory_value(
             "SSH_CONFIG_FILE_IS_REQUIRED"
         )
@@ -100,16 +102,12 @@ class ParametersReader:
             value = self.yaml_content[key]
         except KeyError as e:
             print(f"missing value: {str(e)}")
-            raise ParametersReader.MissingValueException(e)
+            raise ParametersReader.MissingValueException(e) from None
         return value
 
-    def _get_ssh_dict_from_json(self):
-        try:
-            with open(self.json_ssh_conf) as ssh_connection_json:
-                ssh_dict = json.load(ssh_connection_json)
-        except IOError:
-            print(
-                "Default ssh configuration was not found, trying to continue without it"
-            )
-            ssh_dict = None
+    def _get_ssh_dict_from_json(self) -> Dict[str, Any]:
+        with open(self.json_ssh_conf) as ssh_connection_json:
+            ssh_dict = json.load(ssh_connection_json)
+        if "private_key_file" in ssh_dict:
+            ssh_dict["private_key_file"] = os.path.expanduser(ssh_dict["private_key_file"])
         return ssh_dict

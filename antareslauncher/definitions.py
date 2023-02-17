@@ -1,7 +1,10 @@
 """This file contains the CONSTANTS for ASL"""
+
 import getpass
 import json
+import sys
 from pathlib import Path
+from typing import Any, Dict
 
 import yaml
 
@@ -51,22 +54,19 @@ SSH_CONFIG_FILE_IS_REQUIRED = None
 DEFAULT_JSON_DB_NAME = f"{getpass.getuser()}_antares_launcher_db.json"
 JSON_DIR = Path.cwd()
 
-path_variables = [
-    STUDIES_IN_DIR,
-    FINISHED_DIR,
-    LOG_DIR,
-]
+
+def _load_config(mod, config_path: Path) -> None:
+    with config_path.open() as yaml_file:
+        data: Dict[str, Any] = yaml.load(yaml_file, Loader=yaml.FullLoader)
+    for key, value in data.items():
+        if key in ["STUDIES_IN_DIR", "FINISHED_DIR", "LOG_DIR"]:
+            path = Path(value).expanduser()
+            setattr(mod, key, path)
+        else:
+            setattr(mod, key, value)
 
 
-yaml_file = open(DATA_DIR / "configuration.yaml")
-yaml_content = yaml.load(yaml_file, Loader=yaml.FullLoader)
-yaml_file.close()
-for key, value in yaml_content.items():
-    if key in path_variables:
-        exec(f"{key} = {Path(value.__repr__())}")
-    else:
-        exec(f"{key} = {value.__repr__()}")
-
+_load_config(sys.modules[__name__], DATA_DIR.joinpath("configuration.yaml"))
 
 SSH_CONFIGFILE_PATH_ALTERNATE1 = Path.cwd() / DEFAULT_SSH_CONFIGFILE_NAME
 SSH_CONFIGFILE_PATH_ALTERNATE2 = (
