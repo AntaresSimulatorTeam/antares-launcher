@@ -9,7 +9,7 @@ from antareslauncher.main_option_parser import (
 from antareslauncher.parameters_reader import ParametersReader
 
 DATA_DIR = Path(__file__).parent.resolve() / "data"
-SSH_JSON_FILE = DATA_DIR / "sshconfig.json"
+SSH_JSON_FILE = DATA_DIR / "ssh_config.json"
 YAML_CONF_FILE = DATA_DIR / "configuration.yaml"
 
 

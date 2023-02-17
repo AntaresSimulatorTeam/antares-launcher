@@ -330,7 +330,7 @@ Go back to ask help to the team who installs the Antares_launcher or try this :
 
 ::
 
-    Antares_Launcher(.exe) --ssh-settings-file=PATH\TO\THE\sshconfig.json
+    Antares_Launcher(.exe) --ssh-settings-file=PATH\TO\THE\ssh_config.json
 
 Detailed workflow
 =================

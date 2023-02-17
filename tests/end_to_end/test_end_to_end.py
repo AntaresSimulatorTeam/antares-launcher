@@ -29,7 +29,7 @@ TEST_CONFIG = get_test_config()
 
 ANTARES_STUDY = DATA_DIR / "STUDIES-IN-FOR-TEST" / "one_node_v7"
 EXAMPLE_STUDIES_IN = DATA_DIR / "STUDIES-IN-FOR-TEST"
-SSH_JSON_FILE = DATA_DIR / "sshconfig.json"
+SSH_JSON_FILE = DATA_DIR / "ssh_config.json"
 YAML_CONF_FILE = DATA_DIR / "configuration.yaml"
 
 

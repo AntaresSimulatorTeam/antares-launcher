@@ -21,7 +21,9 @@ class NoRemoteBaseDirException(Exception):
 
 
 class NoLaunchScriptFoundException(Exception):
-    pass
+    def __init__(self, remote_path: str):
+        msg = f"Launch script not found in remote server: '{remote_path}."
+        super().__init__(msg)
 
 
 class KillJobErrorException(Exception):

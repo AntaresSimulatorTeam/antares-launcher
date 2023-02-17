@@ -11,7 +11,7 @@ class TestParametersReader:
     def setup_method(self):
         self.SLURM_SCRIPT_PATH = "/path/to/launchAntares_v1.1.3.sh"
         self.SSH_CONFIG_FILE_IS_REQUIRED = False
-        self.DEFAULT_SSH_CONFIGFILE_NAME = "sshconfig.json"
+        self.DEFAULT_SSH_CONFIGFILE_NAME = "ssh_config.json"
         self.DB_PRIMARY_KEY = "name"
         self.DEFAULT_WAIT_TIME = 900
         self.DEFAULT_N_CPU = 12

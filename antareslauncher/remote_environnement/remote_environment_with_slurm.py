@@ -59,7 +59,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
     def _check_remote_script(self):
         remote_antares_script = self.slurm_script_features.solver_script_path
         if not self.connection.check_file_not_empty(remote_antares_script):
-            raise NoLaunchScriptFoundException
+            raise NoLaunchScriptFoundException(remote_antares_script)
 
     def get_queue_info(self):
         """This function return the information from: squeue -u run-antares

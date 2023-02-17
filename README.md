@@ -51,18 +51,18 @@ The generated file will be inside the dist directory. Note that pyinstaller does
 By default the program will
 
 - look for a configuration file necessary for the connection
-named *sshconfig.json*.
+named *ssh_config.json*.
 If no value is given, it will look for it in default location with this order:
   - 1st: current working directory
-  - 2nd: $HOME/antares_launcher_settings/sshconfig.json
+  - 2nd: $HOME/antares_launcher_settings/ssh_config.json
   - 3rd: default configuration (json file embedded in the data directory if present).
 
-A default *sshconfig.json* file can be found in this
+A default *ssh_config.json* file can be found in this
 repository in the `./data` directory of the project
 
 
 - look for an rsa-private ssh-key to access to the remote server.
-The path of the key is specified in the `sshconfig.json` file
+The path of the key is specified in the `ssh_config.json` file
 
 - look for a directory containing
 the Antares studies to be run on the remote machine
