@@ -55,6 +55,7 @@ class StudyListComposer:
         """
         return self._repo.get_list_of_studies()
 
+    # fixme: deprecated: should be removed
     def get_ls_of_studiesin_dir(self):
         """Retrieve the list of directories inside the STUDIES_IN_DIR folder
 
@@ -136,29 +137,24 @@ class StudyListComposer:
         """List all directories inside the STUDIES_IN_DIR folder, if a directory is a valid antares study
         and is new, then creates a StudyDTO object then saves it in the repo
         """
-        self._show_welcome_message()
+        message = f"Updating current database from '{self._studies_in_dir}'..."
+        if self.xpansion_mode:
+            message += f"New studies will be run in xpansion mode {self.xpansion_mode}"
+        self._display.show_message(message, f"{__name__}.{__class__.__name__}")
 
         self._new_study_added = False
-        for directory in self.get_ls_of_studiesin_dir():
+
+        directories = self._file_manager.listdir_of(self._studies_in_dir)
+        for directory in directories:
             directory_path = Path(self._studies_in_dir) / Path(directory)
             if self._file_manager.is_dir(directory_path):
                 self._update_database_with_directory(directory_path)
 
-        if self._new_study_added is False:
+        if not self._new_study_added:
             self._display.show_message(
                 "Didn't find any new simulations...",
-                __name__ + "." + __class__.__name__,
+                f"{__name__}.{__class__.__name__}",
             )
-
-    def _show_welcome_message(self):
-        if self.xpansion_mode:
-            message = f"Updating current database... New studies will be ran in xpansion mode {self.xpansion_mode}"
-        else:
-            message = "Updating current database..."
-        self._display.show_message(
-            message,
-            __name__ + "." + __class__.__name__,
-        )
 
     def _update_database_with_new_study(
         self, antares_version, directory_path, xpansion_mode: str
