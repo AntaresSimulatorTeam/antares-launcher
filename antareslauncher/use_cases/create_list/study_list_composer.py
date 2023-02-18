@@ -55,16 +55,6 @@ class StudyListComposer:
         """
         return self._repo.get_list_of_studies()
 
-    # fixme: deprecated: should be removed
-    def get_ls_of_studiesin_dir(self):
-        """Retrieve the list of directories inside the STUDIES_IN_DIR folder
-
-        Returns:
-            list of directories inside the STUDIES_IN_DIR folder
-        """
-        ls_of_dir = self._file_manager.listdir_of(self._studies_in_dir)
-        return ls_of_dir
-
     def _create_study(self, path, antares_version, xpansion_mode: str):
         if self.xpansion_mode == "r":
             run_mode = Modes.xpansion_r

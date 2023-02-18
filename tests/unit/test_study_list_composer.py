@@ -130,11 +130,10 @@ class TestStudyListComposer:
 
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
-            file_manager=mock.Mock(),
+            file_manager=mock.Mock(listdir_of=mock.Mock(return_value=["study"])),
             display=mock.Mock(),
             parameters=self.parameters,
         )
-        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(return_value=["study"])
         study_list_composer.get_antares_version = mock.Mock(return_value=True)
         study_list_composer._repo.is_study_inside_database = mock.Mock(
             return_value=True
@@ -157,6 +156,7 @@ class TestStudyListComposer:
         file_manager.file_exists = mock.create_autospec(
             FileManager.file_exists, return_value=False
         )
+        file_manager.listdir_of = mock.Mock(return_value=["study_path"])
         repo = mock.create_autospec(IDataRepo, instance=True)
         repo.is_study_inside_database = mock.Mock(return_value=False)
         # given
@@ -165,9 +165,6 @@ class TestStudyListComposer:
             file_manager=file_manager,
             display=mock.Mock(),
             parameters=self.parameters,
-        )
-        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(
-            return_value=["study_path"]
         )
         study_list_composer.get_antares_version = mock.Mock(return_value="700")
         study_list_composer._file_manager.is_dir = mock.Mock(return_value=True)
@@ -195,11 +192,10 @@ class TestStudyListComposer:
         # given
         study_list_composer = StudyListComposer(
             repo=None,
-            file_manager=None,
+            file_manager=mock.Mock(listdir_of=mock.Mock(return_value=[])),
             display=mock.Mock(),
             parameters=self.parameters,
         )
-        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(return_value=[])
         # when
         study_list_composer.update_study_database()
         # then
@@ -213,12 +209,11 @@ class TestStudyListComposer:
         self.parameters.studies_in_dir = "studies_in_dir"
         study_list_composer = StudyListComposer(
             repo=mock.Mock(),
-            file_manager=mock.Mock(),
+            file_manager=mock.Mock(
+                listdir_of=mock.Mock(return_value=["study1", "study2"])
+            ),
             display=mock.Mock(),
             parameters=self.parameters,
-        )
-        study_list_composer.get_ls_of_studiesin_dir = mock.Mock(
-            return_value=["study1", "study2"]
         )
         study_list_composer.get_antares_version = mock.Mock(return_value="700")
         study_list_composer._repo.is_study_inside_database = mock.Mock(
