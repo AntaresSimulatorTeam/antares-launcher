@@ -11,7 +11,47 @@
 To test the `Antares_Launcher` command-line application, you need to create a `configuration.yaml` configuration file
 that defines input/output directories, SSH configuration, and simulation parameters.
 
-> TODO
+Example of application configuration file:
+
+```yaml
+LOG_DIR : "~/Projects/antares-launcher/data/LOGS"
+JSON_DIR : "~/Projects/antares-launcher/data/LOGS"
+STUDIES_IN_DIR : "~/Projects/antares-launcher/data/STUDIES-IN"
+FINISHED_DIR : "~/Projects/antares-launcher/data/FINISHED"
+DEFAULT_TIME_LIMIT : 172800
+DEFAULT_N_CPU : 12
+DEFAULT_WAIT_TIME : 900
+DB_PRIMARY_KEY : "name"
+DEFAULT_SSH_CONFIGFILE_NAME: "ssh_config.json"
+SSH_CONFIG_FILE_IS_REQUIRED : False
+SLURM_SCRIPT_PATH : "/opt/antares/launchAntares.sh"
+
+ANTARES_VERSIONS_ON_REMOTE_SERVER :
+  - "610"
+  - "700"
+  - "710"
+  - "720"
+  - "800"
+  - "810"
+  - "820"
+  - "830"
+  - "840"
+```
+
+Below is a description of the parameters:
+
+- `LOG_DIR`: 
+- `JSON_DIR`: 
+- `STUDIES_IN_DIR`: 
+- `FINISHED_DIR`: 
+- `DEFAULT_TIME_LIMIT`: 
+- `DEFAULT_N_CPU`: 
+- `DEFAULT_WAIT_TIME`: 
+- `DB_PRIMARY_KEY`: 
+- `DEFAULT_SSH_CONFIGFILE_NAME`: name of the SSH configuration file, it should be "ssh_config.json".
+- `SSH_CONFIG_FILE_IS_REQUIRED`: 
+- `SLURM_SCRIPT_PATH`: 
+- `ANTARES_VERSIONS_ON_REMOTE_SERVER`: 
 
 ## SSH Configuration
 
