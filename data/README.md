@@ -40,18 +40,18 @@ ANTARES_VERSIONS_ON_REMOTE_SERVER :
 
 Below is a description of the parameters:
 
-- `LOG_DIR`: 
-- `JSON_DIR`: 
-- `STUDIES_IN_DIR`: 
-- `FINISHED_DIR`: 
-- `DEFAULT_TIME_LIMIT`: 
-- `DEFAULT_N_CPU`: 
-- `DEFAULT_WAIT_TIME`: 
-- `DB_PRIMARY_KEY`: 
-- `DEFAULT_SSH_CONFIGFILE_NAME`: name of the SSH configuration file, it should be "ssh_config.json".
-- `SSH_CONFIG_FILE_IS_REQUIRED`: 
-- `SLURM_SCRIPT_PATH`: 
-- `ANTARES_VERSIONS_ON_REMOTE_SERVER`: 
+- `LOG_DIR`: Path to the directory where logs will be stored.
+- `JSON_DIR`: Path to the directory where the JSON database will be stored.
+- `STUDIES_IN_DIR`: Path to the directory where studies will be read.
+- `FINISHED_DIR`: Path to the directory where finished studies will be downloaded and placed.
+- `DEFAULT_TIME_LIMIT`: The default time limit (in seconds) for each study simulation job.
+- `DEFAULT_N_CPU`: The default number of CPUs to be used by each study simulation job.
+- `DEFAULT_WAIT_TIME`: The default wait time (in seconds) between study simulation jobs.
+- `DB_PRIMARY_KEY`: A string representing the primary key used in the database.
+- `DEFAULT_SSH_CONFIGFILE_NAME`: The default name of the SSH configuration file, it should be "ssh_config.json".
+- `SSH_CONFIG_FILE_IS_REQUIRED`: A flag indicating whether an SSH configuration file is required.
+- `SLURM_SCRIPT_PATH`: Path to the SLURM script used to launch studies (a Shell script).
+- `ANTARES_VERSIONS_ON_REMOTE_SERVER`: A list of strings representing the available Antares Solver versions on the remote server.
 
 ## SSH Configuration
 
