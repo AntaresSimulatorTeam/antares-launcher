@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import List, Optional
 
-from antareslauncher.remote_environnement import iconnection
+from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
 
 NOT_SUBMITTED_STATE = "not_submitted"
@@ -19,7 +21,9 @@ class NoRemoteBaseDirException(Exception):
 
 
 class NoLaunchScriptFoundException(Exception):
-    pass
+    def __init__(self, remote_path: str):
+        msg = f"Launch script not found in remote server: '{remote_path}."
+        super().__init__(msg)
 
 
 class KillJobErrorException(Exception):
@@ -37,7 +41,7 @@ class GetJobStateOutputException(Exception):
 class IRemoteEnvironment(ABC):
     """Class that represents the remote environment"""
 
-    def __init__(self, _connection: iconnection.IConnection):
+    def __init__(self, _connection: SshConnection):
         self.connection = _connection
         self.remote_base_path = None
 
@@ -54,11 +58,11 @@ class IRemoteEnvironment(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def download_logs(self, study: StudyDTO):
+    def download_logs(self, study: StudyDTO) -> List[Path]:
         raise NotImplementedError
 
     @abstractmethod
-    def download_final_zip(self, study: StudyDTO) -> str:
+    def download_final_zip(self, study: StudyDTO) -> Optional[Path]:
         raise NotImplementedError
 
     @abstractmethod

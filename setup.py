@@ -23,6 +23,6 @@ setup(
         "Operating System :: POSIX :: Linux",
     ],
     entry_points={
-        "console_scripts": ["Antares_Launcher=antareslauncher.main_launcher:run"],
+        "console_scripts": ["Antares_Launcher = antareslauncher.advanced_launch:main"],
     },
 )

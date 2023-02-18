@@ -18,7 +18,7 @@ Advanced Options:
 |-n N_CPU, --n-cores=N_CPU               |number of cores to be used for a single job,      |                                 |
 |                                        |max 12                                            |                                 |
 +----------------------------------------+--------------------------------------------------+---------------------------------+
-|--ssh-settings-file=JSON_SSH_CONFIG     |path to the configuration file for the ssh        |JSON_SSH_CONFIG=.\sshconfig.json |
+|--ssh-settings-file=JSON_SSH_CONFIG     |path to the configuration file for the ssh        |JSON_SSH_CONFIG=.\ssh_config.json |
 |                                        |connection                                        |                                 |
 +----------------------------------------+--------------------------------------------------+---------------------------------+
 |-k                                      |Kill a job on remote server arg: JOBID            |                                 |

@@ -1,5 +1,4 @@
 import argparse
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict
@@ -133,7 +132,7 @@ def run_with(
             output_dir=arguments.output_dir,
             post_processing=arguments.post_processing,
             antares_versions_on_remote_server=parameters.antares_versions_on_remote_server,
-            other_options=arguments.other_options,
+            other_options=arguments.other_options or "",
         ),
     )
     launch_controller = LaunchController(
@@ -180,9 +179,10 @@ def run_with(
 
 
 def verify_connection(connection, display):
-    if not connection.test_connection():
-        raise Exception("Could not establish ssh connection")
-    display.show_message("Ssh connection established", __name__)
+    if connection.test_connection():
+        display.show_message(f"SSH connection to {connection.host} established", __name__)
+    else:
+        raise Exception(f"Could not establish SSH connection to {connection.host}")
 
 
 def get_ssh_config_dict(file_manager, json_ssh_config, ssh_dict: dict):
@@ -191,5 +191,5 @@ def get_ssh_config_dict(file_manager, json_ssh_config, ssh_dict: dict):
     else:
         ssh_dict = file_manager.convert_json_file_to_dict(json_ssh_config)
     if ssh_dict is None:
-        raise Exception("Could not find any ssh configuration file")
+        raise Exception("Could not find any SSH configuration file")
     return ssh_dict

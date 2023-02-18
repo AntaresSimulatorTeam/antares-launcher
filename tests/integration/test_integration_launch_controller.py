@@ -45,19 +45,28 @@ class TestIntegrationLaunchController:
         return launch_controller
 
     @pytest.mark.integration_test
-    def test_given_2_studies_when_launch_controller_launch_all_studies_is_called_then_connection_upload_file_is_called_twice(
-        self, launch_controller
-    ):
+    def test_upload_file__called_twice(self, launch_controller):
+        """
+        This test function checks if when launching two studies through the controller,
+        the call to the 'launch_all_studies' method triggers the 'upload_file' method
+        of the connection twice.
+        """
         # when
         launch_controller.launch_all_studies()
 
         # then
+        # noinspection PyUnresolvedReferences
         assert launch_controller.env.connection.upload_file.call_count == 2
 
     @pytest.mark.integration_test
-    def test_given_a_study_when_launch_controller_submit_job_is_called_then_connection_execute_command_is_called_once_with_correct_command(
+    def test_execute_command__called_with_the_correct_parameters(
         self,
     ):
+        """
+        This test function checks if when launching a study through the controller,
+        the call to the `submit_job` method triggers the `execute_command` method
+        of the connection only once, with the correct command.
+        """
         # given
         connection = mock.Mock()
         connection.execute_command = mock.Mock(return_value=["Submitted 42", ""])
@@ -69,7 +78,7 @@ class TestIntegrationLaunchController:
             zipfile_path=str(Path("base_path") / "zip_name"),
             zip_is_sent=False,
             n_cpu=12,
-            antares_version=700,
+            antares_version="700",
             time_limit=120,
         )
         home_dir = "Submitted"
@@ -78,13 +87,24 @@ class TestIntegrationLaunchController:
             str(home_dir) + "/REMOTE_" + getpass.getuser() + "_" + socket.gethostname()
         )
 
-        study_type = "ANTARES"
+        zipfile_name = Path(study1.zipfile_path).name
+        job_type = "ANTARES"
         post_processing = False
+        other_options = ""
+        bash_options = (
+                f'"{zipfile_name}"'
+                f" {study1.antares_version}"
+                f" {job_type}"
+                f" {post_processing}"
+                f" '{other_options}'"
+        )
         command = (
             f"cd {remote_base_path} && "
-            f'sbatch --job-name="{Path(study1.path).name}" --time={study1.time_limit // 60} --cpus-per-task={study1.n_cpu}'
+            f'sbatch --job-name="{Path(study1.path).name}"'
+            f" --time={study1.time_limit // 60}"
+            f" --cpus-per-task={study1.n_cpu}"
             f" {environment.slurm_script_features.solver_script_path}"
-            f' "{Path(study1.zipfile_path).name}" {study1.antares_version} {study_type} {post_processing}'
+            f" {bash_options}"
         )
 
         data_repo = mock.Mock()
@@ -104,9 +124,11 @@ class TestIntegrationLaunchController:
         connection.execute_command.assert_called_once_with(command)
 
     @pytest.mark.integration_test
-    def test_given_two_sent_studies_when_launch_all_studies_executed_then_remove_zip_file_is_called_twice(
-        self, launch_controller
-    ):
+    def test_remove_zip_file__called_twice(self, launch_controller):
+        """
+        This test function checks if when executing the `launch_all_studies` with two sent studies,
+        the `remove_zip_file` method is called twice.
+        """
         launch_controller.file_manager.remove_file = mock.Mock()
 
         # when
