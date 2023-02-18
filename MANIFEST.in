@@ -1,2 +1,7 @@
-include data/launchAntares_v0.sh
-include data/ssh_config.json
+# The `data` directory is intended to store your configuration for integration testing with a SLURM server.
+# It should contain the application configuration file `configuration.yaml` and the SSH configuration file
+# `ssh_config.json`. The files in this directory should never be stored in the source distribution (except `README.md`).
+include data/
+include data/.gitignore
+include data/README.md
+recursive-exclude data *

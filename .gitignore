@@ -14,7 +14,6 @@ STUDIES-IN
 LOGS
 .coverage
 tests/.coverage
-data/ssh_config.json
 venv*/
 antareslauncher*.rst
 modules.rst
@@ -22,10 +21,6 @@ Antares_Launcher.spec
 *.spec
 *.log
 *.zip
-
-/data/ssh_config.json
-/tests/DATA-4-TEST/ssh_config.json
-/tests/DATA-4-TEST/configuration.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -154,4 +149,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/tests/data/ssh_config.json
