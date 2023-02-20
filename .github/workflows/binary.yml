@@ -2,8 +2,9 @@ name: deploy
 on:
   push:
     branches:
-      - 'pbq/build/binary'
-
+      - 'main'
+      - 'dev'
+      - 'release/**'
 
 jobs:
   binary:
@@ -11,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, ubuntu-20.04, macOS-latest]
 
     steps:
       - name: Checkout github repo (+ download lfs dependencies)
@@ -23,15 +24,21 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Generate Windows binary
-        if: matrix.os == 'windows-latest'
+          pip install .[pyinstaller]
+      - name: Generate Antares Launcher application
         run: |
           pyinstaller -F antareslauncher/advanced_launch.py -n Antares_Launcher
         env:
           PYTHONPATH: .
-      - name: Archive binaries
+      - name: Archive Windows Application
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v2
         with:
           name: Antares_Launcher
           path: dist/Antares_Launcher.exe
+      - name: Archive POSIX Application
+        if: matrix.os != 'windows-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Antares_Launcher
+          path: dist/Antares_Launcher
