@@ -5,6 +5,7 @@ on:
       - 'main'
       - 'dev'
       - 'release/**'
+      - 'feature/build-workflow'
 
 jobs:
   binary:
