@@ -75,7 +75,7 @@ class TestSSHConfig:
             "private_key_file": "path/to/private.key",
             "key_password": "key_password",
         }
-        config_path = tmp_path.joinpath(f"my_ssh_config.json")
+        config_path = tmp_path.joinpath("my_ssh_config.json")
         config_path.write_text(json.dumps(data), encoding="utf-8")
         config = SSHConfig.load_config(config_path)
         assert config.config_path == config_path
@@ -93,7 +93,7 @@ class TestSSHConfig:
             "port": 22,
             "password": "S3Cr3T",
         }
-        config_path = tmp_path.joinpath(f"my_ssh_config.json")
+        config_path = tmp_path.joinpath("my_ssh_config.json")
         config_path.write_text(json.dumps(data), encoding="utf-8")
         config = SSHConfig.load_config(config_path)
         assert config.config_path == config_path
@@ -113,13 +113,13 @@ class TestSSHConfig:
             "password": "S3Cr3T",
         }
         del data[required]
-        config_path = tmp_path.joinpath(f"my_ssh_config.json")
+        config_path = tmp_path.joinpath("my_ssh_config.json")
         config_path.write_text(json.dumps(data), encoding="utf-8")
         with pytest.raises(InvalidConfigValueError):
             SSHConfig.load_config(config_path)
 
     def test_save_config__with_private_key_file(self, tmp_path):
-        config_path = tmp_path.joinpath(f"my_ssh_config.json")
+        config_path = tmp_path.joinpath("my_ssh_config.json")
         config = SSHConfig(
             config_path=config_path,
             username="john.doe",
@@ -138,8 +138,8 @@ class TestSSHConfig:
         assert actual["key_password"] == config.key_password
         assert "password" not in actual
 
-    def test_load_config__with_password(self, tmp_path):
-        config_path = tmp_path.joinpath(f"my_ssh_config.json")
+    def test_save_config__with_password(self, tmp_path):
+        config_path = tmp_path.joinpath("my_ssh_config.json")
         config = SSHConfig(
             config_path=config_path,
             username="john.doe",
@@ -167,13 +167,13 @@ class TestConfig:
             "port": 22,
             "password": "S3Cr3T",
         }
-        config_path = tmp_path.joinpath(f"ssh_config.json")
+        config_path = tmp_path.joinpath("ssh_config.json")
         config_path.write_text(json.dumps(data), encoding="utf-8")
         return config_path
 
     @pytest.fixture(name="ssh_config")
     def fixture_ssh_config(self, tmp_path) -> SSHConfig:
-        config_path = tmp_path.joinpath(f"ssh_config.json")
+        config_path = tmp_path.joinpath("ssh_config.json")
         return SSHConfig(
             config_path=config_path,
             username="john.doe",
