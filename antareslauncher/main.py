@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict
 
-from antareslauncher import VERSION
+from antareslauncher import __version__
 from antareslauncher.antares_launcher import AntaresLauncher
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
@@ -80,7 +80,7 @@ def run_with(
 ):
     """Instantiates all the objects necessary to antares-launcher, and runs the program"""
     if arguments.version:
-        print(f"Antares_Launcher v{VERSION}")
+        print(f"Antares_Launcher v{__version__}")
         return
 
     if show_banner:

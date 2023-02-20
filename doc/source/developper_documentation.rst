@@ -2,7 +2,7 @@
 Dev documentation
 *****************
 
-This part of the documentation is for developpers.
+This part of the documentation is for developers.
 
 The aim is to have a design doc ready to be shared with any other dev. It should greatly help people getting in the project.
 

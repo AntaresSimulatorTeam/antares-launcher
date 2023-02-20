@@ -52,8 +52,6 @@ This diagram describes the behavior of the module between your local computer an
    roadmap.rst
    changelog.rst
 
-.. date::
-
 Indices and tables
 ==================
 
