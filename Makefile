@@ -54,11 +54,6 @@ test-unit:
 test-integration:
 	pytest -m integration_test
 
-# help: test-end-to-end                - run end to end tests
-.PHONY: test-end-to-end
-test-end-to-end:
-	pytest -m end_to_end_test
-
 # help: doc                            - generate documentation in doc/build
 .PHONY: doc
 doc:
