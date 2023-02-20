@@ -28,18 +28,9 @@ jobs:
           pip install .[pyinstaller]
       - name: Generate Antares Launcher application
         run: |
-          pyinstaller -F antareslauncher/advanced_launch.py -n Antares_Launcher
-        env:
-          PYTHONPATH: .
+          pyinstaller -F antareslauncher/advanced_launch.py -n Antares_Launcher-${{ matrix.os }}-$(python3 setup.py --version)
+
       - name: Archive Windows Application
-        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v2
         with:
-          name: Antares_Launcher
-          path: dist/Antares_Launcher.exe
-      - name: Archive POSIX Application
-        if: matrix.os != 'windows-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: Antares_Launcher
-          path: dist/Antares_Launcher
+          path: dist/*
