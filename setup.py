@@ -43,6 +43,8 @@ docs_requires = [
     "recommonmark",
     "sphinx",
     "sphinx_rtd_theme",
+    # sphinx-rtd-theme 1.2.0 has requirement docutils<0.19
+    "docutils<0.19",
 ]
 
 # Extra dependencies used to create the executable package.
