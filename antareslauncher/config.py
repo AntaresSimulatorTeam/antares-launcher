@@ -157,6 +157,7 @@ class Config:
     Attributes:
     - config_path: Path to the Antares Launcher configuration file.
     - log_dir: Path to the directory where logs will be stored.
+    - json_dir: Path to the directory where the JSON database will be stored.
     - studies_in_dir: Path to the directory where studies will be read.
     - finished_dir: Path to the directory where finished studies will be downloaded and placed.
     - default_time_limit: The default time limit (in seconds) for each study simulation job.
@@ -173,6 +174,7 @@ class Config:
 
     config_path: pathlib.Path
     log_dir: pathlib.Path
+    json_dir: pathlib.Path
     studies_in_dir: pathlib.Path
     finished_dir: pathlib.Path
     default_time_limit: int
@@ -215,6 +217,7 @@ class Config:
             # handle paths
             for key in [
                 "log_dir",
+                "json_dir",
                 "studies_in_dir",
                 "finished_dir",
                 "slurm_script_path",
@@ -250,6 +253,7 @@ class Config:
         obj["antares_versions_on_remote_server"] = obj.pop("remote_solver_versions")
         for key in [
             "log_dir",
+            "json_dir",
             "studies_in_dir",
             "finished_dir",
             "slurm_script_path",

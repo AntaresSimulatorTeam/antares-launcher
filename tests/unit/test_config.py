@@ -189,11 +189,13 @@ class TestConfig:
 
     def test_load_config__nominal(self, tmp_path, ssh_config_path):
         log_dir = tmp_path.joinpath("log_dir")
+        json_dir = tmp_path.joinpath("json_dir")
         studies_in_dir = tmp_path.joinpath("studies_in_dir")
         finished_dir = tmp_path.joinpath("finished_dir")
         slurm_script_path = tmp_path.joinpath("slurm_script.sh")
         data = {
             "log_dir": str(log_dir),
+            "json_dir": str(json_dir),
             "studies_in_dir": str(studies_in_dir),
             "finished_dir": str(finished_dir),
             "default_time_limit": 3600,
@@ -211,6 +213,7 @@ class TestConfig:
         config = Config.load_config(config_path)
         assert config.config_path == config_path
         assert config.log_dir == log_dir
+        assert config.json_dir == json_dir
         assert config.studies_in_dir == studies_in_dir
         assert config.finished_dir == finished_dir
         assert config.default_time_limit == data["default_time_limit"]
@@ -226,12 +229,14 @@ class TestConfig:
     def test_save_config__nominal(self, tmp_path, ssh_config):
         config_path = tmp_path.joinpath("configuration.yaml")
         log_dir = tmp_path.joinpath("log_dir")
+        json_dir = tmp_path.joinpath("json_dir")
         studies_in_dir = tmp_path.joinpath("studies_in_dir")
         finished_dir = tmp_path.joinpath("finished_dir")
         slurm_script_path = tmp_path.joinpath("slurm_script.sh")
         config = Config(
             config_path=config_path,
             log_dir=log_dir,
+            json_dir=json_dir,
             studies_in_dir=studies_in_dir,
             finished_dir=finished_dir,
             default_time_limit=3600,
@@ -249,6 +254,7 @@ class TestConfig:
 
         assert "config_path" not in actual
         assert actual["log_dir"] == str(log_dir)
+        assert actual["json_dir"] == str(json_dir)
         assert actual["studies_in_dir"] == str(studies_in_dir)
         assert actual["finished_dir"] == str(finished_dir)
         assert actual["default_time_limit"] == config.default_time_limit
@@ -268,6 +274,7 @@ class TestConfig:
         "required",
         [
             "log_dir",
+            "json_dir",
             "studies_in_dir",
             "finished_dir",
             "default_time_limit",
@@ -282,11 +289,13 @@ class TestConfig:
     )
     def test_load_config__missing_parameter(self, tmp_path, ssh_config_path, required):
         log_dir = tmp_path.joinpath("log_dir")
+        json_dir = tmp_path.joinpath("json_dir")
         studies_in_dir = tmp_path.joinpath("studies_in_dir")
         finished_dir = tmp_path.joinpath("finished_dir")
         slurm_script_path = tmp_path.joinpath("slurm_script.sh")
         data = {
             "log_dir": str(log_dir),
+            "json_dir": str(json_dir),
             "studies_in_dir": str(studies_in_dir),
             "finished_dir": str(finished_dir),
             "default_time_limit": 3600,
