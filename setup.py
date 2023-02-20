@@ -50,7 +50,7 @@ docs_requires = [
 # Extra dependencies used to create the executable package.
 # Use `pip install -e .[pyinstaller]` to install.
 pyinstaller_requires = [
-    "pyinstaller",
+    "pyinstaller ~= 5.8.0",
 ]
 
 
