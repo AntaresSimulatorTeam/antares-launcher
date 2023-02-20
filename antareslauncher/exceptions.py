@@ -2,10 +2,33 @@
 Antares Launcher Exceptions
 """
 import pathlib
+from typing import Sequence
 
 
 class AntaresLauncherException(Exception):
     """The base-class of all Antares Launcher exceptions."""
+
+
+class ConfigFileNotFoundError(AntaresLauncherException):
+    """Configuration file not found."""
+
+    def __init__(
+        self, possible_dirs: Sequence[pathlib.Path], config_name: str, *args
+    ) -> None:
+        super().__init__(possible_dirs, config_name, *args)
+
+    @property
+    def possible_dirs(self) -> Sequence[pathlib.Path]:
+        return self.args[0]
+
+    @property
+    def config_name(self) -> str:
+        return self.args[1]
+
+    def __str__(self):
+        possible_dirs = ", ".join(f"'{p}'" for p in self.possible_dirs)
+        config_name = self.config_name
+        return f"Configuration file '{config_name}' not found in the following locations: {possible_dirs}"
 
 
 class ConfigError(AntaresLauncherException):

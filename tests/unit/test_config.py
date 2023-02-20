@@ -3,14 +3,15 @@ import getpass
 import json
 import pathlib
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 import yaml
-
 from antareslauncher.config import (
     APP_AUTHOR,
     APP_NAME,
     APP_VERSION,
+    CONFIGURATION_YAML,
     Config,
     SSHConfig,
     dump_config,
@@ -18,7 +19,11 @@ from antareslauncher.config import (
     get_user_config_dir,
     parse_config,
 )
-from antareslauncher.exceptions import InvalidConfigValueError, UnknownFileSuffixError
+from antareslauncher.exceptions import (
+    ConfigFileNotFoundError,
+    InvalidConfigValueError,
+    UnknownFileSuffixError,
+)
 
 
 class TestParseConfig:
@@ -336,15 +341,52 @@ class TestGetUserConfigDir:
 
 
 class TestGetConfigPath:
-    def test_get_config_path__from_env(self, monkeypatch):
-        config_path = pathlib.Path("/path/to.config.yaml")
+    def test_get_config_path__from_env(self, monkeypatch, tmp_path):
+        config_path = tmp_path.joinpath("my_config.yaml")
+        config_path.touch()
         monkeypatch.setenv("ANTARES_LAUNCHER_CONFIG_PATH", str(config_path))
         actual = get_config_path()
         assert actual == config_path
 
-    def test_get_config_path__from_user_config_dir(self, monkeypatch):
+    def test_get_config_path__from_env__not_found(self, monkeypatch, tmp_path):
+        config_path = tmp_path.joinpath("my_config.yaml")
+        monkeypatch.setenv("ANTARES_LAUNCHER_CONFIG_PATH", str(config_path))
+        with pytest.raises(ConfigFileNotFoundError):
+            get_config_path()
+
+    @pytest.mark.parametrize("config_name", [None, CONFIGURATION_YAML, "my_config.yaml"])
+    def test_get_config_path__from_user_config_dir(
+        self, monkeypatch, tmp_path, config_name
+    ):
+        config_path = tmp_path.joinpath(config_name or CONFIGURATION_YAML)
+        config_path.touch()
         monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)
-        config_dir = get_user_config_dir()
-        config_path = config_dir.joinpath("configuration.yaml")  # hard codded
-        actual = get_config_path()
+        # noinspection SpellCheckingInspection
+        with patch("antareslauncher.config.get_user_config_dir", new=lambda: tmp_path):
+            args = (config_name,) if config_name else ()
+            actual = get_config_path(*args)
         assert actual == config_path
+
+    @pytest.mark.parametrize("relpath", ["", "data"])
+    @pytest.mark.parametrize("config_name", [None, CONFIGURATION_YAML, "my_config.yaml"])
+    def test_get_config_path__from_curr_dir(self, monkeypatch, tmp_path, relpath, config_name):
+        data_dir = tmp_path.joinpath(relpath)
+        data_dir.mkdir(exist_ok=True)
+        config_path: pathlib.Path = tmp_path.joinpath(data_dir, config_name or CONFIGURATION_YAML)
+        config_path.touch()
+        monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)
+        monkeypatch.chdir(tmp_path)
+        args = (config_name,) if config_name else ()
+        actual = get_config_path(*args)
+        assert actual == config_path.relative_to(tmp_path)
+
+    @pytest.mark.parametrize("relpath", ["", "data"])
+    def test_get_config_path__from_curr_dir__not_found(
+        self, monkeypatch, tmp_path, relpath
+    ):
+        data_dir = tmp_path.joinpath(relpath)
+        data_dir.mkdir(exist_ok=True)
+        monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)
+        monkeypatch.chdir(tmp_path)
+        with pytest.raises(ConfigFileNotFoundError):
+            get_config_path()

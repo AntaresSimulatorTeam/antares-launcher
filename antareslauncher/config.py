@@ -12,11 +12,17 @@ from typing import Any, Dict, List, Optional
 import yaml
 
 from antareslauncher import __author__, __project_name__, __version__
-from antareslauncher.exceptions import InvalidConfigValueError, UnknownFileSuffixError
+from antareslauncher.exceptions import (
+    InvalidConfigValueError,
+    UnknownFileSuffixError,
+    ConfigFileNotFoundError,
+)
 
 APP_NAME = __project_name__
 APP_AUTHOR = __author__.split(",")[0]
 APP_VERSION = ".".join(__version__.split(".")[:2])  # "MAJOR.MINOR"
+
+CONFIGURATION_YAML = "configuration.yaml"
 
 
 def parse_config(config_path: pathlib.Path) -> Dict[str, Any]:
@@ -287,21 +293,16 @@ def get_user_config_dir(system: str = ""):
     return config_dir.joinpath(APP_NAME, APP_VERSION)
 
 
-def get_config_path():
-    """
-    Retrieve the path to the configuration file for the Antares Launcher,
-    using the `get_user_config_dir()` function.
-
-    If the environment variable "ANTARES_LAUNCHER_CONFIG_PATH" is set, its value
-    is returned as the configuration path.
-
-    Returns:
-        Path to the default configuration file "configuration.yaml" located
-        in the user configuration directory.
-    """
+def get_config_path(config_name: str = CONFIGURATION_YAML) -> pathlib.Path:
     env_value = os.environ.get("ANTARES_LAUNCHER_CONFIG_PATH")
-    if env_value is None:
-        config_dir = get_user_config_dir()
-        return config_dir.joinpath("configuration.yaml")
-    else:
-        return pathlib.Path(env_value)
+    if env_value is not None:
+        config_path = pathlib.Path(env_value)
+        if config_path.exists():
+            return config_path
+        raise ConfigFileNotFoundError([config_path.parent], config_path.name)
+    possible_dirs = [get_user_config_dir(), pathlib.Path("."), pathlib.Path("./data")]
+    for config_dir in possible_dirs:
+        config_path = config_dir.joinpath(config_name)
+        if config_path.exists():
+            return config_path
+    raise ConfigFileNotFoundError(possible_dirs, config_name)
