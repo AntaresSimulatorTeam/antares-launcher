@@ -13,7 +13,10 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [windows-latest, ubuntu-20.04, macOS-latest]
+        # We should build a binary executable for windows-2016,
+        # But currently, the oldest available version is windows-2019.
+        # We also build a binary executable for ubuntu-20.04 for integration tests.
+        os: [windows-2019, ubuntu-20.04]
 
     steps:
       - name: Checkout github repo (+ download lfs dependencies)
@@ -32,13 +35,13 @@ jobs:
         env:
           PYTHONPATH: .
       - name: Archive Windows Application
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
         uses: actions/upload-artifact@v2
         with:
           name: Antares_Launcher
           path: dist/Antares_Launcher.exe
       - name: Archive POSIX Application
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-2019'
         uses: actions/upload-artifact@v2
         with:
           name: Antares_Launcher
