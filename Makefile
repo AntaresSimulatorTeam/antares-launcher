@@ -1,5 +1,5 @@
 PYTHON   = /usr/bin/python3
-VENV_DIR = venv3.7
+VENV_DIR = venv
 
 # help: help                           - display this makefile's help information
 .PHONY: help
@@ -54,13 +54,12 @@ test-unit:
 test-integration:
 	pytest -m integration_test
 
-# help: doc                            - generate documentation in doc/build
-.PHONY: doc
-doc:
+# help: docs                            - generate documentation in doc/build
+.PHONY: docs
+docs:
 	@/bin/bash -c "source $(VENV_DIR)/bin/activate \
-	&& cd doc \
-	&& sphinx-apidoc -fMe -o source/ ../antareslauncher/ -t source/_templates/ \
-	&& sphinx-build -b html ./source ./build"
+	&& sphinx-apidoc -fMe -o doc/source/api antareslauncher/ -t doc/source/_templates/ \
+	&& sphinx-build -b html -d build/docs/doctrees doc/source dist/docs/html"
 
 # help: black                          - apply black to all .py files
 .PHONY: black

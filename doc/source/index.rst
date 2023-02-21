@@ -43,7 +43,7 @@ This diagram describes the behavior of the module between your local computer an
    :maxdepth: 3
    :caption: Code documentation
 
-   modules.rst
+   api/modules.rst
 
 .. toctree::
    :maxdepth: 0
