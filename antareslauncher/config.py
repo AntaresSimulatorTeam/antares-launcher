@@ -155,6 +155,7 @@ class Config:
     Represents the configuration for launching studies on a SLURM server using Antares Launcher.
 
     Attributes:
+
     - config_path: Path to the Antares Launcher configuration file.
     - log_dir: Path to the directory where logs will be stored.
     - json_dir: Path to the directory where the JSON database will be stored.
