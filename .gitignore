@@ -15,8 +15,6 @@ LOGS
 .coverage
 tests/.coverage
 venv*/
-antareslauncher*.rst
-modules.rst
 Antares_Launcher.spec
 *.spec
 *.log
