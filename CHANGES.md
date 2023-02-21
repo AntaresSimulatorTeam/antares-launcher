@@ -4,13 +4,15 @@
 
 ### Added
 
-- Add a deployment GitHub action to build Antares_Launcher executable [#22](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/22)
+- Add a deployment GitHub action to build Antares_Launcher
+  executable [#22](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/22)
 - Prepare python library [#18](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/18)
 - Describe the application configuration file parameters
 
 ### Fixes
 
-- Ensure ZIP and log files are removed after download [#20](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/20)
+- Ensure ZIP and log files are removed after
+  download [#20](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/20)
 
 ### Refactorings
 
@@ -18,6 +20,10 @@
 - Rename a few variables and parameters
 - Remove end-to-end tests
 - Change the build name
+
+### Docs
+
+- Update and improve the documentation [#24](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/24)
 
 ## [1.1.4] - 2021-05-25
 
@@ -56,4 +62,5 @@
 - Enable ssh_config_file to be `None`
 
 [Unreleased]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.1.4...HEAD
+
 [1.1.4]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.1.4
