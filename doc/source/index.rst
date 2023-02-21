@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to Antares Launcher's documentation!
-==================================================
+============================================
 
 Antares Launcher (AL) allows users to seamlessly send and submit a list of Antares simulations on a remote Linux machine.
 
@@ -21,23 +21,12 @@ This diagram describes the behavior of the module between your local computer an
 
 .. .. figure:: ./schema/al_main_poster.png
 
-.. .. toctree::
-   :maxdepth: 3
-   :caption: Introduction:
-
-..   introduction.rst
-
 .. toctree::
    :maxdepth: 3
-   :caption: User Guide:
+   :caption: Guides:
 
-   first_use_of_antares_launcher.rst
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Developper documentation
-
-   developper_documentation.rst
+   user_guide.rst
+   development_guide.rst
 
 .. toctree::
    :maxdepth: 3

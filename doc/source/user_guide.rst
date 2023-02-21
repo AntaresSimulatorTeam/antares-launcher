@@ -1,5 +1,5 @@
-Getting started
-===============
+User Guide
+==========
 
 
 The basic usage of Antares_Launcher consists in preparing a working directory, for instance
@@ -111,7 +111,7 @@ The execution flows look like this:
 
 
 Options
------------
+-------
 You can run Antares_Launcher using several options described below.
 You need to execute the following commands inside a console to use those options specifically on Windows.
 To open the Windows command prompt, open the ``BASE`` directory and press **shift-key** +
@@ -269,7 +269,7 @@ post-processing.R for the adequacy patch of a specific study: notice the setSimu
 
 
 7. Kill job
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 ::
 
