@@ -11,7 +11,8 @@ from paramiko.sftp_attr import SFTPAttributes
 
 from antareslauncher.remote_environnement.ssh_connection import (
     DownloadMonitor,
-    SshConnection, ConnectionFailedException,
+    SshConnection,
+    ConnectionFailedException,
 )
 
 LOGGER = DownloadMonitor.__module__
@@ -90,10 +91,14 @@ class TestSshConnection:
 
         # ensure that no error is reported
         assert not caplog.text, caplog.text
-        assert actual == [Path('/path/to/study/foo.txt'), Path('/path/to/study/bar.zip'),]
+        assert actual == [
+            Path("/path/to/study/foo.txt"),
+            Path("/path/to/study/bar.zip"),
+        ]
         assert sftp.get.mock_calls == [
-            call("/workspace/foo.txt", "/path/to/study/foo.txt", ANY),
-            call("/workspace/bar.zip", "/path/to/study/bar.zip", ANY),
+            # We use str(Path("...")) because Path could be a WindowsPath which use "/" instead of "\"
+            call("/workspace/foo.txt", str(Path("/path/to/study/foo.txt")), ANY),
+            call("/workspace/bar.zip", str(Path("/path/to/study/bar.zip")), ANY),
         ]
         assert sftp.remove.mock_calls == [
             call("/workspace/foo.txt"),
@@ -130,6 +135,7 @@ class TestSshConnection:
         assert "an error occurs" in caplog.text, caplog.text
         assert not actual
         assert sftp.get.mock_calls == [
-            call("/workspace/foo.txt", "/path/to/study/foo.txt", ANY),
+            # We use str(Path("...")) because Path could be a WindowsPath which use "/" instead of "\"
+            call("/workspace/foo.txt", str(Path("/path/to/study/foo.txt")), ANY),
         ]
         assert sftp.remove.mock_calls == []

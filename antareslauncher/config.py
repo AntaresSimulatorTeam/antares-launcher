@@ -260,9 +260,9 @@ class Config:
             "slurm_script_path",
         ]:
             obj[key] = obj[key].as_posix()
-        obj[
-            "default_ssh_configfile_name"
-        ] = ssh_config_name = self.ssh_config.config_path.name
+        # fmt: off
+        obj["default_ssh_configfile_name"] = ssh_config_name = self.ssh_config.config_path.name
+        # fmt: on
         dump_config(config_path, obj)
         config_dir = config_path.parent
         self.ssh_config.save_config(config_dir.joinpath(ssh_config_name))

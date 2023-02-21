@@ -139,7 +139,7 @@ class TestSSHConfig:
         assert actual["username"] == config.username
         assert actual["hostname"] == config.hostname
         assert actual["port"] == config.port
-        assert actual["private_key_file"] == str(config.private_key_file)
+        assert actual["private_key_file"] == config.private_key_file.as_posix()
         assert actual["key_password"] == config.key_password
         assert "password" not in actual
 
@@ -253,10 +253,10 @@ class TestConfig:
             actual = yaml.load(fd, Loader=yaml.FullLoader)
 
         assert "config_path" not in actual
-        assert actual["log_dir"] == str(log_dir)
-        assert actual["json_dir"] == str(json_dir)
-        assert actual["studies_in_dir"] == str(studies_in_dir)
-        assert actual["finished_dir"] == str(finished_dir)
+        assert actual["log_dir"] == log_dir.as_posix()
+        assert actual["json_dir"] == json_dir.as_posix()
+        assert actual["studies_in_dir"] == studies_in_dir.as_posix()
+        assert actual["finished_dir"] == finished_dir.as_posix()
         assert actual["default_time_limit"] == config.default_time_limit
         assert actual["default_n_cpu"] == config.default_n_cpu
         assert actual["default_wait_time"] == config.default_wait_time
@@ -264,7 +264,7 @@ class TestConfig:
         assert (
             actual["ssh_config_file_is_required"] == config.ssh_config_file_is_required
         )
-        assert actual["slurm_script_path"] == str(slurm_script_path)
+        assert actual["slurm_script_path"] == slurm_script_path.as_posix()
         assert (
             actual["antares_versions_on_remote_server"] == config.remote_solver_versions
         )
