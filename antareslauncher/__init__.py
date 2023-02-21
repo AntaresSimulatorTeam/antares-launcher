@@ -9,7 +9,7 @@ This module contains the project metadata.
 
 # Standard project metadata
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __author__ = "RTE, Antares Web Team"
 __date__ = "2023-02-21"
 # noinspection SpellCheckingInspection
