@@ -1,23 +1,23 @@
 import getpass
-import ntpath
 import socket
 import time
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+from typing import List, Optional
 
-from antareslauncher.remote_environnement import iconnection
 from antareslauncher.remote_environnement.iremote_environment import (
-    IRemoteEnvironment,
-    NoRemoteBaseDirException,
-    NoLaunchScriptFoundException,
-    KillJobErrorException,
-    SubmitJobErrorException,
     GetJobStateErrorException,
     GetJobStateOutputException,
+    IRemoteEnvironment,
+    KillJobErrorException,
+    NoLaunchScriptFoundException,
+    NoRemoteBaseDirException,
+    SubmitJobErrorException,
 )
 from antareslauncher.remote_environnement.slurm_script_features import (
-    SlurmScriptFeatures,
     ScriptParametersDTO,
+    SlurmScriptFeatures,
 )
+from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
 
 SLURM_STATE_FAILED = "FAILED"
@@ -32,7 +32,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
 
     def __init__(
         self,
-        _connection: iconnection.IConnection,
+        _connection: SshConnection,
         slurm_script_features: SlurmScriptFeatures,
     ):
         super(RemoteEnvironmentWithSlurm, self).__init__(_connection=_connection)
@@ -59,7 +59,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
     def _check_remote_script(self):
         remote_antares_script = self.slurm_script_features.solver_script_path
         if not self.connection.check_file_not_empty(remote_antares_script):
-            raise NoLaunchScriptFoundException
+            raise NoLaunchScriptFoundException(remote_antares_script)
 
     def get_queue_info(self):
         """This function return the information from: squeue -u run-antares
@@ -135,7 +135,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
             antares_version=my_study.antares_version,
             run_mode=my_study.run_mode,
             post_processing=my_study.post_processing,
-            other_options=my_study.other_options or ""
+            other_options=my_study.other_options or "",
         )
         command = self.compose_launch_command(script_params)
         output, error = self.connection.execute_command(command)
@@ -245,92 +245,51 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         dst = f"{self.remote_base_path}/{Path(src).name}"
         return self.connection.upload_file(src, dst)
 
-    def _list_remote_logs(self, job_id: int):
-        """Lists the logs related to the job
-
-        Returns:
-            List containing the files name, empty if none is present
+    def download_logs(self, study: StudyDTO) -> List[Path]:
         """
-
-        logs_path_signature = self.slurm_script_features.get_logs_path_signature(
-            self.remote_base_path, job_id
-        )
-        command = f"ls  " + logs_path_signature
-        output, error = self.connection.execute_command(command)
-
-        def path_leaf(path):
-            head, tail = ntpath.split(path)
-            return tail or ntpath.basename(head)
-
-        list_of_files = []
-        if output and not error:
-            list_of_files = [path_leaf(Path(file)) for file in output.splitlines()]
-
-        return list_of_files
-
-    def download_logs(self, study: StudyDTO):
-        """Download the slurm logs of a given study
+        Download the slurm logs of a given study.
 
         Args:
             study: The study data transfer object
+            study: A data transfer object representing the study for which
+            to download the log files.
 
         Returns:
-            True if all the logs have been downloaded, False if all the logs have not been downloaded or if there are
-            no files to download
+            True if all the logs have been downloaded, False if all the logs
+            have not been downloaded or if there are no files to download
         """
-        file_list = self._list_remote_logs(study.job_id)
-        if file_list:
-            return_flag = True
-            for file in file_list:
-                src = self.remote_base_path + "/" + file
-                dst = str(Path(study.job_log_dir) / file)
-                return_flag = return_flag and self.connection.download_file(src, dst)
-        else:
-            return_flag = False
-        return return_flag
+        src_dir = PurePosixPath(self.remote_base_path)
+        dst_dir = Path(study.job_log_dir)
+        return self.connection.download_files(src_dir, dst_dir, f"*{study.job_id}*.txt")
 
-    def check_final_zip_not_empty(self, study: StudyDTO, final_zip_name: str):
-        """Checks if finished-job.zip is not empty
+    def download_final_zip(self, study: StudyDTO) -> Optional[Path]:
+        """
+        Download the final ZIP file for the specified study from the remote
+        server and save it to the local output directory.
 
         Args:
-            study:
-            final_zip_name:
+            study: A data transfer object representing the study for which
+            to download the final ZIP file.
 
         Returns:
-            True if the final zip exists, False otherwise
+            The path to the downloaded ZIP file on the local filesystem,
+            or `None` if the download failed or no files were downloaded.
+
+        Note:
+            This function assumes that the remote server stores the final ZIP
+            file in a directory located at `self.remote_base_path`.
+            The downloaded file will be saved to the local output directory
+            specified in `study.output_dir`.
         """
-        return_flag = False
-        if study.finished:
-            filename = self.remote_base_path + "/" + final_zip_name
-            if self.connection.check_file_not_empty(filename) is True:
-                return_flag = True
-        return return_flag
-
-    def download_final_zip(self, study: StudyDTO):
-        """Downloads the final zip containing the output fo Antares
-
-        Args:
-            study: The study that will be downloaded
-
-        Returns:
-            True if the zip has been successfully downloaded, false otherwise
-        """
-        final_zip_name = self.slurm_script_features.get_final_zip_name(
-            study.name, study.job_id, study.run_mode
+        src_dir = PurePosixPath(self.remote_base_path)
+        dst_dir = Path(study.output_dir)
+        downloaded_files = self.connection.download_files(
+            src_dir,
+            dst_dir,
+            f"finished_{study.name}_{study.job_id}.zip",
+            f"finished_XPANSION_{study.name}_{study.job_id}.zip",
         )
-
-        if self.check_final_zip_not_empty(study, final_zip_name):
-            if study.local_final_zipfile_path:
-                local_final_zipfile_path = study.local_final_zipfile_path
-            else:
-                local_final_zipfile_path = str(Path(study.output_dir) / final_zip_name)
-                src = self.remote_base_path + "/" + final_zip_name
-                dst = str(local_final_zipfile_path)
-                if not self.connection.download_file(src, dst):
-                    local_final_zipfile_path = None
-        else:
-            local_final_zipfile_path = None
-        return local_final_zipfile_path
+        return next(iter(downloaded_files), None)
 
     def remove_input_zipfile(self, study: StudyDTO):
         """Removes initial zipfile

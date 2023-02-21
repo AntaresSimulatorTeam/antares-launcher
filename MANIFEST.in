@@ -1,2 +1,23 @@
-include data/launchAntares_v0.sh
-include data/sshconfig.json
+# This configuration file lists the elements to include in the source
+# distribution of the Python package.
+# See: https://packaging.python.org/en/latest/guides/using-manifest-in/
+
+graft antareslauncher
+graft doc
+graft remote_scripts_templates
+graft tests
+
+include *.ini
+include *.md
+include *.py
+include *.txt
+include Makefile
+
+# The `data` directory is intended to store your configuration for integration testing with a SLURM server.
+# It should contain the application configuration file `configuration.yaml` and the SSH configuration file
+# `ssh_config.json`. The files in this directory should never be stored in the source distribution (except `README.md`).
+include data/.gitignore
+include data/README.md
+recursive-exclude data *
+
+global-exclude *.py[cod] .DS_Store

@@ -1,5 +1,5 @@
-Getting started
-===============
+User Guide
+==========
 
 
 The basic usage of Antares_Launcher consists in preparing a working directory, for instance
@@ -99,7 +99,9 @@ Basic execution
 ---------------
 
 By simply launching Antares_Launcher with no options or by double click on the executable file:
+
 ::
+
    Antares_Launcher(.exe)
 
 The execution flows look like this:
@@ -109,7 +111,7 @@ The execution flows look like this:
 
 
 Options
------------
+-------
 You can run Antares_Launcher using several options described below.
 You need to execute the following commands inside a console to use those options specifically on Windows.
 To open the Windows command prompt, open the ``BASE`` directory and press **shift-key** +
@@ -118,7 +120,7 @@ To open the Windows command prompt, open the ``BASE`` directory and press **shif
 Here are the basic options you can use :
 
 1. Wait mode
-^^^^^^^^^^^
+^^^^^^^^^^^^
 
 ::
 
@@ -267,7 +269,7 @@ post-processing.R for the adequacy patch of a specific study: notice the setSimu
 
 
 7. Kill job
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 ::
 
@@ -287,34 +289,34 @@ You can get the list of options by using this command :
 
 
 
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|option command                          |explaination                                      |by default                       |
-+========================================+==================================================+=================================+
-|--version                               |show program's version number and exit            |                                 |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|-i STUDIES_IN or                        |directory containing the studies to be executed   |the studies that are looking for |
-|--studies-in-dir=STUDIES_IN             |                                                  |should be in STUDIES-IN          |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|-w or --wait-mode                       |activate the wait mode : the antares_launcher     |desactivated                     |
-|                                        |waits all the jobs to finish                      |                                 |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|-o OUTPUT_DIR or --output-dir=OUTPUT_DIR|directory where the finished studies will be      |done jobs are put inside         |
-|                                        |downloaded and extracted                          |FINISHED directory               |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|-t TIME_LIMIT or --time-limit=TIME_LIMIT|time limit in seconds of a single job             |5h=18000 secondes                |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|--wait-time=WAIT_TIME                   |number of seconds between each verification       |60 seconds                       |
-|                                        |of the end of the simulations                     |                                 |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|-q                                      |displays the queue of Antares jobs                |                                 |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|-x                                      |run all new (compatible) studies in xpansion mode |                                 |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|-p                                      |trigger *R* post-processing                       |                                 |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
-|-k JOB_ID_TO_KILL  or                   |kill a job by specifying its JOB_ID                |                                 |
-|--kill-job  JOB_ID_TO_KILL              |It overrides the -q or the standard execution     |                                 |
-+----------------------------------------+--------------------------------------------------+---------------------------------+
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| command option                           | explanation                                        | default value                    |
++==========================================+====================================================+==================================+
+| --version                                | show program version number and exit               |                                  |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| -i STUDIES_IN or                         | directory containing the studies to be executed    | the studies we are looking for   |
+| --studies-in-dir=STUDIES_IN              |                                                    | must be in ``STUDIES-IN``        |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| -w or --wait-mode                        | activate the wait mode: the antares_launcher       | deactivated                      |
+|                                          | waits all the jobs to finish                       |                                  |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| -o OUTPUT_DIR or --output-dir=OUTPUT_DIR | directory where the finished studies will be       | done jobs are put inside         |
+|                                          | downloaded and extracted                           | ``FINISHED`` directory           |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| -t TIME_LIMIT or --time-limit=TIME_LIMIT | time limit in seconds of a single job              | 5h = 18000 seconds               |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| --wait-time=WAIT_TIME                    | number of seconds between each verification        | 60 seconds                       |
+|                                          | of the end of the simulations                      |                                  |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| -q                                       | displays the queue of Antares jobs                 |                                  |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| -x                                       | run all new (compatible) studies in xpansion mode  |                                  |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| -p                                       | trigger *R* post-processing                        |                                  |
++------------------------------------------+----------------------------------------------------+----------------------------------+
+| -k JOB_ID_TO_KILL  or                    | kill a job by specifying its JOB_ID                |                                  |
+| --kill-job  JOB_ID_TO_KILL               | It overrides the ``-q`` or the standard execution  |                                  |
++------------------------------------------+----------------------------------------------------+----------------------------------+
 
 
 Errors and exception
@@ -330,7 +332,7 @@ Go back to ask help to the team who installs the Antares_launcher or try this :
 
 ::
 
-    Antares_Launcher(.exe) --ssh-settings-file=PATH\TO\THE\sshconfig.json
+    Antares_Launcher(.exe) --ssh-settings-file=PATH\TO\THE\ssh_config.json
 
 Detailed workflow
 =================

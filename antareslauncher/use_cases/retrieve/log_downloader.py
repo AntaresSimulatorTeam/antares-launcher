@@ -48,21 +48,14 @@ class LogDownloader:
         return self._current_study
 
     def _do_download_logs(self):
-        success = self.env.download_logs(copy.copy(self._current_study))
-        if success is True:
+        if self.env.download_logs(copy.copy(self._current_study)):
             self._current_study.logs_downloaded = True
-            self._display_success_message()
+            self.display.show_message(
+                f'"{Path(self._current_study.path).name}": Logs downloaded',
+                f"{__name__}.{__class__.__name__}",
+            )
         else:
-            self._display_failure_error()
-
-    def _display_failure_error(self):
-        self.display.show_error(
-            f'"{Path(self._current_study.path).name}": Logs not downloaded',
-            __name__ + "." + __class__.__name__,
-        )
-
-    def _display_success_message(self):
-        self.display.show_message(
-            f'"{Path(self._current_study.path).name}": Logs downloaded',
-            __name__ + "." + __class__.__name__,
-        )
+            self.display.show_error(
+                f'"{Path(self._current_study.path).name}": Logs not downloaded',
+                f"{__name__}.{__class__.__name__}",
+            )

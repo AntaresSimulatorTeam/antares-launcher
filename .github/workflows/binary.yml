@@ -1,0 +1,40 @@
+name: Deploy Executable
+on:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+      - 'release/**'
+
+jobs:
+  binary:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 3
+      matrix:
+        # We should build a binary executable for windows-2016,
+        # But currently, the oldest available version is windows-2019.
+        # We also build a binary executable for ubuntu-20.04 for integration tests.
+        os: [windows-2019, ubuntu-20.04]
+
+    steps:
+      - name: Checkout github repo (+ download lfs dependencies)
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install pip dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .[pyinstaller]
+      - name: Generate Antares Launcher executable
+        # Generates:
+        # - "Antares_Launcher-X.Y.Z-windows-2019.exe" on Windows
+        # - "Antares_Launcher-X.Y.Z-ubuntu-20.04" on Ubuntu
+        run: |
+          pyinstaller -F antareslauncher/advanced_launch.py -n Antares_Launcher-$(python3 setup.py --version)-${{ matrix.os }}
+      - name: Archive Antares Launcher executable
+        uses: actions/upload-artifact@v2
+        with:
+          path: dist/*

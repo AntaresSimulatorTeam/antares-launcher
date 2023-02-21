@@ -24,6 +24,7 @@ class TestIntegrationStudyListComposer:
                 output_dir="output_dir",
                 post_processing=False,
                 antares_versions_on_remote_server=["700"],
+                other_options="",
             ),
         )
 
@@ -33,16 +34,6 @@ class TestIntegrationStudyListComposer:
     ):
         self.study_list_composer.get_list_of_studies()
         self.study_list_composer._repo.get_list_of_studies.assert_called_once()
-
-    @pytest.mark.integration_test
-    def test_study_list_composer_get_studies_in_dir_list_calls_file_manager_listdir_of(
-        self,
-    ):
-        self.study_list_composer._file_manager.listdir_of = mock.Mock(return_value=[])
-        self.study_list_composer.get_ls_of_studiesin_dir()
-        self.study_list_composer._file_manager.listdir_of.assert_called_once_with(
-            self.study_list_composer._studies_in_dir
-        )
 
     @pytest.mark.integration_test
     def test_study_list_composer_get_antares_version_calls_file_manager_get_config_from_file(

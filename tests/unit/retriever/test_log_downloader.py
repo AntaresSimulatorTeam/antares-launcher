@@ -21,7 +21,7 @@ class TestLogDownloader:
 
     @pytest.fixture(scope="function")
     def started_study(self):
-        study = StudyDTO(path=Path("path") / "hello")
+        study = StudyDTO(path="path/hello")
         study.started = True
         study.job_id = 42
         study.job_log_dir = "ROOT_LOG_DIR"
@@ -90,9 +90,11 @@ class TestLogDownloader:
         self.file_manager.make_dir.assert_called_once_with(expected_job_log_dir)
 
     def test_environment_download_logs_is_called_if_study_started(self, started_study):
-        self.remote_env_mock.download_logs = mock.Mock(return_value=True)
         log_dir_name = f"{started_study.name}_{started_study.job_id}"
-        expected_job_log_dir = str(Path(started_study.job_log_dir) / log_dir_name)
+        log_path = Path(started_study.job_log_dir) / log_dir_name
+        self.remote_env_mock.download_logs = mock.Mock(return_value=[log_path])
+
+        expected_job_log_dir = str(log_path)
         expected_study = copy(started_study)
         expected_study.job_log_dir = expected_job_log_dir
 
