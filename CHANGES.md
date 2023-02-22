@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.1] - (unreleased)
+## [1.3.0] - (unreleased)
 
 ## [1.2.0] - 2023-02-21
 
@@ -63,7 +63,7 @@
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
 
-[1.2.1]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.0...HEAD
+[1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.0...HEAD
 
 [1.2.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.0
 
