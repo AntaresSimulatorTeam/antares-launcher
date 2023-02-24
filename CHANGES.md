@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.2] - (unreleased)
+
+## [1.2.1] - 2023-02-24
+
+### Fixes
+
+- Correct install_requires to be compatible with AntaREST project
+
 ## [1.2.0] - 2023-02-21
 
 ### Added
@@ -60,6 +68,10 @@
 - Add proper output for `study_list_composer.py`
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
+
+[1.2.2]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.1...HEAD
+
+[1.2.1]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.1
 
 [1.2.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.0
 
