@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.2.2] - (unreleased)
+
 ## [1.2.1] - 2023-02-24
 
 ### Fixes
@@ -66,6 +68,8 @@
 - Add proper output for `study_list_composer.py`
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
+
+[1.2.2]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.1...HEAD
 
 [1.2.1]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.1
 
