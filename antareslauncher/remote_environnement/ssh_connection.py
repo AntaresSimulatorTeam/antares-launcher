@@ -320,6 +320,7 @@ class SshConnection:
         dst_dir: LocalPath,
         pattern: str,
         *patterns: str,
+        remove: bool = True,
     ) -> List[LocalPath]:
         """
         Download files matching the specified patterns from the remote
@@ -335,11 +336,13 @@ class SshConnection:
 
             patterns: Additional Unix shell-style wildcards.
 
+            remove: if `True`, the remote file is removed after download.
+
         Returns:
             The paths of the downloaded files on the local filesystem.
         """
         try:
-            return self._download_files(src_dir, dst_dir, (pattern,) + patterns)
+            return self._download_files(src_dir, dst_dir, (pattern,) + patterns, remove=remove)
         except TimeoutError as exc:
             self.logger.error(f"Timeout: {exc}", exc_info=True)
             return []
@@ -355,6 +358,8 @@ class SshConnection:
         src_dir: RemotePath,
         dst_dir: LocalPath,
         patterns: Tuple[str],
+        *,
+        remove: bool = True,
     ) -> List[LocalPath]:
         """
         Download files matching the specified patterns from the remote
@@ -366,6 +371,8 @@ class SshConnection:
             dst_dir: Local destination directory.
 
             patterns: A tuple of Unix shell-style wildcards to match the files to download.
+
+            remove: if `True`, the remote file is removed after download.
 
         Returns:
             The paths of the downloaded files on the local filesystem.
@@ -392,9 +399,10 @@ class SshConnection:
                     src_path = src_dir.joinpath(filename)
                     dst_path = dst_dir.joinpath(filename)
                     sftp.get(str(src_path), str(dst_path), monitor)
-                for filename in files_to_download:
-                    src_path = src_dir.joinpath(filename)
-                    sftp.remove(str(src_path))
+                if remove:
+                    for filename in files_to_download:
+                        src_path = src_dir.joinpath(filename)
+                        sftp.remove(str(src_path))
                 return [dst_dir.joinpath(filename) for filename in files_to_download]
 
     def check_remote_dir_exists(self, dir_path):

@@ -372,7 +372,7 @@ class TestRemoteEnvironmentWithSlurm:
         src_dir = PurePosixPath(remote_env.remote_base_path)
         dst_dir = Path(study.job_log_dir)
         assert remote_env.connection.download_files.mock_calls == [
-            call(src_dir, dst_dir, "*999999999*.txt")
+            call(src_dir, dst_dir, "*999999999*.txt", remove=study.finished)
         ]
 
     @pytest.mark.unit_test
