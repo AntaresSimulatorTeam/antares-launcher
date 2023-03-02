@@ -260,7 +260,12 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         """
         src_dir = PurePosixPath(self.remote_base_path)
         dst_dir = Path(study.job_log_dir)
-        return self.connection.download_files(src_dir, dst_dir, f"*{study.job_id}*.txt")
+        return self.connection.download_files(
+            src_dir,
+            dst_dir,
+            f"*{study.job_id}*.txt",
+            remove=study.finished,
+        )
 
     def download_final_zip(self, study: StudyDTO) -> Optional[Path]:
         """

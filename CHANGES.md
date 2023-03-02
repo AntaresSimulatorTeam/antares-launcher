@@ -2,6 +2,19 @@
 
 ## [1.3.0] - (unreleased)
 
+## [1.2.2] - 2023-03-02
+
+### Fixes
+
+- Preserve the log files if the study processing is not
+  finished [#37](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/37)
+
+## [1.2.1] - 2023-02-24
+
+### Fixes
+
+- Correct install_requires to be compatible with AntaREST project
+
 ## [1.2.0] - 2023-02-21
 
 ### Added
@@ -63,7 +76,11 @@
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
 
-[1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.0...HEAD
+[1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.2...HEAD
+
+[1.2.2]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.2
+
+[1.2.1]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.1
 
 [1.2.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.0
 
