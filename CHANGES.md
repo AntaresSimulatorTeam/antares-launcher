@@ -1,6 +1,11 @@
 # Changelog
 
-## [1.2.2] - (unreleased)
+## [1.2.2] - 2023-03-02
+
+### Fixes
+
+- Preserve the log files if the study processing is not
+  finished [#37](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/37)
 
 ## [1.2.1] - 2023-02-24
 
@@ -69,7 +74,7 @@
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
 
-[1.2.2]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.1...HEAD
+[1.2.2]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.2
 
 [1.2.1]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.1
 
