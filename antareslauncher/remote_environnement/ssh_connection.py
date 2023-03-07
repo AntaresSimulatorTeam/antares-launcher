@@ -55,29 +55,29 @@ class DownloadMonitor:
         self.msg = msg or "Downloading..."
         self.logger = logger or logging.getLogger(__name__)
         self._start_time = time.time()
-        self._size = 0
+        self._transferred = 0
         self._progress: int = 0
 
     def __call__(self, transferred: int, subtotal: int) -> None:
         if not self.total_size:
             return
-        self._size += transferred
+        self._transferred = transferred
         # Avoid emitting too many messages
-        rate = self._size / self.total_size
+        rate = self._transferred / self.total_size
         if self._progress != int(rate * 10):
             self._progress = int(rate * 10)
             self.logger.info(str(self))
 
     def __str__(self):
-        rate = self._size / self.total_size
-        if self._size:
+        rate = self._transferred / self.total_size
+        if self._transferred:
             # Calculate ETA and progress rate
             # 0        curr_size                   total_size
             # |----------->|--------------------------->|
             # 0        duration                    total_duration
             # 0%       percent                         100%
             duration = time.time() - self._start_time
-            eta = int(duration * (self.total_size - self._size) / self._size)
+            eta = int(duration * (self.total_size - self._transferred) / self._transferred)
             return f"{self.msg:<20} ETA: {eta}s [{rate:.0%}]"
         return f"{self.msg:<20} ETA: ??? [{rate:.0%}]"
 

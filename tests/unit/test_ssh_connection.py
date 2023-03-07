@@ -30,8 +30,8 @@ class TestDownloadMinotor:
         total_size = 1000
         monitor = DownloadMonitor(total_size, msg="Downloading 'foo'")
         with caplog.at_level(level=logging.INFO, logger=LOGGER):
-            for _ in range(0, total_size, 250):
-                monitor(250, 0)
+            for transferred in range(250, total_size + 1, 250):
+                monitor(transferred, 0)
                 time.sleep(0.01)
         assert caplog.messages == [
             "Downloading 'foo'    ETA: 0s [25%]",
