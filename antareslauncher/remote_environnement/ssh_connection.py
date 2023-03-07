@@ -4,7 +4,6 @@ import logging
 import socket
 import stat
 import time
-from os.path import expanduser
 from pathlib import Path, PurePosixPath
 from typing import Tuple, List
 
@@ -50,15 +49,40 @@ class ConnectionFailedException(SshConnectionError):
 
 
 class DownloadMonitor:
+    """
+    A class that monitors the progress of a download.
+
+    Args:
+        total_size: The total size of the file being downloaded (in bytes).
+        msg: The message to display while downloading. Defaults to "Downloading...".
+        logger: A logger object for logging progress messages. Defaults to `None`.
+
+    Attributes:
+        total_size: The total size of the file being downloaded.
+        msg: The message to display while downloading.
+        logger: A logger object for logging progress messages.
+    """
+
     def __init__(self, total_size: int, msg: str = "", logger=None) -> None:
         self.total_size = total_size
         self.msg = msg or "Downloading..."
         self.logger = logger or logging.getLogger(__name__)
-        self._start_time = time.time()
-        self._transferred = 0
+        # The start time of the download use to calculate ETA
+        self._start_time: float = time.time()
+        # The amount of data that has been transferred so far (in bytes)
+        self._transferred: int = 0
+        # The progress of the download, as a percentage (0-100)
         self._progress: int = 0
 
     def __call__(self, transferred: int, subtotal: int) -> None:
+        """
+        Called when data is transferred during the download.
+        Updates the progress and logs a message if progress has changed.
+
+        Args:
+            transferred: The amount of data transferred in the current transfer (in bytes).
+            subtotal: The total amount of data transferred so far in this download (in bytes).
+        """
         if not self.total_size:
             return
         self._transferred = transferred
@@ -68,7 +92,10 @@ class DownloadMonitor:
             self._progress = int(rate * 10)
             self.logger.info(str(self))
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the current progress.
+        """
         rate = self._transferred / self.total_size
         if self._transferred:
             # Calculate ETA and progress rate
@@ -77,7 +104,9 @@ class DownloadMonitor:
             # 0        duration                    total_duration
             # 0%       percent                         100%
             duration = time.time() - self._start_time
-            eta = int(duration * (self.total_size - self._transferred) / self._transferred)
+            eta = int(
+                duration * (self.total_size - self._transferred) / self._transferred
+            )
             return f"{self.msg:<20} ETA: {eta}s [{rate:.0%}]"
         return f"{self.msg:<20} ETA: ??? [{rate:.0%}]"
 
@@ -342,7 +371,9 @@ class SshConnection:
             The paths of the downloaded files on the local filesystem.
         """
         try:
-            return self._download_files(src_dir, dst_dir, (pattern,) + patterns, remove=remove)
+            return self._download_files(
+                src_dir, dst_dir, (pattern,) + patterns, remove=remove
+            )
         except TimeoutError as exc:
             self.logger.error(f"Timeout: {exc}", exc_info=True)
             return []
