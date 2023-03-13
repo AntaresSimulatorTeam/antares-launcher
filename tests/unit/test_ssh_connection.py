@@ -7,13 +7,12 @@ from unittest.mock import ANY, Mock, call, patch
 
 import paramiko
 import pytest
-from paramiko.sftp_attr import SFTPAttributes
-
 from antareslauncher.remote_environnement.ssh_connection import (
+    ConnectionFailedException,
     DownloadMonitor,
     SshConnection,
-    ConnectionFailedException,
 )
+from paramiko.sftp_attr import SFTPAttributes
 
 LOGGER = DownloadMonitor.__module__
 
@@ -27,16 +26,25 @@ class TestDownloadMinotor:
         assert not caplog.text
 
     def test_download_monitor__nominal(self, caplog):
-        total_size = 1000
+        """Simulate the downloading of two files"""
+        sizes = 1000, 1256  # two different sizes
+        total_size = sum(sizes)
         monitor = DownloadMonitor(total_size, msg="Downloading 'foo'")
         with caplog.at_level(level=logging.INFO, logger=LOGGER):
-            for transferred in range(250, total_size + 1, 250):
-                monitor(transferred, 0)
-                time.sleep(0.01)
+            for size in sizes:
+                monitor.accumulate()
+                for transferred in range(250, size + 1, 250):
+                    monitor(transferred, 0)
+                    time.sleep(0.01)
         assert caplog.messages == [
-            "Downloading 'foo'    ETA: 0s [25%]",
-            "Downloading 'foo'    ETA: 0s [50%]",
-            "Downloading 'foo'    ETA: 0s [75%]",
+            "Downloading 'foo'    ETA: 0s [11%]",
+            "Downloading 'foo'    ETA: 0s [22%]",
+            "Downloading 'foo'    ETA: 0s [33%]",
+            "Downloading 'foo'    ETA: 0s [44%]",
+            "Downloading 'foo'    ETA: 0s [55%]",
+            "Downloading 'foo'    ETA: 0s [66%]",
+            "Downloading 'foo'    ETA: 0s [78%]",
+            "Downloading 'foo'    ETA: 0s [89%]",
             "Downloading 'foo'    ETA: 0s [100%]",
         ]
 

@@ -5,7 +5,7 @@ import socket
 import stat
 import time
 from pathlib import Path, PurePosixPath
-from typing import Tuple, List
+from typing import List, Tuple
 
 import paramiko
 
@@ -69,8 +69,11 @@ class DownloadMonitor:
         self.logger = logger or logging.getLogger(__name__)
         # The start time of the download use to calculate ETA
         self._start_time: float = time.time()
-        # The amount of data that has been transferred so far (in bytes)
+        # The amount of data (in bytes) that has been transferred so far
+        # for each file
         self._transferred: int = 0
+        # The total amount of data that has been transferred so far (in bytes)
+        self._accumulated: int = 0
         # The progress of the download, as a percentage (0-100)
         self._progress: int = 0
 
@@ -87,7 +90,7 @@ class DownloadMonitor:
             return
         self._transferred = transferred
         # Avoid emitting too many messages
-        rate = self._transferred / self.total_size
+        rate = (self._accumulated + self._transferred) / self.total_size
         if self._progress != int(rate * 10):
             self._progress = int(rate * 10)
             self.logger.info(str(self))
@@ -96,8 +99,9 @@ class DownloadMonitor:
         """
         Returns a string representation of the current progress.
         """
-        rate = self._transferred / self.total_size
-        if self._transferred:
+        total_transferred = self._accumulated + self._transferred
+        rate = total_transferred / self.total_size
+        if total_transferred:
             # Calculate ETA and progress rate
             # 0        curr_size                   total_size
             # |----------->|--------------------------->|
@@ -105,10 +109,22 @@ class DownloadMonitor:
             # 0%       percent                         100%
             duration = time.time() - self._start_time
             eta = int(
-                duration * (self.total_size - self._transferred) / self._transferred
+                duration * (self.total_size - total_transferred) / total_transferred
             )
             return f"{self.msg:<20} ETA: {eta}s [{rate:.0%}]"
         return f"{self.msg:<20} ETA: ??? [{rate:.0%}]"
+
+    def accumulate(self):
+        """
+        Accumulates the quantity transferred by the previous transfer and
+        the current transfer.
+
+        This function is used to keep track of the total quantity of data transferred
+        across multiple transfers. The accumulated quantity is calculated by adding
+        the quantity transferred in the current transfer to the quantity transferred
+        in the previous transfer.
+        """
+        self._accumulated += self._transferred
 
 
 class SshConnection:
@@ -427,6 +443,7 @@ class SshConnection:
                 count = len(files_to_download)
                 for no, filename in enumerate(files_to_download, 1):
                     monitor.msg = f"Downloading '{filename}' [{no}/{count}]..."
+                    monitor.accumulate()
                     src_path = src_dir.joinpath(filename)
                     dst_path = dst_dir.joinpath(filename)
                     sftp.get(str(src_path), str(dst_path), monitor)
