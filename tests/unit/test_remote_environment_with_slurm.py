@@ -187,8 +187,8 @@ class TestRemoteEnvironmentWithSlurm:
     def test_when_submit_job_is_called_then_execute_command_is_called_with_specific_slurm_command(
         self, remote_env, study
     ):
-        # the SSH call output should match "Submitted (?P<job_id>\d+)"
-        output = "Submitted 456789"
+        # the SSH call output should match "Submitted batch job (?P<job_id>\d+)"
+        output = "Submitted batch job 456789\n"
         remote_env.connection.execute_command = mock.Mock(return_value=(output, ""))
         remote_env.submit_job(study)
         # then
@@ -276,6 +276,7 @@ class TestRemoteEnvironmentWithSlurm:
     @pytest.mark.parametrize(
         "state, expected",
         [
+            ("", (False, False, False)),
             ("PENDING", (False, False, False)),
             ("RUNNING", (True, False, False)),
             ("CANCELLED", (True, True, True)),
@@ -294,7 +295,7 @@ class TestRemoteEnvironmentWithSlurm:
         """
         study.job_id = 42
         # the output of `sacct` should be: JobID,JobName,State
-        output = f"{study.job_id},{study.name},{state}"
+        output = f"{study.job_id},{study.name},{state}" if state else ""
         remote_env.connection.execute_command = mock.Mock(return_value=(output, ""))
         actual = remote_env.get_job_state_flags(study)
         assert actual == expected

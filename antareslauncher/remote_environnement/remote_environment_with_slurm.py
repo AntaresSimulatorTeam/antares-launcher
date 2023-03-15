@@ -30,6 +30,15 @@ class GetJobStateError(RemoteEnvBaseError):
         super().__init__(msg)
 
 
+class JobNotFoundError(RemoteEnvBaseError):
+    def __init__(self, job_id: int, job_name: str):
+        msg = (
+            f"Unable to retrieve the status of the SLURM job {job_id}"
+            f" (study job '{job_name}): Job not found."
+        )
+        super().__init__(msg)
+
+
 class NoRemoteBaseDirError(RemoteEnvBaseError):
     def __init__(self, remote_base_path: PurePosixPath):
         msg = f"Unable to create the remote base directory: '{remote_base_path}"
@@ -217,7 +226,8 @@ class RemoteEnvironmentWithSlurm:
             reason = f"The command [{command}] failed: {error}"
             raise SubmitJobError(my_study.name, reason)
 
-        if match := re.match(r"Submitted (?P<job_id>\d+)", output, flags=re.IGNORECASE):
+        # should match "Submitted batch job 123456"
+        if match := re.match(r"Submitted.*?(?P<job_id>\d+)", output, flags=re.IGNORECASE):
             return int(match["job_id"])
 
         reason = (
@@ -313,6 +323,10 @@ class RemoteEnvironmentWithSlurm:
                 f" {last_error}"
             )
             raise GetJobStateError(job_id, job_name, reason)
+
+        # When the output is empty it mean that the job is not found
+        if not output.strip():
+            return JobStateCodes.PENDING
 
         # Parse the output to extract the job state.
         # The output must be a CSV-like string without header row.
