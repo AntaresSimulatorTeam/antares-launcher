@@ -291,6 +291,7 @@ class SshConnection:
         self.logger.info(f"Executing command on remote server: {command}")
         try:
             with self.ssh_client() as client:
+                self.logger.info(f"Running SSH command [{command}]...")
                 stdin, stdout, stderr = client.exec_command(command, timeout=30)
                 output = stdout.read().decode("utf-8")
                 error = stderr.read().decode("utf-8")
@@ -516,7 +517,7 @@ class SshConnection:
         return result_flag
 
     def make_dir(self, dir_path):
-        """Creates a remote directory if it does not exists yet
+        """Creates a remote directory if it does not exist yet
 
         Args:
             dir_path: Remote path of the directory that will be created
@@ -525,7 +526,7 @@ class SshConnection:
             True if path exists or the directory is successfully created, False otherwise
 
         Raises:
-            IOError if the path exists and it is a file
+            IOError if the path exists, and it is a file
         """
         try:
             with self.ssh_client() as client:

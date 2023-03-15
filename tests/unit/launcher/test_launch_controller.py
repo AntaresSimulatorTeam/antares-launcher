@@ -5,6 +5,7 @@ from unittest.mock import call
 
 import pytest
 
+import antareslauncher.remote_environnement.remote_environment_with_slurm
 import antareslauncher.use_cases.launch.study_submitter
 import antareslauncher.use_cases.launch.study_zip_uploader
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
@@ -12,24 +13,21 @@ from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement import iremote_environment
-from antareslauncher.remote_environnement.iremote_environment import (
-    IRemoteEnvironment,
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    RemoteEnvironmentWithSlurm,
 )
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch import launch_controller
 from antareslauncher.use_cases.launch.launch_controller import StudyLauncher
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 from antareslauncher.use_cases.launch.study_zip_cleaner import StudyZipCleaner
-from antareslauncher.use_cases.launch.study_zip_uploader import (
-    StudyZipfileUploader,
-)
+from antareslauncher.use_cases.launch.study_zip_uploader import StudyZipfileUploader
 from antareslauncher.use_cases.launch.study_zipper import StudyZipper
 
 
 class TestStudyLauncher:
     def setup_method(self):
-        env = mock.Mock(spec_set=IRemoteEnvironment)
+        env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
         display = mock.Mock(spec_set=IDisplay)
         file_manager = mock.Mock(spec_set=FileManager)
         repo = mock.Mock(spec_set=IDataRepo)
@@ -84,7 +82,7 @@ class TestLauncherController:
         expected_study = StudyDTO(path="hello")
         list_of_studies = [copy.deepcopy(expected_study)]
         self.data_repo.get_list_of_studies = mock.Mock(return_value=list_of_studies)
-        remote_env_mock = mock.Mock(spec=iremote_environment.IRemoteEnvironment)
+        remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         file_manager_mock = mock.Mock()
         my_launcher = launch_controller.LaunchController(
             self.data_repo, remote_env_mock, file_manager_mock, self.display
@@ -96,7 +94,7 @@ class TestLauncherController:
         list_of_studies = [my_study]
         self.data_repo.get_list_of_studies = mock.Mock(return_value=list_of_studies)
 
-        remote_env_mock = mock.Mock(spec=iremote_environment.IRemoteEnvironment)
+        remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         file_manager = mock.Mock(spec_set=FileManager)
         file_manager.zip_dir_excluding_subdir = mock.Mock()
 

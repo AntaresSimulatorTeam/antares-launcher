@@ -5,7 +5,7 @@ from typing import List, Optional
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.study_dto import StudyDTO, Modes
+from antareslauncher.study_dto import Modes, StudyDTO
 
 
 @dataclass
