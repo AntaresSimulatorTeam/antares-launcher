@@ -3,14 +3,16 @@ from pathlib import Path
 
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement import iremote_environment
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    RemoteEnvironmentWithSlurm,
+)
 from antareslauncher.study_dto import StudyDTO
 
 
 class LogDownloader:
     def __init__(
         self,
-        env: iremote_environment.IRemoteEnvironment,
+        env: RemoteEnvironmentWithSlurm,
         file_manager: FileManager,
         display: IDisplay,
     ):

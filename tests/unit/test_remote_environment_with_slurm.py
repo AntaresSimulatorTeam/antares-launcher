@@ -7,16 +7,13 @@ from unittest.mock import call
 
 import pytest
 
-from antareslauncher.remote_environnement.iremote_environment import (
-    GetJobStateErrorException,
-    GetJobStateOutputException,
-    KillJobErrorException,
-    NoLaunchScriptFoundException,
-    NoRemoteBaseDirException,
-    SubmitJobErrorException,
-)
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    GetJobStateError,
+    KillJobError,
+    NoLaunchScriptFoundError,
+    NoRemoteBaseDirError,
     RemoteEnvironmentWithSlurm,
+    SubmitJobError,
 )
 from antareslauncher.remote_environnement.slurm_script_features import (
     ScriptParametersDTO,
@@ -51,9 +48,9 @@ class TestRemoteEnvironmentWithSlurm:
         """Dummy Study Data Transfer Object (DTO)"""
         return StudyDTO(
             time_limit=60,
-            path="study path",
+            path="path/to/study/91f1f911-4f4a-426f-b127-d0c2a2465b5f",
             n_cpu=42,
-            zipfile_path="zipfile_path",
+            zipfile_path="path/to/study/91f1f911-4f4a-426f-b127-d0c2a2465b5f-foo.zip",
             antares_version="700",
             local_final_zipfile_path="local_final_zipfile_path",
             run_mode=Modes.antares,
@@ -63,7 +60,7 @@ class TestRemoteEnvironmentWithSlurm:
     def remote_env(self) -> RemoteEnvironmentWithSlurm:
         """SLURM remote environment (Mock)"""
         remote_home_dir = "remote_home_dir"
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
@@ -77,7 +74,7 @@ class TestRemoteEnvironmentWithSlurm:
         remote_base_dir = (
             f"{remote_home_dir}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
         )
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
@@ -92,12 +89,12 @@ class TestRemoteEnvironmentWithSlurm:
         self,
     ):
         # given
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         # when
         connection.make_dir = mock.Mock(return_value=False)
         # then
-        with pytest.raises(NoRemoteBaseDirException):
+        with pytest.raises(NoRemoteBaseDirError):
             RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
     @pytest.mark.unit_test
@@ -105,7 +102,7 @@ class TestRemoteEnvironmentWithSlurm:
         self,
     ):
         # given
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")
@@ -121,14 +118,14 @@ class TestRemoteEnvironmentWithSlurm:
     ):
         # given
         remote_home_dir = "/applications/antares/"
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         # when
         connection.check_file_not_empty = mock.Mock(return_value=False)
         # then
-        with pytest.raises(NoLaunchScriptFoundException):
+        with pytest.raises(NoLaunchScriptFoundError):
             RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
     @pytest.mark.unit_test
@@ -183,17 +180,16 @@ class TestRemoteEnvironmentWithSlurm:
         error = "error"
         remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
         # then
-        with pytest.raises(KillJobErrorException):
+        with pytest.raises(KillJobError):
             remote_env.kill_remote_job(42)
 
     @pytest.mark.unit_test
     def test_when_submit_job_is_called_then_execute_command_is_called_with_specific_slurm_command(
         self, remote_env, study
     ):
-        # when
-        output = "output"
-        error = None
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
+        # the SSH call output should match "Submitted batch job (?P<job_id>\d+)"
+        output = "Submitted batch job 456789\n"
+        remote_env.connection.execute_command = mock.Mock(return_value=(output, ""))
         remote_env.submit_job(study)
         # then
         script_params = ScriptParametersDTO(
@@ -209,7 +205,7 @@ class TestRemoteEnvironmentWithSlurm:
         command = remote_env.slurm_script_features.compose_launch_command(
             remote_env.remote_base_path, script_params
         )
-        remote_env.connection.execute_command.assert_called_with(command)
+        remote_env.connection.execute_command.assert_called_once_with(command)
 
     @pytest.mark.unit_test
     def test_when_submit_job_is_called_and_receives_submitted_420_returns_job_id_420(
@@ -231,98 +227,88 @@ class TestRemoteEnvironmentWithSlurm:
         error = "error"
         remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
         # then
-        with pytest.raises(SubmitJobErrorException):
+        with pytest.raises(SubmitJobError):
             remote_env.submit_job(study)
 
     @pytest.mark.unit_test
-    def test_when_check_job_state_is_called_then_execute_command_is_called_with_correct_command(
-        self, remote_env, study
-    ):
-        # given
-        output = "output"
-        error = ""
-        study.submitted = True
+    def test_get_job_state_flags__sacct_bad_output(self, remote_env, study):
         study.job_id = 42
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
-        # when
-        remote_env.get_job_state_flags(study)
-        # then
-        # noinspection SpellCheckingInspection
-        expected_command = (
-            f"sacct -j {study.job_id} -n --format=state | head -1 "
-            + "| awk -F\" \" '{print $1}'"
+        # the output of `sacct` is not: JobID,JobName,State
+        output = "the sun is shining"
+        remote_env.connection.execute_command = mock.Mock(return_value=(output, ""))
+        with pytest.raises(GetJobStateError, match="non-parsable output") as ctx:
+            remote_env.get_job_state_flags(study)
+        assert output in str(ctx.value)
+        command = (
+            "sacct"
+            f" --jobs={study.job_id}"
+            f" --name={study.name}"
+            " --format=JobID,JobName,State"
+            " --parsable2"
+            " --delimiter=,"
+            " --noheader"
         )
-        remote_env.connection.execute_command.assert_called_with(expected_command)
+        remote_env.connection.execute_command.assert_called_once_with(command)
 
     @pytest.mark.unit_test
-    def test_given_submitted_study__when_check_job_state_gets_empty_output_it_tries_5_times_then_raises_exception(
-        self, remote_env, study
-    ):
-        # given
-        output = ""
-        error = ""
-        study.submitted = True
+    def test_get_job_state_flags__sacct_call_fails(self, remote_env, study):
         study.job_id = 42
-        # when
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
-        # then
-        with pytest.raises(GetJobStateOutputException):
-            remote_env.get_job_state_flags(study)
-        tries_number = remote_env.connection.execute_command.call_count
-        assert tries_number == 5
+        # the `sacct` command fails, output = None (error)
+        error = "an error occurs"
+        remote_env.connection.execute_command = mock.Mock(return_value=(None, error))
+        with pytest.raises(GetJobStateError, match="an error occurs"):
+            remote_env.get_job_state_flags(study, attempts=2, sleep_time=0.1)
+        command = (
+            "sacct"
+            f" --jobs={study.job_id}"
+            f" --name={study.name}"
+            " --format=JobID,JobName,State"
+            " --parsable2"
+            " --delimiter=,"
+            " --noheader"
+        )
+        remote_env.connection.execute_command.mock_calls = [
+            call(command),
+            call(command),
+        ]
 
-    @pytest.mark.unit_test
-    def test_given_a_submitted_study_when_execute_command_returns_an_error_then_an_exception_is_raised(
-        self, remote_env, study
-    ):
-        # given
-        output = "output"
-        error = "error"
-        study.submitted = True
-        study.job_id = 42
-        # when
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
-        # then
-        with pytest.raises(GetJobStateErrorException):
-            remote_env.get_job_state_flags(study)
-
-    # noinspection SpellCheckingInspection
     @pytest.mark.unit_test
     @pytest.mark.parametrize(
-        "output,expected_started, expected_finished, expected_with_error",
+        "state, expected",
         [
-            ("PENDING", False, False, False),
-            ("RUNNING", True, False, False),
-            ("CANCELLED BY DUMMY", True, True, True),
-            ("TIMEOUT", True, True, True),
-            ("COMPLETED", True, True, False),
-            ("FAILED DUMMYWORD", True, True, True),
+            ("", (False, False, False)),
+            ("PENDING", (False, False, False)),
+            ("RUNNING", (True, False, False)),
+            ("CANCELLED", (True, True, True)),
+            ("TIMEOUT", (True, True, True)),
+            ("COMPLETED", (True, True, False)),
+            ("FAILED", (True, True, True)),
         ],
     )
-    def test_given_state_when_get_job_state_flags_is_called_then_started_and_finished_and_with_error_are_correct(
-        self,
-        remote_env,
-        study,
-        output,
-        expected_started,
-        expected_finished,
-        expected_with_error,
+    def test_get_job_state_flags__nominal_case(
+        self, remote_env, study, state, expected
     ):
-        # given
-        error = ""
-        study.submitted = True
+        """
+        Check that the "get_job_state_flags" method is correctly returning
+        the status flags ("started", "finished", and "with_error")
+        for a SLURM job in a specific state.
+        """
         study.job_id = 42
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
-        # when
-        (
-            started,
-            finished,
-            with_error,
-        ) = remote_env.get_job_state_flags(study)
-        # then
-        assert started is expected_started
-        assert finished is expected_finished
-        assert with_error is expected_with_error
+        # the output of `sacct` should be: JobID,JobName,State
+        output = f"{study.job_id},{study.name},{state}" if state else ""
+        remote_env.connection.execute_command = mock.Mock(return_value=(output, ""))
+        actual = remote_env.get_job_state_flags(study)
+        assert actual == expected
+        command = (
+            "sacct"
+            f" --jobs={study.job_id}"
+            f" --name={study.name}"
+            " --format=JobID,JobName,State"
+            " --parsable2"
+            " --delimiter=,"
+            " --noheader"
+        )
+        remote_env.connection.execute_command.assert_called_once_with(command)
 
     @pytest.mark.unit_test
     @pytest.mark.parametrize(

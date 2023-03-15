@@ -1,7 +1,9 @@
 import copy
 
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement import iremote_environment
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    RemoteEnvironmentWithSlurm,
+)
 from antareslauncher.study_dto import StudyDTO
 
 
@@ -12,7 +14,7 @@ class FinalZipNotDownloadedException(Exception):
 class FinalZipDownloader(object):
     def __init__(
         self,
-        env: iremote_environment.IRemoteEnvironment,
+        env: RemoteEnvironmentWithSlurm,
         display: IDisplay,
     ):
         self._env = env

@@ -19,6 +19,7 @@ jobs:
   deploy:
 
     runs-on: ubuntu-20.04
+    environment: PyPi
 
     steps:
       - uses: actions/checkout@v3

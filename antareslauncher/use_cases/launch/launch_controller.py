@@ -2,15 +2,13 @@ from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement.iremote_environment import (
-    IRemoteEnvironment,
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    RemoteEnvironmentWithSlurm,
 )
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 from antareslauncher.use_cases.launch.study_zip_cleaner import StudyZipCleaner
-from antareslauncher.use_cases.launch.study_zip_uploader import (
-    StudyZipfileUploader,
-)
+from antareslauncher.use_cases.launch.study_zip_uploader import StudyZipfileUploader
 from antareslauncher.use_cases.launch.study_zipper import StudyZipper
 
 
@@ -61,7 +59,7 @@ class LaunchController:
     def __init__(
         self,
         repo: IDataRepo,
-        env: IRemoteEnvironment,
+        env: RemoteEnvironmentWithSlurm,
         file_manager: FileManager,
         display: IDisplay,
     ):
