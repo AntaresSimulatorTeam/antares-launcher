@@ -26,15 +26,15 @@ class ParametersReader:
         with open(Path(yaml_filepath)) as yaml_file:
             self.yaml_content = yaml.load(yaml_file, Loader=yaml.FullLoader) or {}
 
+        # fmt: off
         self._wait_time = self._get_compulsory_value("DEFAULT_WAIT_TIME")
         self.time_limit = self._get_compulsory_value("DEFAULT_TIME_LIMIT")
         self.n_cpu = self._get_compulsory_value("DEFAULT_N_CPU")
         self.studies_in_dir = os.path.expanduser(self._get_compulsory_value("STUDIES_IN_DIR"))
         self.log_dir = os.path.expanduser(self._get_compulsory_value("LOG_DIR"))
         self.finished_dir = os.path.expanduser(self._get_compulsory_value("FINISHED_DIR"))
-        self.ssh_conf_file_is_required = self._get_compulsory_value(
-            "SSH_CONFIG_FILE_IS_REQUIRED"
-        )
+        self.ssh_conf_file_is_required = self._get_compulsory_value("SSH_CONFIG_FILE_IS_REQUIRED")
+        # fmt: on
 
         alt1, alt2 = self._get_ssh_conf_file_alts()
         self.ssh_conf_alt1, self.ssh_conf_alt2 = alt1, alt2
@@ -50,7 +50,6 @@ class ParametersReader:
         )
 
     def get_parser_parameters(self):
-
         options = ParserParameters(
             default_wait_time=self._wait_time,
             default_time_limit=self.time_limit,
@@ -65,7 +64,6 @@ class ParametersReader:
         return options
 
     def get_main_parameters(self) -> MainParameters:
-
         main_parameters = MainParameters(
             json_dir=self.json_dir,
             default_json_db_name=self.json_db_name,
@@ -108,5 +106,7 @@ class ParametersReader:
         with open(self.json_ssh_conf) as ssh_connection_json:
             ssh_dict = json.load(ssh_connection_json)
         if "private_key_file" in ssh_dict:
-            ssh_dict["private_key_file"] = os.path.expanduser(ssh_dict["private_key_file"])
+            ssh_dict["private_key_file"] = os.path.expanduser(
+                ssh_dict["private_key_file"]
+            )
         return ssh_dict

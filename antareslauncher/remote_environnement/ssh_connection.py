@@ -4,9 +4,8 @@ import logging
 import socket
 import stat
 import time
-from os.path import expanduser
 from pathlib import Path, PurePosixPath
-from typing import Tuple, List
+from typing import List, Tuple
 
 import paramiko
 
@@ -50,36 +49,82 @@ class ConnectionFailedException(SshConnectionError):
 
 
 class DownloadMonitor:
+    """
+    A class that monitors the progress of a download.
+
+    Args:
+        total_size: The total size of the file being downloaded (in bytes).
+        msg: The message to display while downloading. Defaults to "Downloading...".
+        logger: A logger object for logging progress messages. Defaults to `None`.
+
+    Attributes:
+        total_size: The total size of the file being downloaded.
+        msg: The message to display while downloading.
+        logger: A logger object for logging progress messages.
+    """
+
     def __init__(self, total_size: int, msg: str = "", logger=None) -> None:
         self.total_size = total_size
         self.msg = msg or "Downloading..."
         self.logger = logger or logging.getLogger(__name__)
-        self._start_time = time.time()
-        self._size = 0
+        # The start time of the download use to calculate ETA
+        self._start_time: float = time.time()
+        # The amount of data (in bytes) that has been transferred so far
+        # for each file
+        self._transferred: int = 0
+        # The total amount of data that has been transferred so far (in bytes)
+        self._accumulated: int = 0
+        # The progress of the download, as a percentage (0-100)
         self._progress: int = 0
 
     def __call__(self, transferred: int, subtotal: int) -> None:
+        """
+        Called when data is transferred during the download.
+        Updates the progress and logs a message if progress has changed.
+
+        Args:
+            transferred: The amount of data transferred in the current transfer (in bytes).
+            subtotal: The total amount of data transferred so far in this download (in bytes).
+        """
         if not self.total_size:
             return
-        self._size += transferred
+        self._transferred = transferred
         # Avoid emitting too many messages
-        rate = self._size / self.total_size
+        rate = (self._accumulated + self._transferred) / self.total_size
         if self._progress != int(rate * 10):
             self._progress = int(rate * 10)
             self.logger.info(str(self))
 
-    def __str__(self):
-        rate = self._size / self.total_size
-        if self._size:
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the current progress.
+        """
+        total_transferred = self._accumulated + self._transferred
+        rate = total_transferred / self.total_size
+        if total_transferred:
             # Calculate ETA and progress rate
             # 0        curr_size                   total_size
             # |----------->|--------------------------->|
             # 0        duration                    total_duration
             # 0%       percent                         100%
             duration = time.time() - self._start_time
-            eta = int(duration * (self.total_size - self._size) / self._size)
+            eta = int(
+                duration * (self.total_size - total_transferred) / total_transferred
+            )
             return f"{self.msg:<20} ETA: {eta}s [{rate:.0%}]"
         return f"{self.msg:<20} ETA: ??? [{rate:.0%}]"
+
+    def accumulate(self):
+        """
+        Accumulates the quantity transferred by the previous transfer and
+        the current transfer.
+
+        This function is used to keep track of the total quantity of data transferred
+        across multiple transfers. The accumulated quantity is calculated by adding
+        the quantity transferred in the current transfer to the quantity transferred
+        in the previous transfer.
+        """
+        self._accumulated += self._transferred
 
 
 class SshConnection:
@@ -246,6 +291,7 @@ class SshConnection:
         self.logger.info(f"Executing command on remote server: {command}")
         try:
             with self.ssh_client() as client:
+                self.logger.info(f"Running SSH command [{command}]...")
                 stdin, stdout, stderr = client.exec_command(command, timeout=30)
                 output = stdout.read().decode("utf-8")
                 error = stderr.read().decode("utf-8")
@@ -342,7 +388,9 @@ class SshConnection:
             The paths of the downloaded files on the local filesystem.
         """
         try:
-            return self._download_files(src_dir, dst_dir, (pattern,) + patterns, remove=remove)
+            return self._download_files(
+                src_dir, dst_dir, (pattern,) + patterns, remove=remove
+            )
         except TimeoutError as exc:
             self.logger.error(f"Timeout: {exc}", exc_info=True)
             return []
@@ -396,6 +444,7 @@ class SshConnection:
                 count = len(files_to_download)
                 for no, filename in enumerate(files_to_download, 1):
                     monitor.msg = f"Downloading '{filename}' [{no}/{count}]..."
+                    monitor.accumulate()
                     src_path = src_dir.joinpath(filename)
                     dst_path = dst_dir.joinpath(filename)
                     sftp.get(str(src_path), str(dst_path), monitor)
@@ -468,7 +517,7 @@ class SshConnection:
         return result_flag
 
     def make_dir(self, dir_path):
-        """Creates a remote directory if it does not exists yet
+        """Creates a remote directory if it does not exist yet
 
         Args:
             dir_path: Remote path of the directory that will be created
@@ -477,7 +526,7 @@ class SshConnection:
             True if path exists or the directory is successfully created, False otherwise
 
         Raises:
-            IOError if the path exists and it is a file
+            IOError if the path exists, and it is a file
         """
         try:
             with self.ssh_client() as client:

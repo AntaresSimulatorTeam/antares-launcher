@@ -2,14 +2,14 @@ import copy
 from pathlib import Path
 
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.iremote_environment import (
-    IRemoteEnvironment,
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    RemoteEnvironmentWithSlurm,
 )
 from antareslauncher.study_dto import StudyDTO
 
 
 class StudyZipfileUploader:
-    def __init__(self, env: IRemoteEnvironment, display: IDisplay):
+    def __init__(self, env: RemoteEnvironmentWithSlurm, display: IDisplay):
         self.env = env
         self.display = display
         self._current_study: StudyDTO = None

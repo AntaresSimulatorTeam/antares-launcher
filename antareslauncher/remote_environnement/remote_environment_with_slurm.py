@@ -1,18 +1,13 @@
+import enum
 import getpass
+import re
+import shlex
 import socket
+import textwrap
 import time
 from pathlib import Path, PurePosixPath
 from typing import List, Optional
 
-from antareslauncher.remote_environnement.iremote_environment import (
-    GetJobStateErrorException,
-    GetJobStateOutputException,
-    IRemoteEnvironment,
-    KillJobErrorException,
-    NoLaunchScriptFoundException,
-    NoRemoteBaseDirException,
-    SubmitJobErrorException,
-)
 from antareslauncher.remote_environnement.slurm_script_features import (
     ScriptParametersDTO,
     SlurmScriptFeatures,
@@ -20,14 +15,111 @@ from antareslauncher.remote_environnement.slurm_script_features import (
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
 
-SLURM_STATE_FAILED = "FAILED"
-SLURM_STATE_TIMEOUT = "TIMEOUT"
-SLURM_STATE_CANCELLED = "CANCELLED"
-SLURM_STATE_COMPLETED = "COMPLETED"
-SLURM_STATE_RUNNING = "RUNNING"
+
+class RemoteEnvBaseError(Exception):
+    """Base class of the `RemoteEnvironmentWithSlurm` exceptions"""
 
 
-class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
+class GetJobStateError(RemoteEnvBaseError):
+    def __init__(self, job_id: int, job_name: str, reason: str):
+        msg = (
+            f"Unable to retrieve the status of the SLURM job {job_id}"
+            f" (study job '{job_name})."
+            f" {reason}"
+        )
+        super().__init__(msg)
+
+
+class JobNotFoundError(RemoteEnvBaseError):
+    def __init__(self, job_id: int, job_name: str):
+        msg = (
+            f"Unable to retrieve the status of the SLURM job {job_id}"
+            f" (study job '{job_name}): Job not found."
+        )
+        super().__init__(msg)
+
+
+class NoRemoteBaseDirError(RemoteEnvBaseError):
+    def __init__(self, remote_base_path: PurePosixPath):
+        msg = f"Unable to create the remote base directory: '{remote_base_path}"
+        super().__init__(msg)
+
+
+class NoLaunchScriptFoundError(RemoteEnvBaseError):
+    def __init__(self, remote_path: str):
+        msg = f"Launch script not found in remote server: '{remote_path}."
+        super().__init__(msg)
+
+
+class KillJobError(RemoteEnvBaseError):
+    def __init__(self, job_id: int, reason: str):
+        msg = f"Unable to kill the SLURM job {job_id}: {reason}"
+        super().__init__(msg)
+
+
+class SubmitJobError(RemoteEnvBaseError):
+    def __init__(self, study_name: str, reason: str):
+        msg = f"Unable to sumit the Antares Job {study_name} to the SLURM: {reason}"
+        super().__init__(msg)
+
+
+class JobStateCodes(enum.Enum):
+    # noinspection SpellCheckingInspection
+    """
+    The `sacct` command returns the status of each task in a column named State or JobState.
+    The possible values for this column depend on the cluster management system
+    you are using, but here are some of the most common values:
+    """
+    # Job terminated due to launch failure, typically due to a hardware failure
+    # (e.g. unable to boot the node or block and the job can not be requeued).
+    BOOT_FAIL = "BOOT_FAIL"
+
+    # Job was explicitly cancelled by the user or system administrator.
+    # The job may or may not have been initiated.
+    CANCELLED = "CANCELLED"
+
+    # Job has terminated all processes on all nodes with an exit code of zero.
+    COMPLETED = "COMPLETED"
+
+    # Job terminated on deadline.
+    DEADLINE = "DEADLINE"
+
+    # Job terminated with non-zero exit code or other failure condition.
+    FAILED = "FAILED"
+
+    # Job terminated due to failure of one or more allocated nodes.
+    NODE_FAIL = "NODE_FAIL"
+
+    # Job experienced out of memory error.
+    OUT_OF_MEMORY = "OUT_OF_MEMORY"
+
+    # Job is awaiting resource allocation.
+    PENDING = "PENDING"
+
+    # Job terminated due to preemption.
+    PREEMPTED = "PREEMPTED"
+
+    # Job currently has an allocation.
+    RUNNING = "RUNNING"
+
+    # Job was requeued.
+    REQUEUED = "REQUEUED"
+
+    # Job is about to change size.
+    RESIZING = "RESIZING"
+
+    # Sibling was removed from cluster due to other cluster starting the job.
+    REVOKED = "REVOKED"
+
+    # Job has an allocation, but execution has been suspended and
+    # CPUs have been released for other jobs.
+    SUSPENDED = "SUSPENDED"
+
+    # Job terminated upon reaching its time limit.
+    TIMEOUT = "TIMEOUT"
+
+
+class RemoteEnvironmentWithSlurm:
     """Class that represents the remote environment"""
 
     def __init__(
@@ -35,33 +127,27 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         _connection: SshConnection,
         slurm_script_features: SlurmScriptFeatures,
     ):
-        super(RemoteEnvironmentWithSlurm, self).__init__(_connection=_connection)
+        self.connection = _connection
         self.slurm_script_features = slurm_script_features
         self.remote_base_path: str = ""
         self._initialise_remote_path()
         self._check_remote_script()
 
     def _initialise_remote_path(self):
-        self._set_remote_base_path()
-        if not self.connection.make_dir(self.remote_base_path):
-            raise NoRemoteBaseDirException
-
-    def _set_remote_base_path(self):
-        remote_home_dir = self.connection.home_dir
-        self.remote_base_path = (
-            str(remote_home_dir)
-            + "/REMOTE_"
-            + getpass.getuser()
-            + "_"
-            + socket.gethostname()
+        remote_home_dir = PurePosixPath(self.connection.home_dir)
+        remote_base_path = remote_home_dir.joinpath(
+            f"REMOTE_{getpass.getuser()}_{socket.gethostname()}"
         )
+        self.remote_base_path = str(remote_base_path)
+        if not self.connection.make_dir(self.remote_base_path):
+            raise NoRemoteBaseDirError(remote_base_path)
 
     def _check_remote_script(self):
         remote_antares_script = self.slurm_script_features.solver_script_path
         if not self.connection.check_file_not_empty(remote_antares_script):
-            raise NoLaunchScriptFoundException(remote_antares_script)
+            raise NoLaunchScriptFoundError(remote_antares_script)
 
-    def get_queue_info(self):
+    def get_queue_info(self) -> str:
         """This function return the information from: squeue -u run-antares
 
         Returns:
@@ -70,25 +156,23 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         username = self.connection.username
         command = f"squeue -u {username} --Format=name:40,state:12,starttime:22,TimeUsed:12,timelimit:12"
         output, error = self.connection.execute_command(command)
-        if error:
-            return error
-        else:
-            return f"{username}@{self.connection.host}\n" + output
+        return error or f"{username}@{self.connection.host}\n{output}"
 
-    def kill_remote_job(self, job_id):
+    def kill_remote_job(self, job_id: int) -> None:
         """Kills job with ID
 
         Args:
-            job_id: Id of the job to kill
+            job_id: ID of the job to kill
 
         Raises:
             KillJobErrorException if the command raises an error
         """
-
+        # noinspection SpellCheckingInspection
         command = f"scancel {job_id}"
         _, error = self.connection.execute_command(command)
         if error:
-            raise KillJobErrorException
+            reason = f"The command [{command}] failed: {error}"
+            raise KillJobError(job_id, reason)
 
     @staticmethod
     def convert_time_limit_from_seconds_to_minutes(time_limit_seconds):
@@ -102,9 +186,7 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         """
         minimum_duration_in_minutes = 1
         time_limit_minutes = int(time_limit_seconds / 60)
-        if time_limit_minutes < minimum_duration_in_minutes:
-            time_limit_minutes = minimum_duration_in_minutes
-        return time_limit_minutes
+        return max(time_limit_minutes, minimum_duration_in_minutes)
 
     def compose_launch_command(self, script_params: ScriptParametersDTO):
         return self.slurm_script_features.compose_launch_command(
@@ -138,100 +220,128 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
             other_options=my_study.other_options or "",
         )
         command = self.compose_launch_command(script_params)
+
         output, error = self.connection.execute_command(command)
         if error:
-            raise SubmitJobErrorException
-        job_id = self._get_jobid_from_output_of_submit_command(output)
-        return job_id
+            reason = f"The command [{command}] failed: {error}"
+            raise SubmitJobError(my_study.name, reason)
 
-    @staticmethod
-    def _get_jobid_from_output_of_submit_command(output):
-        job_id = None
-        # SLURM squeue command returns f'Submitted {job_id}' if successful
-        stdout_list = str(output).split()
-        if stdout_list and stdout_list[0] == "Submitted":
-            job_id = int(stdout_list[-1])
-        return job_id
+        # should match "Submitted batch job 123456"
+        if match := re.match(r"Submitted.*?(?P<job_id>\d+)", output, flags=re.IGNORECASE):
+            return int(match["job_id"])
 
-    @staticmethod
-    def get_advancement_flags_from_state(state):
-        """Converts the slurm state of the job to 3 boolean values
+        reason = (
+            f"The command [{command}] return an non-parsable output:"
+            f"\n{textwrap.indent(output, 'OUTPUT> ')}"
+        )
+        raise SubmitJobError(my_study.name, reason)
 
-        Args:
-            state: The job state string as obtained from Slurm
-
-        Returns:
-            started, finished, with_error: the booleans representing the advancement of the slurm_job
+    def get_job_state_flags(
+        self,
+        study,
+        *,
+        attempts=5,
+        sleep_time=0.5,
+    ) -> [bool, bool, bool]:
         """
-
-        if state == SLURM_STATE_RUNNING:
-            started = True
-            finished = False
-            with_error = False
-        elif state == SLURM_STATE_COMPLETED:
-            started = True
-            finished = True
-            with_error = False
-        elif (
-            state.startswith(SLURM_STATE_CANCELLED)
-            or state.startswith(SLURM_STATE_TIMEOUT)
-            or state == SLURM_STATE_FAILED
-        ):
-            started = True
-            with_error = True
-            finished = True
-        # PENDING
-        else:
-            started = False
-            finished = False
-            with_error = False
-
-        return started, finished, with_error
-
-    def _check_job_state(self, job_id: int):
-        """Checks the slurm state of a study
+        Retrieves the current state of a SLURM job with the given job ID and name.
 
         Args:
-            job_id: The id of the job to be checked
+            study: The study to check.
+            attempts: The number of attempts to make to retrieve the job state.
+            sleep_time: The amount of time to wait between attempts, in seconds.
 
         Returns:
-            The slurm job state string if the server correctly returned id
+            started, finished, with_error: booleans representing the advancement of the SLURM job
 
         Raises:
-            GetJobStateErrorException if the job_state has not been obtained
+            GetJobStateErrorException: If the job state cannot be retrieved after
+            the specified number of attempts.
         """
-        command = self._compose_command_to_get_state_as_one_word(job_id)
-        max_number_of_tries = 5
-        seconds_to_wait = 0.5
-        for _ in range(max_number_of_tries):
-            output, error = self.connection.execute_command(command)
-            if error:
-                raise GetJobStateErrorException
-            stdout = str(output).split()
-            if stdout:
-                return stdout[0]
-            time.sleep(seconds_to_wait)
-
-        raise GetJobStateOutputException
-
-    @staticmethod
-    def _compose_command_to_get_state_as_one_word(job_id):
-        return (
-            f"sacct -j {int(job_id)} -n --format=state | head -1 "
-            + "| awk -F\" \" '{print $1}'"
+        job_state: JobStateCodes = self._retrieve_job_state(
+            study.job_id,
+            study.name,
+            attempts=attempts,
+            sleep_time=sleep_time,
         )
+        return {
+            # JobStateCodes ------ started, finished, with_error
+            JobStateCodes.BOOT_FAIL: (False, False, False),
+            JobStateCodes.CANCELLED: (True, True, True),
+            JobStateCodes.COMPLETED: (True, True, False),
+            JobStateCodes.DEADLINE: (True, True, True),  # similar to timeout
+            JobStateCodes.FAILED: (True, True, True),
+            JobStateCodes.NODE_FAIL: (True, True, True),
+            JobStateCodes.OUT_OF_MEMORY: (True, True, True),
+            JobStateCodes.PENDING: (False, False, False),
+            JobStateCodes.PREEMPTED: (False, False, False),
+            JobStateCodes.RUNNING: (True, False, False),
+            JobStateCodes.REQUEUED: (False, False, False),
+            JobStateCodes.RESIZING: (False, False, False),
+            JobStateCodes.REVOKED: (False, False, False),
+            JobStateCodes.SUSPENDED: (True, False, False),
+            JobStateCodes.TIMEOUT: (True, True, True),
+        }[job_state]
 
-    def get_job_state_flags(self, study) -> [bool, bool, bool]:
-        """Checks the job state of a submitted study and converts it to flags
+    def _retrieve_job_state(
+        self,
+        job_id: int,
+        job_name: str,
+        *,
+        attempts: int = 5,
+        sleep_time: float = 0.5,
+    ) -> JobStateCodes:
+        # Construct the command line arguments used to check the jobs state.
+        # See the man page: https://slurm.schedmd.com/sacct.html
+        # noinspection SpellCheckingInspection
+        delimiter = ","
+        # noinspection SpellCheckingInspection
+        args = [
+            "sacct",
+            f"--jobs={job_id}",
+            f"--name={job_name}",
+            "--format=JobID,JobName,State",
+            "--parsable2",
+            f"--delimiter={delimiter}",
+            "--noheader",
+        ]
+        command = " ".join(shlex.quote(arg) for arg in args)
 
-        Args:
-            study: The study data transfer object
+        # Makes several attempts to get the job state.
+        # I don't really know why, but it's better to reproduce the old behavior.
+        output: Optional[str]
+        last_error: str = ""
+        for attempt in range(attempts):
+            output, error = self.connection.execute_command(command)
+            if output is not None:
+                break
+            last_error = error
+            time.sleep(sleep_time)
+        else:
+            reason = (
+                f" The command [{command}] failed after {attempts} attempts:"
+                f" {last_error}"
+            )
+            raise GetJobStateError(job_id, job_name, reason)
 
-        Returns:
-            started, finished, with_error: The booleans representing the advancement of the slurm_job
-        """
-        job_state = self._check_job_state(study.job_id)
-        return self.get_advancement_flags_from_state(job_state)
+        # When the output is empty it mean that the job is not found
+        if not output.strip():
+            return JobStateCodes.PENDING
+
+        # Parse the output to extract the job state.
+        # The output must be a CSV-like string without header row.
+        for line in output.splitlines():
+            parts = line.split(delimiter)
+            if len(parts) == 3:
+                out_job_id, out_job_name, out_state = parts
+                if out_job_id == str(job_id) and out_job_name == job_name:
+                    return JobStateCodes(out_state)
+
+        reason = (
+            f" The command [{command}] return an non-parsable output:"
+            f"\n{textwrap.indent(output, 'OUTPUT> ')}"
+        )
+        raise GetJobStateError(job_id, job_name, reason)
 
     def upload_file(self, src):
         """Uploads a file to the remote server
@@ -335,9 +445,9 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         Returns:
             True if all files have been removed, False otherwise
         """
-        return_flag = False
-        if not study.remote_server_is_clean:
-            return_flag = self.remove_remote_final_zipfile(
-                study
-            ) & self.remove_input_zipfile(study)
-        return return_flag
+        return (
+            False
+            if study.remote_server_is_clean
+            else self.remove_remote_final_zipfile(study)
+            & self.remove_input_zipfile(study)
+        )
