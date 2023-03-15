@@ -1,12 +1,14 @@
 # Changelog
 
+## [1.3.0] - (unreleased)
+
 ## [1.2.3] - 2023-03-16
+
+### Fixes
 
 - Correct download progress bar in logs [#40](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/40)
 
 - Correct SLURM job status checking [#43](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/43)
-
-### Fixes
 
 ## [1.2.2] - 2023-03-02
 
@@ -81,6 +83,8 @@
 - Add proper output for `study_list_composer.py`
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
+
+[1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.3...HEAD
 
 [1.2.3]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.3
 
