@@ -5,19 +5,19 @@ from unittest.mock import call
 import pytest
 
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.iremote_environment import (
-    IRemoteEnvironment,
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    RemoteEnvironmentWithSlurm,
 )
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_zip_uploader import (
-    StudyZipfileUploader,
     FailedUploadException,
+    StudyZipfileUploader,
 )
 
 
 class TestZipfileUploader:
     def setup_method(self):
-        self.remote_env = mock.Mock(spec_set=IRemoteEnvironment)
+        self.remote_env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
         self.display_mock = mock.Mock(spec_set=IDisplay)
         self.study_uploader = StudyZipfileUploader(self.remote_env, self.display_mock)
 

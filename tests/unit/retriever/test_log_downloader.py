@@ -4,15 +4,18 @@ from unittest import mock
 
 import pytest
 
+import antareslauncher.remote_environnement.remote_environment_with_slurm
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement import iremote_environment
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    RemoteEnvironmentWithSlurm,
+)
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 
 
 class TestLogDownloader:
     def setup_method(self):
-        self.remote_env_mock = mock.Mock(spec=iremote_environment.IRemoteEnvironment)
+        self.remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         self.file_manager = mock.Mock()
         self.display_mock = mock.Mock(spec_set=IDisplay)
         self.log_downloader = LogDownloader(

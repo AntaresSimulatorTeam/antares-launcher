@@ -8,20 +8,34 @@ import time
 from pathlib import Path, PurePosixPath
 from typing import List, Optional
 
-from antareslauncher.remote_environnement.iremote_environment import (
-    GetJobStateError,
-    IRemoteEnvironment,
-    KillJobError,
-    NoLaunchScriptFoundError,
-    NoRemoteBaseDirError,
-    SubmitJobError,
-)
 from antareslauncher.remote_environnement.slurm_script_features import (
     ScriptParametersDTO,
     SlurmScriptFeatures,
 )
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
+
+
+class GetJobStateError(Exception):
+    pass
+
+
+class NoRemoteBaseDirError(Exception):
+    pass
+
+
+class NoLaunchScriptFoundError(Exception):
+    def __init__(self, remote_path: str):
+        msg = f"Launch script not found in remote server: '{remote_path}."
+        super().__init__(msg)
+
+
+class KillJobError(Exception):
+    pass
+
+
+class SubmitJobError(Exception):
+    pass
 
 
 class JobStateCodes(enum.Enum):
@@ -80,7 +94,7 @@ class JobStateCodes(enum.Enum):
     TIMEOUT = "TIMEOUT"
 
 
-class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
+class RemoteEnvironmentWithSlurm:
     """Class that represents the remote environment"""
 
     def __init__(
@@ -88,7 +102,8 @@ class RemoteEnvironmentWithSlurm(IRemoteEnvironment):
         _connection: SshConnection,
         slurm_script_features: SlurmScriptFeatures,
     ):
-        super(RemoteEnvironmentWithSlurm, self).__init__(_connection=_connection)
+        self.connection = _connection
+        self.remote_base_path = None
         self.slurm_script_features = slurm_script_features
         self.remote_base_path: str = ""
         self._initialise_remote_path()

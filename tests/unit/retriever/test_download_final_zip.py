@@ -6,8 +6,8 @@ from unittest.mock import call
 import pytest
 
 from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.iremote_environment import (
-    IRemoteEnvironment,
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    RemoteEnvironmentWithSlurm,
 )
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.download_final_zip import (
@@ -18,7 +18,7 @@ from antareslauncher.use_cases.retrieve.download_final_zip import (
 
 class TestFinalZipDownloader:
     def setup_method(self):
-        self.remote_env = mock.Mock(spec_set=IRemoteEnvironment)
+        self.remote_env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
         self.display_mock = mock.Mock(spec_set=IDisplay)
         self.final_zip_downloader = FinalZipDownloader(
             self.remote_env, self.display_mock
@@ -103,7 +103,9 @@ class TestFinalZipDownloader:
         self, successfully_finished_zip_study
     ):
         final_zipfile_path = "results.zip"
-        self.remote_env.download_final_zip = mock.Mock(return_value=Path(final_zipfile_path))
+        self.remote_env.download_final_zip = mock.Mock(
+            return_value=Path(final_zipfile_path)
+        )
 
         new_study = self.final_zip_downloader.download(successfully_finished_zip_study)
 

@@ -7,15 +7,13 @@ from unittest.mock import call
 
 import pytest
 
-from antareslauncher.remote_environnement.iremote_environment import (
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     GetJobStateError,
     KillJobError,
     NoLaunchScriptFoundError,
     NoRemoteBaseDirError,
-    SubmitJobError,
-)
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
+    SubmitJobError,
 )
 from antareslauncher.remote_environnement.slurm_script_features import (
     ScriptParametersDTO,
