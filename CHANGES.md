@@ -2,6 +2,10 @@
 
 ## [1.2.3] - unreleased
 
+- Correct download progress bar in logs [#40](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/40)
+
+- Correct SLURM job status checking [#43](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/43)
+
 ### Fixes
 
 ## [1.2.2] - 2023-03-02
