@@ -160,7 +160,7 @@ class MainOptionParser:
         self.parser.add_argument(
             "--other-options",
             dest="other_options",
-            help='Other options to pass to the antares launcher script',
+            help="Other options to pass to the antares launcher script",
         )
 
         self.parser.add_argument(
