@@ -12,29 +12,25 @@ FINISHED_STATE = "finished"
 FINISHED_WITH_ERROR_STATE = "finished_with_error"
 
 
-class GetJobStateErrorException(Exception):
+class GetJobStateError(Exception):
     pass
 
 
-class NoRemoteBaseDirException(Exception):
+class NoRemoteBaseDirError(Exception):
     pass
 
 
-class NoLaunchScriptFoundException(Exception):
+class NoLaunchScriptFoundError(Exception):
     def __init__(self, remote_path: str):
         msg = f"Launch script not found in remote server: '{remote_path}."
         super().__init__(msg)
 
 
-class KillJobErrorException(Exception):
+class KillJobError(Exception):
     pass
 
 
-class SubmitJobErrorException(Exception):
-    pass
-
-
-class GetJobStateOutputException(Exception):
+class SubmitJobError(Exception):
     pass
 
 
