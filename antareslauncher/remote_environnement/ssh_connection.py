@@ -470,7 +470,7 @@ class SshConnection:
         return result_flag
 
     def make_dir(self, dir_path):
-        """Creates a remote directory if it does not exists yet
+        """Creates a remote directory if it does not exist yet
 
         Args:
             dir_path: Remote path of the directory that will be created
@@ -479,7 +479,7 @@ class SshConnection:
             True if path exists or the directory is successfully created, False otherwise
 
         Raises:
-            IOError if the path exists and it is a file
+            IOError if the path exists, and it is a file
         """
         try:
             with self.ssh_client() as client:

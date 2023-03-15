@@ -19,7 +19,7 @@ from antareslauncher.use_cases.launch.launch_controller import LaunchController
 class TestIntegrationLaunchController:
     @pytest.fixture(scope="function")
     def launch_controller(self):
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = mock.Mock()

@@ -60,7 +60,7 @@ class TestRemoteEnvironmentWithSlurm:
     def remote_env(self) -> RemoteEnvironmentWithSlurm:
         """SLURM remote environment (Mock)"""
         remote_home_dir = "remote_home_dir"
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
@@ -74,7 +74,7 @@ class TestRemoteEnvironmentWithSlurm:
         remote_base_dir = (
             f"{remote_home_dir}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
         )
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
@@ -89,7 +89,7 @@ class TestRemoteEnvironmentWithSlurm:
         self,
     ):
         # given
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")
         # when
         connection.make_dir = mock.Mock(return_value=False)
@@ -102,7 +102,7 @@ class TestRemoteEnvironmentWithSlurm:
         self,
     ):
         # given
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")
@@ -118,7 +118,7 @@ class TestRemoteEnvironmentWithSlurm:
     ):
         # given
         remote_home_dir = "/applications/antares/"
-        connection = mock.Mock()
+        connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         slurm_script_features = SlurmScriptFeatures("slurm_script_path")

@@ -16,26 +16,42 @@ from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
 
 
-class GetJobStateError(Exception):
-    pass
+class RemoteEnvBaseError(Exception):
+    """Base class of the `RemoteEnvironmentWithSlurm` exceptions"""
 
 
-class NoRemoteBaseDirError(Exception):
-    pass
+class GetJobStateError(RemoteEnvBaseError):
+    def __init__(self, job_id: int, job_name: str, reason: str):
+        msg = (
+            f"Unable to retrieve the status of the SLURM job {job_id}"
+            f" (study job '{job_name})."
+            f" {reason}"
+        )
+        super().__init__(msg)
 
 
-class NoLaunchScriptFoundError(Exception):
+class NoRemoteBaseDirError(RemoteEnvBaseError):
+    def __init__(self, remote_base_path: PurePosixPath):
+        msg = f"Unable to create the remote base directory: '{remote_base_path}"
+        super().__init__(msg)
+
+
+class NoLaunchScriptFoundError(RemoteEnvBaseError):
     def __init__(self, remote_path: str):
         msg = f"Launch script not found in remote server: '{remote_path}."
         super().__init__(msg)
 
 
-class KillJobError(Exception):
-    pass
+class KillJobError(RemoteEnvBaseError):
+    def __init__(self, job_id: int, reason: str):
+        msg = f"Unable to kill the SLURM job {job_id}: {reason}"
+        super().__init__(msg)
 
 
-class SubmitJobError(Exception):
-    pass
+class SubmitJobError(RemoteEnvBaseError):
+    def __init__(self, study_name: str, reason: str):
+        msg = f"Unable to sumit the Antares Job {study_name} to the SLURM: {reason}"
+        super().__init__(msg)
 
 
 class JobStateCodes(enum.Enum):
@@ -103,33 +119,26 @@ class RemoteEnvironmentWithSlurm:
         slurm_script_features: SlurmScriptFeatures,
     ):
         self.connection = _connection
-        self.remote_base_path = None
         self.slurm_script_features = slurm_script_features
         self.remote_base_path: str = ""
         self._initialise_remote_path()
         self._check_remote_script()
 
     def _initialise_remote_path(self):
-        self._set_remote_base_path()
-        if not self.connection.make_dir(self.remote_base_path):
-            raise NoRemoteBaseDirError
-
-    def _set_remote_base_path(self):
-        remote_home_dir = self.connection.home_dir
-        self.remote_base_path = (
-            str(remote_home_dir)
-            + "/REMOTE_"
-            + getpass.getuser()
-            + "_"
-            + socket.gethostname()
+        remote_home_dir = PurePosixPath(self.connection.home_dir)
+        remote_base_path = remote_home_dir.joinpath(
+            f"REMOTE_{getpass.getuser()}_{socket.gethostname()}"
         )
+        self.remote_base_path = str(remote_base_path)
+        if not self.connection.make_dir(self.remote_base_path):
+            raise NoRemoteBaseDirError(remote_base_path)
 
     def _check_remote_script(self):
         remote_antares_script = self.slurm_script_features.solver_script_path
         if not self.connection.check_file_not_empty(remote_antares_script):
             raise NoLaunchScriptFoundError(remote_antares_script)
 
-    def get_queue_info(self):
+    def get_queue_info(self) -> str:
         """This function return the information from: squeue -u run-antares
 
         Returns:
@@ -140,7 +149,7 @@ class RemoteEnvironmentWithSlurm:
         output, error = self.connection.execute_command(command)
         return error or f"{username}@{self.connection.host}\n{output}"
 
-    def kill_remote_job(self, job_id):
+    def kill_remote_job(self, job_id: int) -> None:
         """Kills job with ID
 
         Args:
@@ -149,12 +158,12 @@ class RemoteEnvironmentWithSlurm:
         Raises:
             KillJobErrorException if the command raises an error
         """
-
         # noinspection SpellCheckingInspection
         command = f"scancel {job_id}"
         _, error = self.connection.execute_command(command)
         if error:
-            raise KillJobError
+            reason = f"The command [{command}] failed: {error}"
+            raise KillJobError(job_id, reason)
 
     @staticmethod
     def convert_time_limit_from_seconds_to_minutes(time_limit_seconds):
@@ -205,22 +214,17 @@ class RemoteEnvironmentWithSlurm:
 
         output, error = self.connection.execute_command(command)
         if error:
-            message = (
-                f"Unable to sumit the Antares Job {my_study.name} to the SLURM."
-                f" The command [{command}] failed:"
-                f" {error}"
-            )
-            raise SubmitJobError(message)
+            reason = f"The command [{command}] failed: {error}"
+            raise SubmitJobError(my_study.name, reason)
 
         if match := re.match(r"Submitted (?P<job_id>\d+)", output, flags=re.IGNORECASE):
             return int(match["job_id"])
 
-        message = (
-            f"Unable to sumit the Antares Job {my_study.name} to the SLURM."
-            f" The command [{command}] return an non-parsable output:"
+        reason = (
+            f"The command [{command}] return an non-parsable output:"
             f"\n{textwrap.indent(output, 'OUTPUT> ')}"
         )
-        raise SubmitJobError(message)
+        raise SubmitJobError(my_study.name, reason)
 
     def get_job_state_flags(
         self,
@@ -304,13 +308,11 @@ class RemoteEnvironmentWithSlurm:
             last_error = error
             time.sleep(sleep_time)
         else:
-            message = (
-                f"Unable to retrieve the status of the SLURM job {job_id}"
-                f" (study job '{job_name})."
+            reason = (
                 f" The command [{command}] failed after {attempts} attempts:"
                 f" {last_error}"
             )
-            raise GetJobStateError(message)
+            raise GetJobStateError(job_id, job_name, reason)
 
         # Parse the output to extract the job state.
         # The output must be a CSV-like string without header row.
@@ -321,13 +323,11 @@ class RemoteEnvironmentWithSlurm:
                 if out_job_id == str(job_id) and out_job_name == job_name:
                     return JobStateCodes(out_state)
 
-        message = (
-            f"Unable to retrieve the status of the SLURM job {job_id}"
-            f" (study job '{job_name})."
+        reason = (
             f" The command [{command}] return an non-parsable output:"
             f"\n{textwrap.indent(output, 'OUTPUT> ')}"
         )
-        raise GetJobStateError(message)
+        raise GetJobStateError(job_id, job_name, reason)
 
     def upload_file(self, src):
         """Uploads a file to the remote server
