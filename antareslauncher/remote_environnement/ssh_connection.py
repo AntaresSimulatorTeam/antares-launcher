@@ -245,6 +245,7 @@ class SshConnection:
         self.logger.info(f"Executing command on remote server: {command}")
         try:
             with self.ssh_client() as client:
+                self.logger.info(f"Running SSH command [{command}]...")
                 stdin, stdout, stderr = client.exec_command(command, timeout=30)
                 output = stdout.read().decode("utf-8")
                 error = stderr.read().decode("utf-8")
