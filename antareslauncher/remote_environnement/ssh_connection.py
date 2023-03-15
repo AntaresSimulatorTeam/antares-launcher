@@ -4,9 +4,8 @@ import logging
 import socket
 import stat
 import time
-from os.path import expanduser
 from pathlib import Path, PurePosixPath
-from typing import Tuple, List
+from typing import List, Tuple
 
 import paramiko
 
@@ -342,7 +341,9 @@ class SshConnection:
             The paths of the downloaded files on the local filesystem.
         """
         try:
-            return self._download_files(src_dir, dst_dir, (pattern,) + patterns, remove=remove)
+            return self._download_files(
+                src_dir, dst_dir, (pattern,) + patterns, remove=remove
+            )
         except TimeoutError as exc:
             self.logger.error(f"Timeout: {exc}", exc_info=True)
             return []
