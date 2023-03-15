@@ -11,7 +11,7 @@ This module contains the project metadata.
 
 __version__ = "1.2.3"
 __author__ = "RTE, Antares Web Team"
-__date__ = "unreleased"
+__date__ = "2023-03-16"
 # noinspection SpellCheckingInspection
 __credits__ = "(c) Réseau de Transport de l’Électricité (RTE)"
 

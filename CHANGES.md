@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.3] - unreleased
+## [1.2.3] - 2023-03-16
 
 - Correct download progress bar in logs [#40](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/40)
 
@@ -82,7 +82,7 @@
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
 
-[1.2.3]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.2...HEAD
+[1.2.3]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.3
 
 [1.2.2]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.2
 
