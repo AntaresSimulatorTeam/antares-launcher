@@ -3,6 +3,7 @@ import fnmatch
 import logging
 import socket
 import stat
+import textwrap
 import time
 from pathlib import Path, PurePosixPath
 from typing import List, Tuple
@@ -288,21 +289,24 @@ class SshConnection:
             error: The standard error of the command
         """
         output = None
-        self.logger.info(f"Executing command on remote server: {command}")
         try:
             with self.ssh_client() as client:
                 self.logger.info(f"Running SSH command [{command}]...")
                 stdin, stdout, stderr = client.exec_command(command, timeout=30)
                 output = stdout.read().decode("utf-8")
                 error = stderr.read().decode("utf-8")
+                self.logger.info(textwrap.indent(output, 'SSH OUTPUT> '))
+                self.logger.info(textwrap.indent(error, 'SSH ERROR> '))
         except socket.timeout:
-            error = f"Command timed out: {command}"
+            error = f"SSH command timed out: {command}"
+            self.logger.error(error)
         except paramiko.SSHException:
-            error = f"Failed to execute {command}"
+            error = f"SSH command failed to execute {command}"
+            self.logger.error(error)
         except ConnectionFailedException:
-            error = f"Failed to connect to remote host and execute {command}"
+            error = f"SSH command failed to connect to remote host and execute {command}"
+            self.logger.error(error)
 
-        self.logger.info(f"Command output:\nOutput: {output}\nError: {error}")
         return output, error
 
     def upload_file(self, src: str, dst: str):
