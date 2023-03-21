@@ -2,17 +2,16 @@ import logging
 from typing import List
 
 import tinydb
-from tinydb import TinyDB, where
-
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.study_dto import StudyDTO
+from tinydb import TinyDB, where
 
 
 class DataRepoTinydb(IDataRepo):
     def __init__(self, database_file_path, db_primary_key: str):
         super(DataRepoTinydb, self).__init__()
         self.database_file_path = database_file_path
-        self.logger = logging.getLogger(__name__ + "." + __class__.__name__)
+        self.logger = logging.getLogger(f"{__name__}.{__class__.__name__}")
         self.db_primary_key = db_primary_key
 
     @property
@@ -42,11 +41,9 @@ class DataRepoTinydb(IDataRepo):
         Returns:
             True if the study has been found and is unique inside the database, False otherwise
         """
-        key = self.db_primary_key
-        value = study.__getattribute__(key)
-        self.logger.info(f"Checking if study {study.path}: is inside database")
-
-        found_studies = self.db.search(where(key=key) == value)
+        pk_name = self.db_primary_key
+        pk_value = getattr(study, pk_name)
+        found_studies = self.db.search(where(key=pk_name) == pk_value)
         return len(found_studies) == 1
 
     def is_job_id_inside_database(self, job_id: int):
@@ -59,22 +56,14 @@ class DataRepoTinydb(IDataRepo):
             True a study inside the database has the correct job_id, False otherwise
         """
         studies_list = self.get_list_of_studies()
-        output = False
-        for study in studies_list:
-            if study.job_id == job_id:
-                output = True
-        return output
+        return any(study.job_id == job_id for study in studies_list)
 
     def get_list_of_studies(self) -> List[StudyDTO]:
         """
         Returns:
             List of all studies inside the database
         """
-        self.logger.info("Retrieving list of studies from the database")
-        study_list = []
-        for doc in self.db.all():
-            study_list.append(self.doc_to_study(doc))
-        return study_list
+        return [self.doc_to_study(doc) for doc in self.db.all()]
 
     def save_study(self, study: StudyDTO):
         """Saves the selected study inside the database. If the study already exists inside the
@@ -83,22 +72,16 @@ class DataRepoTinydb(IDataRepo):
         Args:
             study: The study data transfer object that will be saved
         """
+        pk_name = self.db_primary_key
+        pk_value = getattr(study, pk_name)
         if self.is_study_inside_database(study=study):
-            self.logger.info(
-                f"Updating study already existing inside database with"
-                f"{self.db_primary_key}: {study.__getattribute__(self.db_primary_key)}"
-            )
-            self.db.update(
-                study.__dict__,
-                where(self.db_primary_key)
-                == study.__getattribute__(self.db_primary_key),
-            )
+            self.logger.info(f"Updating study {pk_name}='{pk_value}' in database")
+            self.db.update(study.__dict__, where(pk_name) == pk_value)
         else:
-            self.logger.info(
-                f"Inserting new study with {self.db_primary_key}: {study.__getattribute__(self.db_primary_key)} inside database"
-            )
+            self.logger.info(f"Inserting new study {pk_name}='{pk_value}' in database")
             self.db.insert(study.__dict__)
 
     def remove_study(self, study_name: str) -> None:
-        self.logger.info(f"Removing study with {self.db_primary_key}:{study_name}")
-        self.db.remove(where(self.db_primary_key) == study_name)
+        pk_name = self.db_primary_key
+        self.logger.info(f"Removing study {pk_name}='{study_name}' from database")
+        self.db.remove(where(pk_name) == study_name)

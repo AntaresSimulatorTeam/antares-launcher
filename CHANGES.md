@@ -2,6 +2,12 @@
 
 ## [1.3.0] - (unreleased)
 
+## [1.2.4] - 2023-03-21
+
+### Fixes
+
+- use `scontrol` and `sacct` command to retrieve the job state [#49](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/49) 
+
 ## [1.2.3] - 2023-03-16
 
 ### Fixes
@@ -84,7 +90,9 @@
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
 
-[1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.3...HEAD
+[1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.4...HEAD
+
+[1.2.4]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.4
 
 [1.2.3]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.3
 
