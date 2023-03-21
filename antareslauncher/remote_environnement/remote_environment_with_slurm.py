@@ -335,7 +335,9 @@ class RemoteEnvironmentWithSlurm:
             if len(parts) == 3:
                 out_job_id, out_job_name, out_state = parts
                 if out_job_id == str(job_id) and out_job_name == job_name:
-                    return JobStateCodes(out_state)
+                    # Match the first word only, e.g.: "CANCEL by 123456798"
+                    job_state_str = re.match(r"(\w+)", out_state)[1]
+                    return JobStateCodes(job_state_str)
 
         reason = (
             f" The command [{command}] return an non-parsable output:"

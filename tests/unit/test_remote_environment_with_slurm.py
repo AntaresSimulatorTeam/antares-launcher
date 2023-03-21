@@ -280,6 +280,7 @@ class TestRemoteEnvironmentWithSlurm:
             ("PENDING", (False, False, False)),
             ("RUNNING", (True, False, False)),
             ("CANCELLED", (True, True, True)),
+            ("CANCELLED by 123456", (True, True, True)),
             ("TIMEOUT", (True, True, True)),
             ("COMPLETED", (True, True, False)),
             ("FAILED", (True, True, True)),
