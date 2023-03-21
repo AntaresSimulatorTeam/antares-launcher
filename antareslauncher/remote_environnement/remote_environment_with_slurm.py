@@ -1,5 +1,6 @@
 import enum
 import getpass
+import logging
 import re
 import shlex
 import socket
@@ -14,6 +15,8 @@ from antareslauncher.remote_environnement.slurm_script_features import (
 )
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
+
+logger = logging.getLogger(__name__)
 
 
 class RemoteEnvBaseError(Exception):
@@ -227,7 +230,9 @@ class RemoteEnvironmentWithSlurm:
             raise SubmitJobError(my_study.name, reason)
 
         # should match "Submitted batch job 123456"
-        if match := re.match(r"Submitted.*?(?P<job_id>\d+)", output, flags=re.IGNORECASE):
+        if match := re.match(
+            r"Submitted.*?(?P<job_id>\d+)", output, flags=re.IGNORECASE
+        ):
             return int(match["job_id"])
 
         reason = (
@@ -258,12 +263,26 @@ class RemoteEnvironmentWithSlurm:
             GetJobStateErrorException: If the job state cannot be retrieved after
             the specified number of attempts.
         """
-        job_state: JobStateCodes = self._retrieve_job_state(
-            study.job_id,
-            study.name,
-            attempts=attempts,
-            sleep_time=sleep_time,
-        )
+        job_state = self._retrieve_slurm_control_state(study.job_id, study.name)
+        if job_state is None:
+            # noinspection SpellCheckingInspection
+            logger.info(
+                f"Job '{study.job_id}' no longer active in SLURM,"
+                f" the job status is read from the SACCT database..."
+            )
+            job_state = self._retrieve_slurm_acct_state(
+                study.job_id,
+                study.name,
+                attempts=attempts,
+                sleep_time=sleep_time,
+            )
+        if job_state is None:
+            # noinspection SpellCheckingInspection
+            logger.warning(
+                f"Job '{study.job_id}' not found in SACCT database."
+                f"Assuming it was recently launched and will start processing soon."
+            )
+            job_state = JobStateCodes.RUNNING
         return {
             # JobStateCodes ------ started, finished, with_error
             JobStateCodes.BOOT_FAIL: (False, False, False),
@@ -283,14 +302,47 @@ class RemoteEnvironmentWithSlurm:
             JobStateCodes.TIMEOUT: (True, True, True),
         }[job_state]
 
-    def _retrieve_job_state(
+    def _retrieve_slurm_control_state(
+        self,
+        job_id: int,
+        job_name: str,
+    ) -> Optional[JobStateCodes]:
+        """
+        Use the `scontrol` command to retrieve job status information in SLURM.
+        See: https://slurm.schedmd.com/scontrol.html
+        """
+        # Construct the command line arguments used to check alive jobs state.
+        # noinspection SpellCheckingInspection
+        args = ["scontrol", "show", "job", f"{job_id}"]
+        command = " ".join(shlex.quote(arg) for arg in args)
+        output, error = self.connection.execute_command(command)
+        if error:
+            # The command output may include an error message if the job is
+            # no longer active or has been removed
+            if re.search("Invalid job id specified", error):
+                return None
+            reason = f"The command [{command}] failed: {error}"
+            raise GetJobStateError(job_id, job_name, reason)
+
+        # We can retrieve the job state from the output of the command
+        # by extracting the value of the `JobState` field.
+        if match := re.search(r"JobState=(\w+)", output):
+            return JobStateCodes(match[1])
+
+        reason = (
+            f"The command [{command}] return an non-parsable output:"
+            f"\n{textwrap.indent(output, 'OUTPUT> ')}"
+        )
+        raise GetJobStateError(job_id, job_name, reason)
+
+    def _retrieve_slurm_acct_state(
         self,
         job_id: int,
         job_name: str,
         *,
         attempts: int = 5,
         sleep_time: float = 0.5,
-    ) -> JobStateCodes:
+    ) -> Optional[JobStateCodes]:
         # Construct the command line arguments used to check the jobs state.
         # See the man page: https://slurm.schedmd.com/sacct.html
         # noinspection SpellCheckingInspection
@@ -319,14 +371,14 @@ class RemoteEnvironmentWithSlurm:
             time.sleep(sleep_time)
         else:
             reason = (
-                f" The command [{command}] failed after {attempts} attempts:"
+                f"The command [{command}] failed after {attempts} attempts:"
                 f" {last_error}"
             )
             raise GetJobStateError(job_id, job_name, reason)
 
         # When the output is empty it mean that the job is not found
         if not output.strip():
-            return JobStateCodes.PENDING
+            return None
 
         # Parse the output to extract the job state.
         # The output must be a CSV-like string without header row.
@@ -335,10 +387,12 @@ class RemoteEnvironmentWithSlurm:
             if len(parts) == 3:
                 out_job_id, out_job_name, out_state = parts
                 if out_job_id == str(job_id) and out_job_name == job_name:
-                    return JobStateCodes(out_state)
+                    # Match the first word only, e.g.: "CANCEL by 123456798"
+                    job_state_str = re.match(r"(\w+)", out_state)[1]
+                    return JobStateCodes(job_state_str)
 
         reason = (
-            f" The command [{command}] return an non-parsable output:"
+            f"The command [{command}] return an non-parsable output:"
             f"\n{textwrap.indent(output, 'OUTPUT> ')}"
         )
         raise GetJobStateError(job_id, job_name, reason)
