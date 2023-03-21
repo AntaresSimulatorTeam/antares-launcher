@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.2.4] - (unreleased)
+
 ## [1.2.3] - 2023-03-16
 
 - Correct download progress bar in logs [#40](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/40)
@@ -81,6 +83,8 @@
 - Add proper output for `study_list_composer.py`
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
+
+[1.2.4]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.4
 
 [1.2.3]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.3
 
