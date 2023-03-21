@@ -1,7 +1,8 @@
 import getpass
+import re
 import socket
 from pathlib import Path, PurePosixPath
-from typing import List
+from typing import List, Tuple
 from unittest import mock
 from unittest.mock import call
 
@@ -230,34 +231,70 @@ class TestRemoteEnvironmentWithSlurm:
         with pytest.raises(SubmitJobError):
             remote_env.submit_job(study)
 
+    # noinspection SpellCheckingInspection
     @pytest.mark.unit_test
-    def test_get_job_state_flags__sacct_bad_output(self, remote_env, study):
+    def test_get_job_state_flags__scontrol_failed(self, remote_env, study):
         study.job_id = 42
-        # the output of `sacct` is not: JobID,JobName,State
-        output = "the sun is shining"
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, ""))
+        output, error = "", "invalid entity:XXX for keyword:show"
+        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
+        with pytest.raises(GetJobStateError, match=re.escape(error)) as ctx:
+            remote_env.get_job_state_flags(study)
+        assert output in str(ctx.value)
+        command = f"scontrol show job {study.job_id}"
+        remote_env.connection.execute_command.assert_called_once_with(command)
+
+    # noinspection SpellCheckingInspection
+    @pytest.mark.unit_test
+    def test_get_job_state_flags__scontrol_dead_job(self, remote_env, study):
+        study.job_id = 42
+        job_state = "RUNNING"
+
+        # noinspection SpellCheckingInspection
+        def execute_command_mock(cmd: str):
+            if cmd == f"scontrol show job {study.job_id}":
+                return "", "Invalid job id specified"
+            expected = (
+                "sacct"
+                f" --jobs={study.job_id}"
+                f" --name={study.name}"
+                " --format=JobID,JobName,State"
+                " --parsable2"
+                " --delimiter=,"
+                " --noheader"
+            )
+            if cmd == expected:
+                return f"{study.job_id},{study.name},{job_state}", None
+            assert False, f"Unknown command: {cmd}"
+
+        remote_env.connection.execute_command = execute_command_mock
+        actual = remote_env.get_job_state_flags(study)
+        assert actual == (True, False, False)
+
+    # noinspection SpellCheckingInspection
+    @pytest.mark.unit_test
+    def test_get_job_state_flags__scontrol_nominal(self, remote_env, study):
+        study.job_id = 42
+        job_state = "RUNNING"
+        output, error = f"JobState={job_state}", None
+        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
+        actual = remote_env.get_job_state_flags(study)
+        assert actual == (True, False, False)
+
+    # noinspection SpellCheckingInspection
+    @pytest.mark.unit_test
+    def test_get_job_state_flags__scontrol_non_parsable(self, remote_env, study):
+        study.job_id = 42
+        output, error = "Blah!Blah!", None
+        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
         with pytest.raises(GetJobStateError, match="non-parsable output") as ctx:
             remote_env.get_job_state_flags(study)
         assert output in str(ctx.value)
-        command = (
-            "sacct"
-            f" --jobs={study.job_id}"
-            f" --name={study.name}"
-            " --format=JobID,JobName,State"
-            " --parsable2"
-            " --delimiter=,"
-            " --noheader"
-        )
+        command = f"scontrol show job {study.job_id}"
         remote_env.connection.execute_command.assert_called_once_with(command)
 
     @pytest.mark.unit_test
-    def test_get_job_state_flags__sacct_call_fails(self, remote_env, study):
+    def test_get_job_state_flags__sacct_bad_output(self, remote_env, study):
         study.job_id = 42
-        # the `sacct` command fails, output = None (error)
-        error = "an error occurs"
-        remote_env.connection.execute_command = mock.Mock(return_value=(None, error))
-        with pytest.raises(GetJobStateError, match="an error occurs"):
-            remote_env.get_job_state_flags(study, attempts=2, sleep_time=0.1)
         command = (
             "sacct"
             f" --jobs={study.job_id}"
@@ -267,6 +304,49 @@ class TestRemoteEnvironmentWithSlurm:
             " --delimiter=,"
             " --noheader"
         )
+
+        # the output of `sacct` is not: JobID,JobName,State
+        output = "the sun is shining"
+
+        # noinspection SpellCheckingInspection
+        def execute_command_mock(cmd: str):
+            if cmd == f"scontrol show job {study.job_id}":
+                return "", "Invalid job id specified"
+            if cmd == command:
+                return output, None
+            assert False, f"Unknown command: {cmd}"
+
+        remote_env.connection.execute_command = execute_command_mock
+
+        with pytest.raises(GetJobStateError, match="non-parsable output") as ctx:
+            remote_env.get_job_state_flags(study)
+        assert output in str(ctx.value)
+
+    # noinspection SpellCheckingInspection
+    @pytest.mark.unit_test
+    def test_get_job_state_flags__sacct_call_fails(self, remote_env, study):
+        study.job_id = 42
+        command = (
+            "sacct"
+            f" --jobs={study.job_id}"
+            f" --name={study.name}"
+            " --format=JobID,JobName,State"
+            " --parsable2"
+            " --delimiter=,"
+            " --noheader"
+        )
+
+        # noinspection SpellCheckingInspection
+        def execute_command_mock(cmd: str):
+            if cmd == f"scontrol show job {study.job_id}":
+                return "", "Invalid job id specified"
+            if cmd == command:
+                return None, "an error occurs"
+            assert False, f"Unknown command: {cmd}"
+
+        remote_env.connection.execute_command = execute_command_mock
+        with pytest.raises(GetJobStateError, match="an error occurs"):
+            remote_env.get_job_state_flags(study, attempts=2, sleep_time=0.1)
         remote_env.connection.execute_command.mock_calls = [
             call(command),
             call(command),
@@ -276,16 +356,17 @@ class TestRemoteEnvironmentWithSlurm:
     @pytest.mark.parametrize(
         "state, expected",
         [
-            ("", (False, False, False)),
+            pytest.param("", (True, False, False), id="unknown-means-RUNNING"),
             ("PENDING", (False, False, False)),
             ("RUNNING", (True, False, False)),
             ("CANCELLED", (True, True, True)),
+            ("CANCELLED by 123456", (True, True, True)),
             ("TIMEOUT", (True, True, True)),
             ("COMPLETED", (True, True, False)),
             ("FAILED", (True, True, True)),
         ],
     )
-    def test_get_job_state_flags__nominal_case(
+    def test_get_job_state_flags__sacct_nominal_case(
         self, remote_env, study, state, expected
     ):
         """
@@ -294,11 +375,6 @@ class TestRemoteEnvironmentWithSlurm:
         for a SLURM job in a specific state.
         """
         study.job_id = 42
-        # the output of `sacct` should be: JobID,JobName,State
-        output = f"{study.job_id},{study.name},{state}" if state else ""
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, ""))
-        actual = remote_env.get_job_state_flags(study)
-        assert actual == expected
         command = (
             "sacct"
             f" --jobs={study.job_id}"
@@ -308,7 +384,21 @@ class TestRemoteEnvironmentWithSlurm:
             " --delimiter=,"
             " --noheader"
         )
-        remote_env.connection.execute_command.assert_called_once_with(command)
+
+        # noinspection SpellCheckingInspection
+        def execute_command_mock(cmd: str):
+            if cmd == f"scontrol show job {study.job_id}":
+                return "", "Invalid job id specified"
+            if cmd == command:
+                # the output of `sacct` should be: JobID,JobName,State
+                output = f"{study.job_id},{study.name},{state}" if state else ""
+                return output, None
+            assert False, f"Unknown command: {cmd}"
+
+        remote_env.connection.execute_command = execute_command_mock
+
+        actual = remote_env.get_job_state_flags(study)
+        assert actual == expected
 
     @pytest.mark.unit_test
     @pytest.mark.parametrize(
