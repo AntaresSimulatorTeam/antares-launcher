@@ -291,20 +291,22 @@ class SshConnection:
         output = None
         try:
             with self.ssh_client() as client:
+                # fmt: off
                 self.logger.info(f"Running SSH command [{command}]...")
                 stdin, stdout, stderr = client.exec_command(command, timeout=30)
-                output = stdout.read().decode("utf-8")
-                error = stderr.read().decode("utf-8")
-                self.logger.info(textwrap.indent(output, 'SSH OUTPUT> '))
-                self.logger.info(textwrap.indent(error, 'SSH ERROR> '))
+                output = stdout.read().decode("utf-8").strip()
+                error = stderr.read().decode("utf-8").strip()
+                self.logger.info(f"SSH command stdout:\n{textwrap.indent(output, 'SSH OUTPUT> ')}")
+                self.logger.info(f"SSH command stderr:\n{textwrap.indent(error, 'SSH ERROR> ')}")
+                # fmt: on
         except socket.timeout:
-            error = f"SSH command timed out: {command}"
+            error = f"SSH command timed out: [{command}]"
             self.logger.error(error)
-        except paramiko.SSHException:
-            error = f"SSH command failed to execute {command}"
+        except paramiko.SSHException as e:
+            error = f"SSH command failed to execute [{command}]: {e}"
             self.logger.error(error)
-        except ConnectionFailedException:
-            error = f"SSH command failed to connect to remote host and execute {command}"
+        except ConnectionFailedException as e:
+            error = f"SSH connection failed: {e}"
             self.logger.error(error)
 
         return output, error
