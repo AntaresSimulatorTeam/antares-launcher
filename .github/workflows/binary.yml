@@ -5,6 +5,7 @@ on:
       - 'main'
       - 'dev'
       - 'release/**'
+      - 'support/**'
 
 jobs:
   binary:
