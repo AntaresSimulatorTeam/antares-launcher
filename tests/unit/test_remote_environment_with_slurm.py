@@ -1,8 +1,9 @@
 import getpass
 import re
+import shlex
 import socket
 from pathlib import Path, PurePosixPath
-from typing import List, Tuple
+from typing import List
 from unittest import mock
 from unittest.mock import call
 
@@ -248,21 +249,22 @@ class TestRemoteEnvironmentWithSlurm:
     def test_get_job_state_flags__scontrol_dead_job(self, remote_env, study):
         study.job_id = 42
         job_state = "RUNNING"
+        args = [
+            "sacct",
+            f"--jobs={study.job_id}",
+            f"--name={study.name}",
+            "--format=JobID,JobName,State",
+            "--parsable2",
+            "--delimiter=,",
+            "--noheader",
+        ]
+        command = " ".join(shlex.quote(arg) for arg in args)
 
         # noinspection SpellCheckingInspection
         def execute_command_mock(cmd: str):
             if cmd == f"scontrol show job {study.job_id}":
                 return "", "Invalid job id specified"
-            expected = (
-                "sacct"
-                f" --jobs={study.job_id}"
-                f" --name={study.name}"
-                " --format=JobID,JobName,State"
-                " --parsable2"
-                " --delimiter=,"
-                " --noheader"
-            )
-            if cmd == expected:
+            if cmd == command:
                 return f"{study.job_id},{study.name},{job_state}", None
             assert False, f"Unknown command: {cmd}"
 
@@ -295,15 +297,16 @@ class TestRemoteEnvironmentWithSlurm:
     @pytest.mark.unit_test
     def test_get_job_state_flags__sacct_bad_output(self, remote_env, study):
         study.job_id = 42
-        command = (
-            "sacct"
-            f" --jobs={study.job_id}"
-            f" --name={study.name}"
-            " --format=JobID,JobName,State"
-            " --parsable2"
-            " --delimiter=,"
-            " --noheader"
-        )
+        args = [
+            "sacct",
+            f"--jobs={study.job_id}",
+            f"--name={study.name}",
+            "--format=JobID,JobName,State",
+            "--parsable2",
+            "--delimiter=,",
+            "--noheader",
+        ]
+        command = " ".join(shlex.quote(arg) for arg in args)
 
         # the output of `sacct` is not: JobID,JobName,State
         output = "the sun is shining"
@@ -326,15 +329,16 @@ class TestRemoteEnvironmentWithSlurm:
     @pytest.mark.unit_test
     def test_get_job_state_flags__sacct_call_fails(self, remote_env, study):
         study.job_id = 42
-        command = (
-            "sacct"
-            f" --jobs={study.job_id}"
-            f" --name={study.name}"
-            " --format=JobID,JobName,State"
-            " --parsable2"
-            " --delimiter=,"
-            " --noheader"
-        )
+        args = [
+            "sacct",
+            f"--jobs={study.job_id}",
+            f"--name={study.name}",
+            "--format=JobID,JobName,State",
+            "--parsable2",
+            "--delimiter=,",
+            "--noheader",
+        ]
+        command = " ".join(shlex.quote(arg) for arg in args)
 
         # noinspection SpellCheckingInspection
         def execute_command_mock(cmd: str):
@@ -375,15 +379,16 @@ class TestRemoteEnvironmentWithSlurm:
         for a SLURM job in a specific state.
         """
         study.job_id = 42
-        command = (
-            "sacct"
-            f" --jobs={study.job_id}"
-            f" --name={study.name}"
-            " --format=JobID,JobName,State"
-            " --parsable2"
-            " --delimiter=,"
-            " --noheader"
-        )
+        args = [
+            "sacct",
+            f"--jobs={study.job_id}",
+            f"--name={study.name}",
+            "--format=JobID,JobName,State",
+            "--parsable2",
+            "--delimiter=,",
+            "--noheader",
+        ]
+        command = " ".join(shlex.quote(arg) for arg in args)
 
         # noinspection SpellCheckingInspection
         def execute_command_mock(cmd: str):
