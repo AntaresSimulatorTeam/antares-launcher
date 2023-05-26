@@ -23,7 +23,7 @@ class StudyZipper:
         return self._current_study
 
     def _do_zip(self):
-        zipfile_path = self._current_study.path + "-" + getpass.getuser() + ".zip"
+        zipfile_path = f"{self._current_study.path}-{getpass.getuser()}.zip"
         success = self.file_manager.zip_dir_excluding_subdir(
             self._current_study.path, zipfile_path, None
         )
@@ -36,11 +36,11 @@ class StudyZipper:
     def _display_failure_error(self):
         self.display.show_error(
             f'"{Path(self._current_study.path).name}": was not zipped',
-            __name__ + "." + __class__.__name__,
+            f"{__name__}.{__class__.__name__}",
         )
 
     def _display_success_message(self):
         self.display.show_message(
             f'"{Path(self._current_study.path).name}": was zipped',
-            __name__ + "." + __class__.__name__,
+            f"{__name__}.{__class__.__name__}",
         )

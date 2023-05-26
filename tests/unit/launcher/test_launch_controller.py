@@ -103,9 +103,9 @@ class TestLauncherController:
         )
         my_launcher.launch_all_studies()
 
-        zipfile_path = my_study.path + "-" + getpass.getuser() + ".zip"
+        zipfile_path = f"{my_study.path}-{getpass.getuser()}.zip"
         file_manager.zip_dir_excluding_subdir.assert_called_once_with(
-            my_study.path, zipfile_path, "output"
+            my_study.path, zipfile_path, None
         )
 
     @pytest.mark.unit_test
@@ -119,9 +119,7 @@ class TestLauncherController:
         my_launcher.repo.save_study = mock.Mock()
         my_launcher.launch_all_studies()
         # then
-        expected_study.zipfile_path = (
-            expected_study.path + "-" + getpass.getuser() + ".zip"
-        )
+        expected_study.zipfile_path = f"{expected_study.path}-{getpass.getuser()}.zip"
         second_call = my_launcher.repo.save_study.call_args_list[1]
         first_argument = second_call[0][0]
         assert first_argument.zip_is_sent
