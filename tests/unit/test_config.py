@@ -363,7 +363,9 @@ class TestGetConfigPath:
         with pytest.raises(ConfigFileNotFoundError):
             get_config_path()
 
-    @pytest.mark.parametrize("config_name", [None, CONFIGURATION_YAML, "my_config.yaml"])
+    @pytest.mark.parametrize(
+        "config_name", [None, CONFIGURATION_YAML, "my_config.yaml"]
+    )
     def test_get_config_path__from_user_config_dir(
         self, monkeypatch, tmp_path, config_name
     ):
@@ -377,11 +379,17 @@ class TestGetConfigPath:
         assert actual == config_path
 
     @pytest.mark.parametrize("relpath", ["", "data"])
-    @pytest.mark.parametrize("config_name", [None, CONFIGURATION_YAML, "my_config.yaml"])
-    def test_get_config_path__from_curr_dir(self, monkeypatch, tmp_path, relpath, config_name):
+    @pytest.mark.parametrize(
+        "config_name", [None, CONFIGURATION_YAML, "my_config.yaml"]
+    )
+    def test_get_config_path__from_curr_dir(
+        self, monkeypatch, tmp_path, relpath, config_name
+    ):
         data_dir = tmp_path.joinpath(relpath)
         data_dir.mkdir(exist_ok=True)
-        config_path: pathlib.Path = tmp_path.joinpath(data_dir, config_name or CONFIGURATION_YAML)
+        config_path: pathlib.Path = tmp_path.joinpath(
+            data_dir, config_name or CONFIGURATION_YAML
+        )
         config_path.touch()
         monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)
         monkeypatch.chdir(tmp_path)
