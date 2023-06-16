@@ -1,6 +1,11 @@
 # Changelog
 
-## [1.3.0] - (unreleased)
+## [1.3.0] - 2023-06-16
+
+### Changed
+
+- Remove "output" exclusion to allow Xpansion sensitivity (now driven by AntaREST) [#46](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/46)
+  and [#51](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/5111)
 
 ## [1.2.4] - 2023-03-21
 
@@ -90,7 +95,7 @@
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
 
-[1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.2.4...HEAD
+[1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.3.0
 
 [1.2.4]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.2.4
 
