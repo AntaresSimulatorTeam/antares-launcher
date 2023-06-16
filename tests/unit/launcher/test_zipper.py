@@ -22,7 +22,7 @@ class TestStudyZipper:
 
         self.study_zipper.zip(study)
 
-        expected_message = f'"hello": was zipped'
+        expected_message = '"hello": was zipped'
         self.display_mock.show_message.assert_called_once_with(
             expected_message, mock.ANY
         )
@@ -34,7 +34,7 @@ class TestStudyZipper:
 
         new_study = self.study_zipper.zip(study)
 
-        expected_message = f'"hello": was not zipped'
+        expected_message = '"hello": was not zipped'
         self.display_mock.show_error.assert_called_once_with(expected_message, mock.ANY)
         assert new_study.zipfile_path == ""
 
@@ -60,8 +60,8 @@ class TestStudyZipper:
 
         new_study = self.study_zipper.zip(study)
 
-        expected_zipfile_path = study.path + "-" + getpass.getuser() + ".zip"
+        expected_zipfile_path = f"{study.path}-{getpass.getuser()}.zip"
         self.file_manager.zip_dir_excluding_subdir.assert_called_once_with(
-            study_path, expected_zipfile_path, "output"
+            study_path, expected_zipfile_path, None
         )
         assert new_study.zipfile_path == expected_zipfile_path
