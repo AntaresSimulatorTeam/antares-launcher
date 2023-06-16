@@ -92,11 +92,11 @@ class TestIntegrationLaunchController:
         post_processing = False
         other_options = ""
         bash_options = (
-                f'"{zipfile_name}"'
-                f" {study1.antares_version}"
-                f" {job_type}"
-                f" {post_processing}"
-                f" '{other_options}'"
+            f'"{zipfile_name}"'
+            f" {study1.antares_version}"
+            f" {job_type}"
+            f" {post_processing}"
+            f" '{other_options}'"
         )
         command = (
             f"cd {remote_base_path} && "
