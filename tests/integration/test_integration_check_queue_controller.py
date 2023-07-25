@@ -23,7 +23,7 @@ class TestIntegrationCheckQueueController:
         self.connection_mock = mock.Mock(home_dir="path/to/home")
         self.connection_mock.username = "username"
         self.connection_mock.execute_command = mock.Mock(return_value=("", ""))
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path", "fake_partition")
         env_mock = RemoteEnvironmentWithSlurm(
             _connection=self.connection_mock,
             slurm_script_features=slurm_script_features,

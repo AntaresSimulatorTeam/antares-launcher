@@ -40,6 +40,7 @@ class ParametersReader:
         self.ssh_conf_alt1, self.ssh_conf_alt2 = alt1, alt2
         self.default_ssh_dict = self._get_ssh_dict_from_json()
         self.remote_slurm_script_path = self._get_compulsory_value("SLURM_SCRIPT_PATH")
+        self.partition = self._get_compulsory_value("PARTITION")
         self.antares_versions = self._get_compulsory_value(
             "ANTARES_VERSIONS_ON_REMOTE_SERVER"
         )
@@ -50,7 +51,7 @@ class ParametersReader:
         )
 
     def get_parser_parameters(self):
-        options = ParserParameters(
+        return ParserParameters(
             default_wait_time=self._wait_time,
             default_time_limit=self.time_limit,
             default_n_cpu=self.n_cpu,
@@ -61,18 +62,17 @@ class ParametersReader:
             ssh_configfile_path_alternate1=self.ssh_conf_alt1,
             ssh_configfile_path_alternate2=self.ssh_conf_alt2,
         )
-        return options
 
     def get_main_parameters(self) -> MainParameters:
-        main_parameters = MainParameters(
+        return MainParameters(
             json_dir=self.json_dir,
             default_json_db_name=self.json_db_name,
             slurm_script_path=self.remote_slurm_script_path,
+            partition=self.partition,
             antares_versions_on_remote_server=self.antares_versions,
             default_ssh_dict=self.default_ssh_dict,
             db_primary_key=self.db_primary_key,
         )
-        return main_parameters
 
     def _get_ssh_conf_file_alts(self):
         default_alternate1, default_alternate2 = self._get_default_alternate_values()

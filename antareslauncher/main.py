@@ -70,6 +70,7 @@ class MainParameters:
     json_dir: Path
     default_json_db_name: str
     slurm_script_path: str
+    partition: str
     antares_versions_on_remote_server: List[str]
     default_ssh_dict: Dict
     db_primary_key: str
@@ -114,7 +115,7 @@ def run_with(
     connection = ssh_connection.SshConnection(config=ssh_dict)
     verify_connection(connection, display)
 
-    slurm_script_features = SlurmScriptFeatures(parameters.slurm_script_path)
+    slurm_script_features = SlurmScriptFeatures(parameters.slurm_script_path, parameters.partition)
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
     data_repo = DataRepoTinydb(
         database_file_path=db_json_file_path, db_primary_key=parameters.db_primary_key

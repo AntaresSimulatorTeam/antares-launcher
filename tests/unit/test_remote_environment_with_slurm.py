@@ -64,7 +64,7 @@ class TestRemoteEnvironmentWithSlurm:
         remote_home_dir = "remote_home_dir"
         connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path", "fake_partition")
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
     @pytest.mark.unit_test
@@ -80,7 +80,7 @@ class TestRemoteEnvironmentWithSlurm:
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path", "fake_partition")
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -92,7 +92,7 @@ class TestRemoteEnvironmentWithSlurm:
     ):
         # given
         connection = mock.Mock(home_dir="path/to/home")
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path", "fake_partition")
         # when
         connection.make_dir = mock.Mock(return_value=False)
         # then
@@ -107,7 +107,7 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock(home_dir="path/to/home")
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path", "fake_partition")
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -123,7 +123,7 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures("slurm_script_path", "fake_partition")
         # when
         connection.check_file_not_empty = mock.Mock(return_value=False)
         # then
@@ -688,7 +688,9 @@ class TestRemoteEnvironmentWithSlurm:
         # then
         change_dir = f"cd {remote_env.remote_base_path}"
         reference_submit_command = (
-            f"sbatch"
+            f"sbatch" 
+            ' --partition'
+            ' fake_partition'
             f' --job-name="{Path(study.path).name}"'
             f" --time={study.time_limit // 60}"
             f" --cpus-per-task={study.n_cpu}"

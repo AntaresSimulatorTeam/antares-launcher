@@ -19,12 +19,13 @@ class SlurmScriptFeatures:
     """Class that returns data related to the remote SLURM script
     Installed on the remote server"""
 
-    def __init__(self, slurm_script_path: str):
+    def __init__(self, slurm_script_path: str, partition: str):
         self.JOB_TYPE_PLACEHOLDER = "TO_BE_REPLACED_WITH_JOB_TYPE"
         self.JOB_TYPE_ANTARES = "ANTARES"
         self.JOB_TYPE_XPANSION_R = "ANTARES_XPANSION_R"
         self.JOB_TYPE_XPANSION_CPP = "ANTARES_XPANSION_CPP"
         self.solver_script_path = slurm_script_path
+        self.partition = partition
         self._script_params = None
         self._remote_launch_dir = None
 
@@ -69,27 +70,24 @@ class SlurmScriptFeatures:
         option3_job_type = f" {self.JOB_TYPE_PLACEHOLDER}"
         option4_post_processing = f" {self._script_params.post_processing}"
         option5_other_options = f" '{self._script_params.other_options}'"
-        bash_options = (
+        return (
             option1_zipfile_name
             + option2_antares_version
             + option3_job_type
             + option4_post_processing
             + option5_other_options
         )
-        return bash_options
 
     def _sbatch_command_with_slurm_options(self):
-        call_sbatch = f"sbatch"
+        call_sbatch = f"sbatch --partition {self.partition}"
         job_name = f' --job-name="{self._script_params.study_dir_name}"'
         time_limit_opt = f" --time={self._script_params.time_limit}"
         cpu_per_task = f" --cpus-per-task={self._script_params.n_cpu}"
-        slurm_options = call_sbatch + job_name + time_limit_opt + cpu_per_task
-        return slurm_options
+        return call_sbatch + job_name + time_limit_opt + cpu_per_task
 
     def _get_complete_command_with_placeholders(self):
         change_dir = f"cd {self._remote_launch_dir}"
         slurm_options = self._sbatch_command_with_slurm_options()
         bash_options = self._bash_options()
-        submit_command = slurm_options + " " + self.solver_script_path + bash_options
-        complete_command = change_dir + " && " + submit_command
-        return complete_command
+        submit_command = f"{slurm_options} {self.solver_script_path}{bash_options}"
+        return f"{change_dir} && {submit_command}"

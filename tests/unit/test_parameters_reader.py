@@ -10,6 +10,7 @@ from antareslauncher.parameters_reader import ParametersReader
 class TestParametersReader:
     def setup_method(self):
         self.SLURM_SCRIPT_PATH = "/path/to/launchAntares_v1.1.3.sh"
+        self.PARTITION = "calin1"
         self.SSH_CONFIG_FILE_IS_REQUIRED = False
         self.DEFAULT_SSH_CONFIGFILE_NAME = "ssh_config.json"
         self.DB_PRIMARY_KEY = "name"
@@ -34,6 +35,7 @@ class TestParametersReader:
             f'DEFAULT_SSH_CONFIGFILE_NAME: "{self.DEFAULT_SSH_CONFIGFILE_NAME}"\n'
             f"SSH_CONFIG_FILE_IS_REQUIRED : {self.SSH_CONFIG_FILE_IS_REQUIRED}\n"
             f'SLURM_SCRIPT_PATH : "{self.SLURM_SCRIPT_PATH}"\n'
+            f'PARTITION : "{self.PARTITION}"\n'
             f"ANTARES_VERSIONS_ON_REMOTE_SERVER :\n"
             f'  - "{self.ANTARES_SUPPORTED_VERSIONS[0]}"\n'
             f'  - "{self.ANTARES_SUPPORTED_VERSIONS[1]}"\n'
@@ -149,6 +151,7 @@ class TestParametersReader:
             main_parameters.default_json_db_name
             == f"{getpass.getuser()}_antares_launcher_db.json"
         )
+        assert main_parameters.partition == self.PARTITION
         assert main_parameters.db_primary_key == self.DB_PRIMARY_KEY
         assert not main_parameters.default_ssh_dict
         assert (
