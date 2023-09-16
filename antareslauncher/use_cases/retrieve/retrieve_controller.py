@@ -51,10 +51,7 @@ class RetrieveController:
             True if all the studies are done, False otherwise
         """
         studies = self.repo.get_list_of_studies()
-        for study in studies:
-            if not study.done:
-                return False
-        return True
+        return all(study.done for study in studies)
 
     def retrieve_all_studies(self):
         """Retrieves all the studies and logs from the environment and process them
@@ -72,8 +69,7 @@ class RetrieveController:
             __name__ + "." + __class__.__name__,
         )
         for study in studies:
-            if not study.done:
-                self.study_retriever.retrieve(study)
+            self.study_retriever.retrieve(study)
         if self.all_studies_done:
             self.display.show_message(
                 "Everything is done",

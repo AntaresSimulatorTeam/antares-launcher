@@ -1,9 +1,6 @@
-from copy import copy
 from unittest import mock
-from unittest.mock import call
 
 import pytest
-
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
@@ -13,7 +10,10 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
 )
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.clean_remote_server import RemoteServerCleaner
-from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownloader
+from antareslauncher.use_cases.retrieve.download_final_zip import (
+    FinalZipDownloader,
+    FinalZipNotDownloadedException,
+)
 from antareslauncher.use_cases.retrieve.final_zip_extractor import FinalZipExtractor
 from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
@@ -61,70 +61,115 @@ class TestStudyRetriever:
         self.zip_extractor.extract_final_zip.assert_not_called()
 
     @pytest.mark.unit_test
-    def test_given_a_not_done_studies_everything_is_called(self):
+    def test_retrieve_study(self):
+        """
+        This test function simulates the retrieval process of a study and verifies
+        that various components and states are updated correctly.
+
+        Test cases covered:
+        - State updater
+        - Logs downloader
+        - Final zip downloader
+        - Remote server cleaner
+        - Zip extractor
+        - Reporter
+        """
         study = StudyDTO(path="hello")
-        study1 = StudyDTO(
-            path="hello",
-            job_id=42,
-            started=True,
-            finished=True,
-            with_error=False,
+
+        def state_updater_run(study_: StudyDTO):
+            study_.job_id = 42
+            study_.started = True
+            study_.finished = True
+            study_.with_error = False
+            return study_
+
+        self.state_updater.run = mock.Mock(side_effect=state_updater_run)
+
+        def logs_downloader_run(study_: StudyDTO):
+            study_.logs_downloaded = True
+            return study_
+
+        self.logs_downloader.run = mock.Mock(side_effect=logs_downloader_run)
+
+        def final_zip_downloader_download(study_: StudyDTO):
+            study_.local_final_zipfile_path = "final-zipfile.zip"
+            return study_
+
+        self.final_zip_downloader.download = mock.Mock(
+            side_effect=final_zip_downloader_download
         )
-        self.state_updater.run = mock.Mock(return_value=study1)
-        study2 = copy(study1)
-        study2.logs_downloaded = True
-        self.logs_downloader.run = mock.Mock(return_value=study2)
-        study3 = copy(study2)
-        study3.local_final_zipfile_path = "final-zipfile.zip"
-        self.final_zip_downloader.download = mock.Mock(return_value=study3)
-        study4 = copy(study3)
-        study4.remote_server_is_clean = True
-        self.remote_server_cleaner.clean = mock.Mock(return_value=study4)
-        study5 = copy(study4)
-        study5.final_zip_extracted = True
-        self.zip_extractor.extract_final_zip = mock.Mock(return_value=study5)
-        study6 = copy(study5)
-        study6.done = True
-        self.reporter.save_study = mock.Mock()
+
+        def remote_server_cleaner_clean(study_: StudyDTO):
+            study_.remote_server_is_clean = True
+            return study_
+
+        self.remote_server_cleaner.clean = mock.Mock(
+            side_effect=remote_server_cleaner_clean
+        )
+
+        def zip_extractor_extract_final_zip(study_: StudyDTO):
+            study_.final_zip_extracted = True
+            return study_
+
+        self.zip_extractor.extract_final_zip = mock.Mock(
+            side_effect=zip_extractor_extract_final_zip
+        )
+        self.reporter.save_study = mock.Mock(return_value=True)
 
         self.study_retriever.retrieve(study)
 
-        self.state_updater.run.assert_called_once_with(study)
-        self.logs_downloader.run.assert_called_once_with(study1)
-        self.final_zip_downloader.download.assert_called_once_with(study2)
-        self.remote_server_cleaner.clean.assert_called_once_with(study3)
-        self.zip_extractor.extract_final_zip.assert_called_once_with(study4)
-        assert self.reporter.save_study.call_count == 6
-        calls = self.reporter.save_study.call_args_list
-        assert calls[0] == call(study1)
-        assert calls[1] == call(study2)
-        assert calls[2] == call(study3)
-        assert calls[3] == call(study4)
-        assert calls[4] == call(study5)
-        assert calls[5] == call(study6)
+        expected = StudyDTO(
+            path="hello",
+            job_id=42,
+            done=True,
+            started=True,
+            finished=True,
+            with_error=False,
+            logs_downloaded=True,
+            local_final_zipfile_path="final-zipfile.zip",
+            remote_server_is_clean=True,
+            final_zip_extracted=True,
+        )
+        self.reporter.save_study.assert_called_once_with(expected)
 
-    @staticmethod
     @pytest.mark.unit_test
-    @pytest.mark.parametrize(
-        "result, with_error,logs_downloaded, local_final_zipfile_path, remote_server_is_clean, final_zip_extracted",
-        [
-            (False, False, False, None, False, False),
-            (True, True, False, None, False, False),
-            (True, False, True, "path.zip", True, True),
-        ],
-    )
-    def test_when_study_finished_with_error_check_if_study_is_done_returns_true(
-        result,
-        with_error,
-        logs_downloaded,
-        local_final_zipfile_path,
-        remote_server_is_clean,
-        final_zip_extracted,
-    ):
-        my_study = StudyDTO(path="hello", job_id=42, started=True, finished=True)
-        my_study.with_error = with_error
-        my_study.logs_downloaded = logs_downloaded
-        my_study.local_final_zipfile_path = local_final_zipfile_path
-        my_study.remote_server_is_clean = remote_server_is_clean
-        my_study.final_zip_extracted = final_zip_extracted
-        assert StudyRetriever.check_if_study_is_done(my_study) is result
+    def test_retrieve_study__exception(self):
+        """
+        This test case specifically checks the behavior of the `retrieve` method
+        in the presence of an exception. It verifies that the study object and
+        its components are updated correctly when this exception occurs.
+        """
+        study = StudyDTO(path="hello")
+
+        def state_updater_run(study_: StudyDTO):
+            study_.job_id = 42
+            study_.started = True
+            study_.finished = True
+            study_.with_error = False
+            return study_
+
+        self.state_updater.run = mock.Mock(side_effect=state_updater_run)
+        self.logs_downloader.run = mock.Mock(
+            side_effect=FinalZipNotDownloadedException("download fails")
+        )
+        self.final_zip_downloader.download = mock.Mock()
+        self.remote_server_cleaner.clean = mock.Mock()
+        self.zip_extractor.extract_final_zip = mock.Mock()
+        self.reporter.save_study = mock.Mock(return_value=True)
+
+        self.study_retriever.retrieve(study)
+
+        expected = StudyDTO(
+            path="hello",
+            job_id=42,
+            done=True,
+            started=True,
+            finished=True,
+            with_error=True,
+            logs_downloaded=False,
+            local_final_zipfile_path="",
+            remote_server_is_clean=False,
+            final_zip_extracted=False,
+            job_state="Internal error: download fails",
+        )
+        self.reporter.save_study.assert_called_once_with(expected)
