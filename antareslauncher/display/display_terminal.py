@@ -8,7 +8,8 @@ from antareslauncher.display.idisplay import IDisplay
 
 class DisplayTerminal(IDisplay):
     def __init__(self):
-        self.format = "%Y%m%d %H:%M"
+        # Use the ISO8601 date format to display messages on the console
+        self.format = "%Y-%m-%d %H:%M:%S%z"
 
     def show_message(self, message: str, class_name: str, end: str = "\n"):
         """Displays a message on the terminal
