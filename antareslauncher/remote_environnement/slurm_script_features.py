@@ -20,7 +20,13 @@ class SlurmScriptFeatures:
     """Class that returns data related to the remote SLURM script
     Installed on the remote server"""
 
-    def __init__(self, slurm_script_path: str, *, partition: str):
+    def __init__(
+        self,
+        slurm_script_path: str,
+        *,
+        partition: str,
+        quality_of_service: str,
+    ):
         """
         Initialize the slurm script feature.
 
@@ -29,9 +35,12 @@ class SlurmScriptFeatures:
             partition: Request a specific partition for the resource allocation.
                 If not specified, the default behavior is to allow the slurm controller
                 to select the default partition as designated by the system administrator.
+            quality_of_service: Request a quality of service for the job.
+                QOS values can be defined for each user/cluster/account association in the Slurm database.
         """
         self.solver_script_path = slurm_script_path
         self.partition = partition
+        self.quality_of_service = quality_of_service
 
     def compose_launch_command(
         self,
@@ -52,6 +61,7 @@ class SlurmScriptFeatures:
         # if they are not empty (or null for integer options).
         _opts = {
             "--partition": self.partition,  # non-empty string
+            "--qos": self.quality_of_service,  # non-empty string
             "--job-name": script_params.study_dir_name,  # non-empty string
             "--time": script_params.time_limit,  # greater than 0
             "--cpus-per-task": script_params.n_cpu,  # greater than 0

@@ -23,6 +23,7 @@ class TestIntegrationLaunchController:
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
             partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = mock.Mock()
@@ -72,10 +73,10 @@ class TestIntegrationLaunchController:
         connection = mock.Mock()
         connection.execute_command = mock.Mock(return_value=["Submitted 42", ""])
         connection.home_dir = "Submitted"
-        fake_partition = "fake_partition"
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
-            partition=fake_partition,
+            partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = StudyDTO(
@@ -105,7 +106,9 @@ class TestIntegrationLaunchController:
         )
         command = (
             f"cd {remote_base_path} && "
-            f"sbatch --partition={fake_partition}"
+            f"sbatch"
+            f" --partition={slurm_script_features.partition}"
+            f" --qos={slurm_script_features.quality_of_service}"
             f" --job-name={Path(study1.path).name}"
             f" --time={study1.time_limit // 60}"
             f" --cpus-per-task={study1.n_cpu}"

@@ -26,6 +26,7 @@ DEFAULT_SSH_CONFIGFILE_NAME: "ssh_config.json"
 SSH_CONFIG_FILE_IS_REQUIRED : False
 SLURM_SCRIPT_PATH : "/opt/antares/launchAntares.sh"
 PARTITION : "compute1"
+QUALITY_OR_SERVICE : "user1_qos"
 
 ANTARES_VERSIONS_ON_REMOTE_SERVER :
   - "610"
@@ -55,6 +56,8 @@ Below is a description of the parameters:
 - `PARTITION`: Extra `sbatch` option to request a specific partition for resource allocation.
   If not specified, the default behavior is to allow the SLURM controller
   to select the default partition as designated by the system administrator.
+- `QUALITY_OF_SERVICE`: Extra `sbatch` option to request a quality of service for the job.
+  QOS values can be defined for each user/cluster/account association in the Slurm database.
 - `ANTARES_VERSIONS_ON_REMOTE_SERVER`: A list of strings representing the available Antares Solver versions on the remote server.
 
 ## SSH Configuration

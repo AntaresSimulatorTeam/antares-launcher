@@ -24,6 +24,7 @@ class TestIntegrationCheckQueueController:
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
             partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         env_mock = RemoteEnvironmentWithSlurm(
             _connection=self.connection_mock,

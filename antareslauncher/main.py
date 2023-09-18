@@ -74,6 +74,8 @@ class MainParameters:
         partition: Extra `sbatch` option to request a specific partition for resource allocation.
             If not specified, the default behavior is to allow the SLURM controller
             to select the default partition as designated by the system administrator.
+        quality_of_service: Extra `sbatch` option to request a quality of service for the job.
+            QOS values can be defined for each user/cluster/account association in the Slurm database.
     """
 
     json_dir: Path
@@ -83,6 +85,7 @@ class MainParameters:
     default_ssh_dict: Dict
     db_primary_key: str
     partition: str = ""
+    quality_of_service: str = ""
 
 
 def run_with(
@@ -127,6 +130,7 @@ def run_with(
     slurm_script_features = SlurmScriptFeatures(
         parameters.slurm_script_path,
         partition=parameters.partition,
+        quality_of_service=parameters.quality_of_service,
     )
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
     data_repo = DataRepoTinydb(

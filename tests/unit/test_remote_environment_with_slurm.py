@@ -67,6 +67,7 @@ class TestRemoteEnvironmentWithSlurm:
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
             partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
@@ -86,6 +87,7 @@ class TestRemoteEnvironmentWithSlurm:
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
             partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
@@ -101,6 +103,7 @@ class TestRemoteEnvironmentWithSlurm:
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
             partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         # when
         connection.make_dir = mock.Mock(return_value=False)
@@ -119,6 +122,7 @@ class TestRemoteEnvironmentWithSlurm:
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
             partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
@@ -138,6 +142,7 @@ class TestRemoteEnvironmentWithSlurm:
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
             partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         # when
         connection.check_file_not_empty = mock.Mock(return_value=False)
@@ -705,6 +710,7 @@ class TestRemoteEnvironmentWithSlurm:
         reference_submit_command = (
             f"sbatch"
             " --partition=fake_partition"
+            " --qos=user1_qos"
             f" --job-name={Path(study.path).name}"
             f" --time={study.time_limit // 60}"
             f" --cpus-per-task={study.n_cpu}"

@@ -16,6 +16,7 @@ class TestIntegrationJobKilController:
         slurm_script_features = SlurmScriptFeatures(
             "slurm_script_path",
             partition="fake_partition",
+            quality_of_service="user1_qos",
         )
         connection = mock.Mock(home_dir="path/to/home")
         env = RemoteEnvironmentWithSlurm(connection, slurm_script_features)

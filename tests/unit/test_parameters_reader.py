@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from antareslauncher.parameters_reader import MissingValueException, ParametersReader
 
@@ -10,7 +11,8 @@ from antareslauncher.parameters_reader import MissingValueException, ParametersR
 class TestParametersReader:
     def setup_method(self):
         self.SLURM_SCRIPT_PATH = "/path/to/launchAntares_v1.1.3.sh"
-        self.PARTITION = "calin1"
+        self.PARTITION = "compute1"
+        self.QUALITY_OF_SERVICE = "user1_qos"
         self.SSH_CONFIG_FILE_IS_REQUIRED = False
         self.DEFAULT_SSH_CONFIGFILE_NAME = "ssh_config.json"
         self.DB_PRIMARY_KEY = "name"
@@ -23,41 +25,43 @@ class TestParametersReader:
         self.JSON_DIR = "JSON"
         self.ANTARES_SUPPORTED_VERSIONS = ["610", "700"]
 
-        self.yaml_compulsory_content = (
-            f'LOG_DIR : "{self.LOG_DIR}"\n'
-            f'JSON_DIR : "{self.JSON_DIR}"\n'
-            f'STUDIES_IN_DIR : "{self.STUDIES_IN_DIR}"\n'
-            f'FINISHED_DIR : "{self.FINISHED_DIR}"\n'
-            f"DEFAULT_TIME_LIMIT : {self.DEFAULT_TIME_LIMIT}\n"
-            f"DEFAULT_N_CPU : {self.DEFAULT_N_CPU}\n"
-            f"DEFAULT_WAIT_TIME : {self.DEFAULT_WAIT_TIME}\n"
-            f'DB_PRIMARY_KEY : "{self.DB_PRIMARY_KEY}"\n'
-            f'DEFAULT_SSH_CONFIGFILE_NAME: "{self.DEFAULT_SSH_CONFIGFILE_NAME}"\n'
-            f"SSH_CONFIG_FILE_IS_REQUIRED : {self.SSH_CONFIG_FILE_IS_REQUIRED}\n"
-            f'SLURM_SCRIPT_PATH : "{self.SLURM_SCRIPT_PATH}"\n'
-            f'PARTITION : "{self.PARTITION}"\n'
-            f"ANTARES_VERSIONS_ON_REMOTE_SERVER :\n"
-            f'  - "{self.ANTARES_SUPPORTED_VERSIONS[0]}"\n'
-            f'  - "{self.ANTARES_SUPPORTED_VERSIONS[1]}"\n'
+        self.yaml_compulsory_content = yaml.dump(
+            {
+                "LOG_DIR": self.LOG_DIR,
+                "JSON_DIR": self.JSON_DIR,
+                "STUDIES_IN_DIR": self.STUDIES_IN_DIR,
+                "FINISHED_DIR": self.FINISHED_DIR,
+                "DEFAULT_TIME_LIMIT": self.DEFAULT_TIME_LIMIT,
+                "DEFAULT_N_CPU": self.DEFAULT_N_CPU,
+                "DEFAULT_WAIT_TIME": self.DEFAULT_WAIT_TIME,
+                "DB_PRIMARY_KEY": self.DB_PRIMARY_KEY,
+                "DEFAULT_SSH_CONFIGFILE_NAME": self.DEFAULT_SSH_CONFIGFILE_NAME,
+                "SSH_CONFIG_FILE_IS_REQUIRED": self.SSH_CONFIG_FILE_IS_REQUIRED,
+                "SLURM_SCRIPT_PATH": self.SLURM_SCRIPT_PATH,
+                "PARTITION": self.PARTITION,
+                "QUALITY_OF_SERVICE": self.QUALITY_OF_SERVICE,
+                "ANTARES_VERSIONS_ON_REMOTE_SERVER": self.ANTARES_SUPPORTED_VERSIONS,
+            },
+            default_flow_style=False,
         )
-        self.DEFAULT_JSON_DB_NAME = "db_file.json"
-        self.yaml_opt_content = (
-            f'DEFAULT_JSON_DB_NAME : "{self.DEFAULT_JSON_DB_NAME}\n'
-            f'DEFAULT_SSH_CONFIGFILE_NAME: "{self.DEFAULT_SSH_CONFIGFILE_NAME}"\n'
+
+        self.yaml_opt_content = yaml.dump(
+            {
+                "DEFAULT_JSON_DB_NAME": "db_file.json",
+                "DEFAULT_SSH_CONFIGFILE_NAME": self.DEFAULT_SSH_CONFIGFILE_NAME,
+            },
+            default_flow_style=False,
         )
-        self.USER = "user"
-        self.HOST = "host"
-        self.KEY = "C:\\home\\hello"
-        self.KEY_PSWD = "hello"
+
         self.json_dict = {
-            "username": self.USER,
-            "hostname": self.HOST,
-            "private_key_file": self.KEY,
-            "key_password": self.KEY_PSWD,
+            "username": "user",
+            "hostname": "host",
+            "private_key_file": "C:\\home\\hello",
+            "key_password": "hello",
         }
 
     @pytest.mark.unit_test
-    def test_ParametersReader_raises_exception_with_no_file(self, tmp_path):
+    def test_parameters_reader_raises_exception_with_no_file(self, tmp_path):
         with pytest.raises(FileNotFoundError):
             ParametersReader(Path(tmp_path), Path("empty.yaml"))
 
@@ -152,6 +156,7 @@ class TestParametersReader:
             == f"{getpass.getuser()}_antares_launcher_db.json"
         )
         assert main_parameters.partition == self.PARTITION
+        assert main_parameters.quality_of_service == self.QUALITY_OF_SERVICE
         assert main_parameters.db_primary_key == self.DB_PRIMARY_KEY
         assert not main_parameters.default_ssh_dict
         assert (
