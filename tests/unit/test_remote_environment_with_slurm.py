@@ -376,6 +376,7 @@ class TestRemoteEnvironmentWithSlurm:
             call(command),
         ]
 
+    # noinspection SpellCheckingInspection
     @pytest.mark.unit_test
     @pytest.mark.parametrize(
         "state, expected",
@@ -387,6 +388,7 @@ class TestRemoteEnvironmentWithSlurm:
             ("CANCELLED by 123456", (True, True, True)),
             ("TIMEOUT", (True, True, True)),
             ("COMPLETED", (True, True, False)),
+            ("COMPLETING", (True, False, False)),
             ("FAILED", (True, True, True)),
         ],
     )

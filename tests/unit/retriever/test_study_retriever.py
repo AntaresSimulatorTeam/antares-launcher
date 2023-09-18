@@ -1,6 +1,7 @@
 from unittest import mock
 
 import pytest
+
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.idisplay import IDisplay
