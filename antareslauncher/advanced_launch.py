@@ -15,7 +15,7 @@ def main():
     )
     parser_parameters: ParserParameters = param_reader.get_parser_parameters()
     parser: MainOptionParser = MainOptionParser(parser_parameters)
-    parser.add_basic_arguments().add_advanced_arguments()
+    parser.add_basic_arguments(antares_versions=param_reader.antares_versions).add_advanced_arguments()
     arguments = parser.parse_args()
     main_parameters: MainParameters = param_reader.get_main_parameters()
     run_with(arguments=arguments, parameters=main_parameters, show_banner=True)

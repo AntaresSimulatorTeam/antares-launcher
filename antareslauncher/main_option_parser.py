@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import getpass
 import pathlib
 from argparse import RawTextHelpFormatter
 from dataclasses import dataclass
-from typing import List, Optional
+import typing as t
 
 
 @dataclass
@@ -17,8 +18,8 @@ class ParserParameters:
     log_dir: str
     finished_dir: str
     ssh_config_file_is_required: bool
-    ssh_configfile_path_alternate1: Optional[pathlib.Path]
-    ssh_configfile_path_alternate2: Optional[pathlib.Path]
+    ssh_configfile_path_alternate1: t.Optional[pathlib.Path]
+    ssh_configfile_path_alternate2: t.Optional[pathlib.Path]
 
 
 class MainOptionParser:
@@ -47,7 +48,7 @@ class MainOptionParser:
             "other_options": None,
         }
 
-    def parse_args(self, args: List[str] = None) -> argparse.Namespace:
+    def parse_args(self, args: t.Sequence[str] = ()) -> argparse.Namespace:
         """Parses the args given with the selected options.
         If args is None, the standard input will be parsed
 
@@ -65,7 +66,9 @@ class MainOptionParser:
                 setattr(output, key, value)
         return output
 
-    def add_basic_arguments(self) -> MainOptionParser:
+    def add_basic_arguments(
+        self, *, antares_versions: t.Sequence[str] = ()
+    ) -> MainOptionParser:
         """Adds to the parser all the arguments for the light mode"""
         self.parser.add_argument(
             "-w",
@@ -73,17 +76,23 @@ class MainOptionParser:
             action="store_true",
             dest="wait_mode",
             default=self.default_argument_values["wait_mode"],
-            help="Activate the wait mode: the Antares_Launcher waits for all the jobs to finish\n"
-            "it check every WAIT_TIME seconds (default value = 900 = 15 minutes).",
+            help=(
+                "Activate the wait mode: the Antares_Launcher waits for all the jobs to finish\n"
+                "it check every WAIT_TIME seconds (default value = 900 = 15 minutes)."
+            ),
         )
 
+        delta = datetime.timedelta(seconds=self.default_argument_values["wait_time"])
         self.parser.add_argument(
             "--wait-time",
             dest="wait_time",
             type=int,
-            default=self.default_argument_values["wait_time"],
-            help="Number of seconds between each verification of the end of the simulations\n"
-            "changes the value of WAIT_TIME used for the wait-mode.",
+            default=int(delta.total_seconds()),
+            help=(
+                "Number of seconds between each verification of the end of the simulations\n"
+                "changes the value of WAIT_TIME used for the wait-mode.\n"
+                f"The default value will be used: {delta.total_seconds():.0f}s = {delta}."
+            ),
         )
 
         self.parser.add_argument(
@@ -91,9 +100,11 @@ class MainOptionParser:
             "--studies-in-dir",
             dest="studies_in",
             default=self.default_argument_values["studies_in"],
-            help="Directory containing the studies to be executed.\n"
-            "If the directory does not exist, it will be created (empty).\n"
-            "if no directory is indicated, the default value will be used STUDIES-IN",
+            help=(
+                "Directory containing the studies to be executed.\n"
+                "If the directory does not exist, it will be created (empty).\n"
+                "if no directory is indicated, the default value will be used STUDIES-IN"
+            ),
         )
 
         self.parser.add_argument(
@@ -101,8 +112,10 @@ class MainOptionParser:
             "--output-dir",
             dest="output_dir",
             default=self.default_argument_values["output_dir"],
-            help="Directory where the finished studies will be downloaded and extracted.\n"
-            'If the directory does not exist, it will be created (default value "FINISHED").',
+            help=(
+                "Directory where the finished studies will be downloaded and extracted.\n"
+                'If the directory does not exist, it will be created (default value "FINISHED").'
+            ),
         )
 
         self.parser.add_argument(
@@ -111,21 +124,26 @@ class MainOptionParser:
             action="store_true",
             dest="check_queue",
             default=self.default_argument_values["check_queue"],
-            help="Displays from the remote queue all job statuses.\n"
-            "If the option is used, it will override the standard execution.\n"
-            "It can be overridden by the kill job option (-k).",
+            help=(
+                "Displays from the remote queue all job statuses.\n"
+                "If the option is used, it will override the standard execution.\n"
+                "It can be overridden by the kill job option (-k)."
+            ),
         )
-        seconds_in_hour = 3600
+
+        delta = datetime.timedelta(seconds=self.default_argument_values["time_limit"])
         self.parser.add_argument(
             "-t",
             "--time-limit",
             dest="time_limit",
             type=int,
-            default=self.default_argument_values["time_limit"],
-            help="Time limit in seconds of a single job.\n"
-            "If nothing is specified here and"
-            "if the study is not initialised with a specific value,\n"
-            f"the default value will be used: {self.parameters.default_time_limit}={int(self.parameters.default_time_limit / seconds_in_hour)}h.",
+            default=int(delta.total_seconds()),
+            help=(
+                "Time limit in seconds of a single job.\n"
+                "If nothing is specified here and"
+                "if the study is not initialised with a specific value,\n"
+                f"The default value will be used: {delta.total_seconds():.0f}s = {delta}."
+            ),
         )
 
         self.parser.add_argument(
@@ -133,10 +151,12 @@ class MainOptionParser:
             "--xpansion-mode",
             dest="xpansion_mode",
             default=None,
-            help="Activate the xpansion mode:\n"
-            "Antares_Launcher will launch all the new studies in xpansion mode if\n"
-            "the studies contains the information necessary for AntaresXpansion.\n"
-            'if rhe flag is set to "r", the xpansion mode will be activated with the R version.\n',
+            help=(
+                "Activate the xpansion mode:\n"
+                "Antares_Launcher will launch all the new studies in xpansion mode if\n"
+                "the studies contains the information necessary for AntaresXpansion.\n"
+                'if rhe flag is set to "r", the xpansion mode will be activated with the R version.\n'
+            ),
         )
 
         self.parser.add_argument(
@@ -169,10 +189,22 @@ class MainOptionParser:
             dest="job_id_to_kill",
             type=int,
             default=self.default_argument_values["job_id_to_kill"],
-            help=f"JobID of the run to be cancelled on the remote server.\n"
-            f"the JobID can be retrieved with option -q to show the queue."
-            f"If option is given it overrides the -q and the standard execution.",
+            help=(
+                f"JobID of the run to be cancelled on the remote server.\n"
+                f"the JobID can be retrieved with option -q to show the queue."
+                f"If option is given it overrides the -q and the standard execution."
+            ),
         )
+
+        antares_version = max(map(int, antares_versions)) if antares_versions else 0
+        self.parser.add_argument(
+            "--solver-version",
+            dest="antares_version",
+            type=int,
+            default=antares_version,
+            help="Antares Solver version to use for simulation",
+        )
+
         return self
 
     def add_advanced_arguments(self) -> MainOptionParser:
@@ -183,18 +215,22 @@ class MainOptionParser:
             dest="n_cpu",
             type=int,
             default=self.default_argument_values["n_cpu"],
-            help=f"Number of cores to be used for a single job.\n"
-            f"If nothing is specified here and "
-            f"if the study is not initialised with a specific value,\n"
-            f"the default value will be used: n_cpu=={self.parameters.default_n_cpu}",
+            help=(
+                f"Number of cores to be used for a single job.\n"
+                f"If nothing is specified here and "
+                f"if the study is not initialised with a specific value,\n"
+                f"the default value will be used: n_cpu=={self.parameters.default_n_cpu}"
+            ),
         )
 
         self.parser.add_argument(
             "--log-dir",
             dest="log_dir",
             default=self.default_argument_values["log_dir"],
-            help="Directory where the logs of the jobs will be found.\n"
-            "If the directory does not exist, it will be created.",
+            help=(
+                "Directory where the logs of the jobs will be found.\n"
+                "If the directory does not exist, it will be created."
+            ),
         )
 
         self.parser.add_argument(
@@ -202,11 +238,13 @@ class MainOptionParser:
             dest="json_ssh_config",
             default=self.default_argument_values["json_ssh_config"],
             required=self.parameters.ssh_config_file_is_required,
-            help=f"Path to the configuration file for the ssh connection.\n"
-            f"If no value is given, "
-            f"it will look for it in default location with this order:\n"
-            f"1st: {self.parameters.ssh_configfile_path_alternate1}\n"
-            f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n",
+            help=(
+                f"Path to the configuration file for the ssh connection.\n"
+                f"If no value is given, "
+                f"it will look for it in default location with this order:\n"
+                f"1st: {self.parameters.ssh_configfile_path_alternate1}\n"
+                f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n"
+            ),
         )
         return self
 
