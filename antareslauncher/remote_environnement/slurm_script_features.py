@@ -81,7 +81,7 @@ class SlurmScriptFeatures:
             for arg in [
                 self.solver_script_path,
                 script_params.input_zipfile_name,
-                script_params.antares_version,
+                str(script_params.antares_version),
                 _job_type,
                 str(script_params.post_processing),
                 script_params.other_options,
