@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from antareslauncher.parameters_reader import ParametersReader
+from antareslauncher.parameters_reader import ParametersReader, MissingValueException
 
 
 class TestParametersReader:
@@ -66,7 +66,7 @@ class TestParametersReader:
         empty_json = tmp_path / "dummy.json"
         empty_yaml = tmp_path / "empty.yaml"
         empty_yaml.write_text("")
-        with pytest.raises(ParametersReader.MissingValueException):
+        with pytest.raises(MissingValueException):
             ParametersReader(empty_json, empty_yaml).get_parser_parameters()
 
     @pytest.mark.unit_test
@@ -74,7 +74,7 @@ class TestParametersReader:
         empty_json = tmp_path / "dummy.json"
         empty_yaml = tmp_path / "empty.yaml"
         empty_yaml.write_text("")
-        with pytest.raises(ParametersReader.MissingValueException):
+        with pytest.raises(MissingValueException):
             ParametersReader(empty_json, empty_yaml).get_main_parameters()
 
     @pytest.mark.unit_test
@@ -91,7 +91,7 @@ class TestParametersReader:
             "DEFAULT_TIME_LIMIT : 172800\n"
             "DEFAULT_N_CPU : 2\n"
         )
-        with pytest.raises(ParametersReader.MissingValueException):
+        with pytest.raises(MissingValueException):
             ParametersReader(empty_json, config_yaml).get_parser_parameters()
 
     @pytest.mark.unit_test
@@ -106,7 +106,7 @@ class TestParametersReader:
             "DEFAULT_TIME_LIMIT : 172800\n"
             "DEFAULT_N_CPU : 2\n"
         )
-        with pytest.raises(ParametersReader.MissingValueException):
+        with pytest.raises(MissingValueException):
             ParametersReader(empty_json, config_yaml).get_main_parameters()
 
     @pytest.mark.unit_test
