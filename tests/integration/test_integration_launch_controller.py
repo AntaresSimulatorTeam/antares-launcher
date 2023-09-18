@@ -20,7 +20,10 @@ class TestIntegrationLaunchController:
     @pytest.fixture(scope="function")
     def launch_controller(self):
         connection = mock.Mock(home_dir="path/to/home")
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path", "fake_partition")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+        )
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = mock.Mock()
         study1.zipfile_path = "filepath"
@@ -70,7 +73,10 @@ class TestIntegrationLaunchController:
         connection.execute_command = mock.Mock(return_value=["Submitted 42", ""])
         connection.home_dir = "Submitted"
         fake_partition = "fake_partition"
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path", fake_partition)
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition=fake_partition,
+        )
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = StudyDTO(
             path="dummy_path",
@@ -91,7 +97,7 @@ class TestIntegrationLaunchController:
         post_processing = False
         other_options = ""
         bash_options = (
-            f' {zipfile_name}'
+            f" {zipfile_name}"
             f" {study1.antares_version}"
             f" {job_type}"
             f" {post_processing}"
@@ -99,8 +105,8 @@ class TestIntegrationLaunchController:
         )
         command = (
             f"cd {remote_base_path} && "
-            f'sbatch --partition={fake_partition}'
-            f' --job-name={Path(study1.path).name}'
+            f"sbatch --partition={fake_partition}"
+            f" --job-name={Path(study1.path).name}"
             f" --time={study1.time_limit // 60}"
             f" --cpus-per-task={study1.n_cpu}"
             f" {environment.slurm_script_features.solver_script_path}"

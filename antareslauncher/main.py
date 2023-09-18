@@ -1,7 +1,7 @@
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 
 from antareslauncher import __version__
 from antareslauncher.antares_launcher import AntaresLauncher
@@ -19,9 +19,7 @@ from antareslauncher.remote_environnement.slurm_script_features import (
 from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
     CheckQueueController,
 )
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
-    SlurmQueueShow,
-)
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 from antareslauncher.use_cases.create_list.study_list_composer import (
     StudyListComposer,
     StudyListComposerParameters,
@@ -29,13 +27,9 @@ from antareslauncher.use_cases.create_list.study_list_composer import (
 from antareslauncher.use_cases.generate_tree_structure.tree_structure_initializer import (
     TreeStructureInitializer,
 )
-from antareslauncher.use_cases.kill_job.job_kill_controller import (
-    JobKillController,
-)
+from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
-from antareslauncher.use_cases.retrieve.retrieve_controller import (
-    RetrieveController,
-)
+from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
     WaitController,
@@ -115,7 +109,10 @@ def run_with(
     connection = ssh_connection.SshConnection(config=ssh_dict)
     verify_connection(connection, display)
 
-    slurm_script_features = SlurmScriptFeatures(parameters.slurm_script_path, parameters.partition)
+    slurm_script_features = SlurmScriptFeatures(
+        parameters.slurm_script_path,
+        partition=parameters.partition,
+    )
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
     data_repo = DataRepoTinydb(
         database_file_path=db_json_file_path, db_primary_key=parameters.db_primary_key

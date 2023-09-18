@@ -20,7 +20,7 @@ class SlurmScriptFeatures:
     """Class that returns data related to the remote SLURM script
     Installed on the remote server"""
 
-    def __init__(self, slurm_script_path: str, partition: str):
+    def __init__(self, slurm_script_path: str, *, partition: str):
         self.solver_script_path = slurm_script_path
         self.partition = partition
 

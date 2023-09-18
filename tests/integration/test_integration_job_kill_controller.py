@@ -8,14 +8,15 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
 from antareslauncher.remote_environnement.slurm_script_features import (
     SlurmScriptFeatures,
 )
-from antareslauncher.use_cases.kill_job.job_kill_controller import (
-    JobKillController,
-)
+from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 
 
 class TestIntegrationJobKilController:
     def setup_method(self):
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path", "fake_partition")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+        )
         connection = mock.Mock(home_dir="path/to/home")
         env = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         self.job_kill_controller = JobKillController(env, mock.Mock(), repo=mock.Mock())
