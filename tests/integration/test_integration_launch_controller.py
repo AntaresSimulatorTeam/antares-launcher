@@ -91,7 +91,7 @@ class TestIntegrationLaunchController:
         post_processing = False
         other_options = ""
         bash_options = (
-            f'"{zipfile_name}"'
+            f' {zipfile_name}'
             f" {study1.antares_version}"
             f" {job_type}"
             f" {post_processing}"
@@ -99,11 +99,12 @@ class TestIntegrationLaunchController:
         )
         command = (
             f"cd {remote_base_path} && "
-            f'sbatch --partition {fake_partition} --job-name="{Path(study1.path).name}"'
+            f'sbatch --partition={fake_partition}'
+            f' --job-name={Path(study1.path).name}'
             f" --time={study1.time_limit // 60}"
             f" --cpus-per-task={study1.n_cpu}"
             f" {environment.slurm_script_features.solver_script_path}"
-            f" {bash_options}"
+            f"{bash_options}"
         )
 
         data_repo = mock.Mock()

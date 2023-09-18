@@ -1,9 +1,10 @@
-from dataclasses import dataclass
+import dataclasses
+import shlex
 
 from antareslauncher.study_dto import Modes
 
 
-@dataclass
+@dataclasses.dataclass
 class ScriptParametersDTO:
     study_dir_name: str
     input_zipfile_name: str
@@ -20,74 +21,52 @@ class SlurmScriptFeatures:
     Installed on the remote server"""
 
     def __init__(self, slurm_script_path: str, partition: str):
-        self.JOB_TYPE_PLACEHOLDER = "TO_BE_REPLACED_WITH_JOB_TYPE"
-        self.JOB_TYPE_ANTARES = "ANTARES"
-        self.JOB_TYPE_XPANSION_R = "ANTARES_XPANSION_R"
-        self.JOB_TYPE_XPANSION_CPP = "ANTARES_XPANSION_CPP"
         self.solver_script_path = slurm_script_path
         self.partition = partition
-        self._script_params = None
-        self._remote_launch_dir = None
 
     def compose_launch_command(
         self,
         remote_launch_dir: str,
         script_params: ScriptParametersDTO,
     ) -> str:
-        """Compose and return the complete command to be executed to launch the Antares Solver script.
-        It includes the change of directory to remote_base_path
+        """
+        Compose and return the complete command to be executed to launch the Antares Solver script.
 
         Args:
-            script_params: ScriptFeaturesDTO dataclass container for script parameters
             remote_launch_dir: remote directory where the script is launched
+            script_params: ScriptFeaturesDTO dataclass container for script parameters
 
         Returns:
-            str: the complete command to be executed to launch the including the change of directory to remote_base_path
-
+            str: the complete command to be executed to launch a study on the SLURM server
         """
-        self._script_params = script_params
-        self._remote_launch_dir = remote_launch_dir
-        complete_command = self._get_complete_command_with_placeholders()
+        # The following options can be added to the `sbatch` command
+        # if they are not empty (or null for integer options).
+        _opts = {
+            "--partition": self.partition,  # non-empty string
+            "--job-name": script_params.study_dir_name,  # non-empty string
+            "--time": script_params.time_limit,  # greater than 0
+            "--cpus-per-task": script_params.n_cpu,  # greater than 0
+        }
 
-        if script_params.run_mode == Modes.antares:
-            complete_command = complete_command.replace(
-                self.JOB_TYPE_PLACEHOLDER, self.JOB_TYPE_ANTARES
-            )
-        elif script_params.run_mode == Modes.xpansion_r:
-            complete_command = complete_command.replace(
-                self.JOB_TYPE_PLACEHOLDER, self.JOB_TYPE_XPANSION_R
-            )
-        elif script_params.run_mode == Modes.xpansion_cpp:
-            complete_command = complete_command.replace(
-                self.JOB_TYPE_PLACEHOLDER, self.JOB_TYPE_XPANSION_CPP
-            )
+        _job_type = {
+            Modes.antares: "ANTARES",  # Mode for Antares Solver
+            Modes.xpansion_r: "ANTARES_XPANSION_R",  # Mode for Old Xpansion implemented in R
+            Modes.xpansion_cpp: "ANTARES_XPANSION_CPP",  # Mode for Xpansion implemented in C++
+        }[script_params.run_mode]
 
-        return complete_command
-
-    def _bash_options(self):
-        option1_zipfile_name = f' "{self._script_params.input_zipfile_name}"'
-        option2_antares_version = f" {self._script_params.antares_version}"
-        option3_job_type = f" {self.JOB_TYPE_PLACEHOLDER}"
-        option4_post_processing = f" {self._script_params.post_processing}"
-        option5_other_options = f" '{self._script_params.other_options}'"
-        return (
-            option1_zipfile_name
-            + option2_antares_version
-            + option3_job_type
-            + option4_post_processing
-            + option5_other_options
+        # Construct the `sbatch` command
+        args = ["sbatch"]
+        args.extend(f"{k}={shlex.quote(str(v))}" for k, v in _opts.items() if v)
+        args.extend(
+            shlex.quote(arg)
+            for arg in [
+                self.solver_script_path,
+                script_params.input_zipfile_name,
+                script_params.antares_version,
+                _job_type,
+                str(script_params.post_processing),
+                script_params.other_options,
+            ]
         )
-
-    def _sbatch_command_with_slurm_options(self):
-        call_sbatch = f"sbatch --partition {self.partition}"
-        job_name = f' --job-name="{self._script_params.study_dir_name}"'
-        time_limit_opt = f" --time={self._script_params.time_limit}"
-        cpu_per_task = f" --cpus-per-task={self._script_params.n_cpu}"
-        return call_sbatch + job_name + time_limit_opt + cpu_per_task
-
-    def _get_complete_command_with_placeholders(self):
-        change_dir = f"cd {self._remote_launch_dir}"
-        slurm_options = self._sbatch_command_with_slurm_options()
-        bash_options = self._bash_options()
-        submit_command = f"{slurm_options} {self.solver_script_path}{bash_options}"
-        return f"{change_dir} && {submit_command}"
+        launch_cmd = f"cd {remote_launch_dir} && {' '.join(args)}"
+        return launch_cmd
