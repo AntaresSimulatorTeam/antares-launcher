@@ -64,7 +64,11 @@ class TestRemoteEnvironmentWithSlurm:
         remote_home_dir = "remote_home_dir"
         connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
     @pytest.mark.unit_test
@@ -80,7 +84,11 @@ class TestRemoteEnvironmentWithSlurm:
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -92,7 +100,11 @@ class TestRemoteEnvironmentWithSlurm:
     ):
         # given
         connection = mock.Mock(home_dir="path/to/home")
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         # when
         connection.make_dir = mock.Mock(return_value=False)
         # then
@@ -107,7 +119,11 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock(home_dir="path/to/home")
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -123,7 +139,11 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         # when
         connection.check_file_not_empty = mock.Mock(return_value=False)
         # then
@@ -689,11 +709,13 @@ class TestRemoteEnvironmentWithSlurm:
         change_dir = f"cd {remote_env.remote_base_path}"
         reference_submit_command = (
             f"sbatch"
-            f' --job-name="{Path(study.path).name}"'
+            " --partition=fake_partition"
+            " --qos=user1_qos"
+            f" --job-name={Path(study.path).name}"
             f" --time={study.time_limit // 60}"
             f" --cpus-per-task={study.n_cpu}"
             f" {filename_launch_script}"
-            f' "{Path(study.zipfile_path).name}"'
+            f" {Path(study.zipfile_path).name}"
             f" {study.antares_version}"
             f" {job_type}"
             f" {post_processing}"

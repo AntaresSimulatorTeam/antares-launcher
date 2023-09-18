@@ -1,5 +1,5 @@
 from unittest import mock
-from unittest.mock import PropertyMock, Mock
+from unittest.mock import Mock, PropertyMock
 
 import pytest
 

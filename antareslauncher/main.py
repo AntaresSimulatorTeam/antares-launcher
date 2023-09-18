@@ -1,7 +1,7 @@
 import argparse
-from dataclasses import dataclass
+import dataclasses
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 
 from antareslauncher import __version__
 from antareslauncher.antares_launcher import AntaresLauncher
@@ -19,9 +19,7 @@ from antareslauncher.remote_environnement.slurm_script_features import (
 from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
     CheckQueueController,
 )
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
-    SlurmQueueShow,
-)
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 from antareslauncher.use_cases.create_list.study_list_composer import (
     StudyListComposer,
     StudyListComposerParameters,
@@ -29,13 +27,9 @@ from antareslauncher.use_cases.create_list.study_list_composer import (
 from antareslauncher.use_cases.generate_tree_structure.tree_structure_initializer import (
     TreeStructureInitializer,
 )
-from antareslauncher.use_cases.kill_job.job_kill_controller import (
-    JobKillController,
-)
+from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
-from antareslauncher.use_cases.retrieve.retrieve_controller import (
-    RetrieveController,
-)
+from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
     WaitController,
@@ -65,14 +59,33 @@ ANTARES_LAUNCHER_BANNER = (
 # fmt: on
 
 
-@dataclass
+@dataclasses.dataclass
 class MainParameters:
+    """
+    Represents the main parameters of the application.
+
+    Attributes:
+        json_dir: Path to the directory where the JSON database will be stored.
+        default_json_db_name: The default JSON database name.
+        slurm_script_path: Path to the SLURM script used to launch studies (a Shell script).
+        antares_versions_on_remote_server: A list of available Antares Solver versions on the remote server.
+        default_ssh_dict: A dictionary containing the SSH settings read from `ssh_config.json`.
+        db_primary_key: The primary key for the database, default to "name".
+        partition: Extra `sbatch` option to request a specific partition for resource allocation.
+            If not specified, the default behavior is to allow the SLURM controller
+            to select the default partition as designated by the system administrator.
+        quality_of_service: Extra `sbatch` option to request a quality of service for the job.
+            QOS values can be defined for each user/cluster/account association in the Slurm database.
+    """
+
     json_dir: Path
     default_json_db_name: str
     slurm_script_path: str
     antares_versions_on_remote_server: List[str]
     default_ssh_dict: Dict
     db_primary_key: str
+    partition: str = ""
+    quality_of_service: str = ""
 
 
 def run_with(
@@ -114,7 +127,11 @@ def run_with(
     connection = ssh_connection.SshConnection(config=ssh_dict)
     verify_connection(connection, display)
 
-    slurm_script_features = SlurmScriptFeatures(parameters.slurm_script_path)
+    slurm_script_features = SlurmScriptFeatures(
+        parameters.slurm_script_path,
+        partition=parameters.partition,
+        quality_of_service=parameters.quality_of_service,
+    )
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
     data_repo = DataRepoTinydb(
         database_file_path=db_json_file_path, db_primary_key=parameters.db_primary_key

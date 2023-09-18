@@ -7,9 +7,7 @@ from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
     CheckQueueController,
 )
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
-    SlurmQueueShow,
-)
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
 

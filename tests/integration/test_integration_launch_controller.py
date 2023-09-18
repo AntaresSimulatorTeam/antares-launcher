@@ -20,7 +20,11 @@ class TestIntegrationLaunchController:
     @pytest.fixture(scope="function")
     def launch_controller(self):
         connection = mock.Mock(home_dir="path/to/home")
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = mock.Mock()
         study1.zipfile_path = "filepath"
@@ -35,14 +39,12 @@ class TestIntegrationLaunchController:
         data_repo.get_list_of_studies = mock.Mock(return_value=[study1, study2])
         file_manager = mock.Mock()
         display = DisplayTerminal()
-        launch_controller = LaunchController(
+        return LaunchController(
             repo=data_repo,
             env=environment,
             file_manager=file_manager,
             display=display,
         )
-
-        return launch_controller
 
     @pytest.mark.integration_test
     def test_upload_file__called_twice(self, launch_controller):
@@ -71,7 +73,11 @@ class TestIntegrationLaunchController:
         connection = mock.Mock()
         connection.execute_command = mock.Mock(return_value=["Submitted 42", ""])
         connection.home_dir = "Submitted"
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         study1 = StudyDTO(
             path="dummy_path",
@@ -84,7 +90,7 @@ class TestIntegrationLaunchController:
         home_dir = "Submitted"
 
         remote_base_path = (
-            str(home_dir) + "/REMOTE_" + getpass.getuser() + "_" + socket.gethostname()
+            f"{home_dir}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
         )
 
         zipfile_name = Path(study1.zipfile_path).name
@@ -92,7 +98,7 @@ class TestIntegrationLaunchController:
         post_processing = False
         other_options = ""
         bash_options = (
-            f'"{zipfile_name}"'
+            f" {zipfile_name}"
             f" {study1.antares_version}"
             f" {job_type}"
             f" {post_processing}"
@@ -100,11 +106,14 @@ class TestIntegrationLaunchController:
         )
         command = (
             f"cd {remote_base_path} && "
-            f'sbatch --job-name="{Path(study1.path).name}"'
+            f"sbatch"
+            f" --partition={slurm_script_features.partition}"
+            f" --qos={slurm_script_features.quality_of_service}"
+            f" --job-name={Path(study1.path).name}"
             f" --time={study1.time_limit // 60}"
             f" --cpus-per-task={study1.n_cpu}"
             f" {environment.slurm_script_features.solver_script_path}"
-            f" {bash_options}"
+            f"{bash_options}"
         )
 
         data_repo = mock.Mock()
