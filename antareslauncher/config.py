@@ -13,9 +13,9 @@ import yaml
 
 from antareslauncher import __author__, __project_name__, __version__
 from antareslauncher.exceptions import (
+    ConfigFileNotFoundError,
     InvalidConfigValueError,
     UnknownFileSuffixError,
-    ConfigFileNotFoundError,
 )
 
 APP_NAME = __project_name__

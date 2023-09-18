@@ -2,9 +2,10 @@ import logging
 from typing import List
 
 import tinydb
+from tinydb import TinyDB, where
+
 from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.study_dto import StudyDTO
-from tinydb import TinyDB, where
 
 
 class DataRepoTinydb(IDataRepo):

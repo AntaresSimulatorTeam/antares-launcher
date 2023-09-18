@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from antareslauncher.parameters_reader import ParametersReader, MissingValueException
+from antareslauncher.parameters_reader import MissingValueException, ParametersReader
 
 
 class TestParametersReader:

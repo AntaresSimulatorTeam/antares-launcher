@@ -37,7 +37,6 @@ class TestStudyListComposer:
     def test_given_repo_when_get_list_of_studies_called_then_repo_get_list_of_studies_is_called(
         self,
     ):
-
         # given
         repo_mock = mock.Mock()
         repo_mock.get_list_of_studies = mock.Mock()

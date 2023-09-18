@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 import yaml
+
 from antareslauncher.config import (
     APP_AUTHOR,
     APP_NAME,

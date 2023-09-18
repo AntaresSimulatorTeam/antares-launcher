@@ -5,8 +5,8 @@ import pytest
 from antareslauncher.main_option_parser import (
     MainOptionParser,
     ParserParameters,
+    look_for_default_ssh_conf_file,
 )
-from antareslauncher.main_option_parser import look_for_default_ssh_conf_file
 
 
 class TestMainOptionParser:

@@ -5,6 +5,7 @@ import typing as t
 from pathlib import Path
 
 import yaml
+
 from antareslauncher.main import MainParameters
 from antareslauncher.main_option_parser import ParserParameters
 
