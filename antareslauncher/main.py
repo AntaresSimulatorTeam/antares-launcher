@@ -1,5 +1,5 @@
 import argparse
-from dataclasses import dataclass
+import dataclasses
 from pathlib import Path
 from typing import Dict, List
 
@@ -59,15 +59,30 @@ ANTARES_LAUNCHER_BANNER = (
 # fmt: on
 
 
-@dataclass
+@dataclasses.dataclass
 class MainParameters:
+    """
+    Represents the main parameters of the application.
+
+    Attributes:
+        json_dir: Path to the directory where the JSON database will be stored.
+        default_json_db_name: The default JSON database name.
+        slurm_script_path: Path to the SLURM script used to launch studies (a Shell script).
+        antares_versions_on_remote_server: A list of available Antares Solver versions on the remote server.
+        default_ssh_dict: A dictionary containing the SSH settings read from `ssh_config.json`.
+        db_primary_key: The primary key for the database, default to "name".
+        partition: Extra `sbatch` option to request a specific partition for resource allocation.
+            If not specified, the default behavior is to allow the SLURM controller
+            to select the default partition as designated by the system administrator.
+    """
+
     json_dir: Path
     default_json_db_name: str
     slurm_script_path: str
-    partition: str
     antares_versions_on_remote_server: List[str]
     default_ssh_dict: Dict
     db_primary_key: str
+    partition: str = ""
 
 
 def run_with(

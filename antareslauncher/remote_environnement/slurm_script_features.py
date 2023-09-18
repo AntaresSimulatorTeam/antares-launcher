@@ -21,6 +21,15 @@ class SlurmScriptFeatures:
     Installed on the remote server"""
 
     def __init__(self, slurm_script_path: str, *, partition: str):
+        """
+        Initialize the slurm script feature.
+
+        Args:
+            slurm_script_path: Path to the SLURM script used to launch studies (a Shell script).
+            partition: Request a specific partition for the resource allocation.
+                If not specified, the default behavior is to allow the slurm controller
+                to select the default partition as designated by the system administrator.
+        """
         self.solver_script_path = slurm_script_path
         self.partition = partition
 

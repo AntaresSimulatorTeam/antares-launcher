@@ -49,7 +49,7 @@ class ParametersReader:
             self.ssh_conf_alt2 = alt2
             self.default_ssh_dict = self._get_ssh_dict_from_json()
             self.remote_slurm_script_path = obj["SLURM_SCRIPT_PATH"]
-            self.partition = obj["PARTITION"]
+            self.partition = obj.get("PARTITION", "")
             self.antares_versions = obj["ANTARES_VERSIONS_ON_REMOTE_SERVER"]
             self.db_primary_key = obj["DB_PRIMARY_KEY"]
             self.json_dir = Path(obj["JSON_DIR"]).expanduser()
