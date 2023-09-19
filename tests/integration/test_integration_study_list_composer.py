@@ -1,8 +1,9 @@
-from pathlib import Path
 from unittest import mock
 
 import pytest
-
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
+from antareslauncher.display.display_terminal import DisplayTerminal
+from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.use_cases.create_list.study_list_composer import (
     StudyListComposer,
     StudyListComposerParameters,
@@ -11,10 +12,13 @@ from antareslauncher.use_cases.create_list.study_list_composer import (
 
 class TestIntegrationStudyListComposer:
     def setup_method(self):
+        self.repo = mock.Mock(spec=DataRepoTinydb)
+        self.file_manager = mock.Mock(spec=FileManager)
+        self.display = mock.Mock(spec=DisplayTerminal)
         self.study_list_composer = StudyListComposer(
-            repo=mock.Mock(),
-            file_manager=mock.Mock(),
-            display=mock.Mock(),
+            repo=self.repo,
+            file_manager=self.file_manager,
+            display=self.display,
             parameters=StudyListComposerParameters(
                 studies_in_dir="studies_in",
                 time_limit=42,
@@ -29,27 +33,14 @@ class TestIntegrationStudyListComposer:
         )
 
     @pytest.mark.integration_test
-    def test_study_list_composer_get_list_of_studies_calls_repo_get_list_of_studies(
-        self,
-    ):
+    def test_get_list_of_studies(self):
         self.study_list_composer.get_list_of_studies()
-        self.study_list_composer._repo.get_list_of_studies.assert_called_once()
+        self.repo.get_list_of_studies.assert_called_once_with()
 
     @pytest.mark.integration_test
-    def test_study_list_composer_get_antares_version_calls_file_manager_get_config_from_file(
-        self,
-    ):
-        # given
-        directory_path = "directory_path"
-        file_path = Path(directory_path) / "study.antares"
-        self.study_list_composer._file_manager.get_config_from_file = mock.Mock(
-            return_value={}
-        )
-        # when
-        self.study_list_composer.get_antares_version(directory_path)
-        # then
-        self.study_list_composer._file_manager.get_config_from_file.assert_called_once_with(
-            file_path
-        )
-
-    # TODO: test_update_study_database already in unit tests?
+    def test_update_study_database(self):
+        self.file_manager.listdir_of = mock.Mock(return_value=["study1", "study2"])
+        self.file_manager.is_dir = mock.Mock(return_value=True)
+        self.study_list_composer.xpansion_mode = "r"  # "r", "cpp" or None
+        self.study_list_composer.update_study_database()
+        self.display.show_message.assert_called()

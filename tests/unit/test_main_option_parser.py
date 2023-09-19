@@ -46,7 +46,7 @@ class TestMainOptionParser:
     @pytest.mark.unit_test
     def test_check_all_default_values_are_present(self, parser):
         parser.add_basic_arguments()
-        output = parser.parse_args([])
+        output = parser.parser.parse_args([])
         out_dict = vars(output)
         for key, value in self.DEFAULT_VALUES.items():
             assert out_dict[key] == value
@@ -54,7 +54,7 @@ class TestMainOptionParser:
     @pytest.mark.unit_test
     def test_given_add_basic_arguments_all_default_values_are_present(self, parser):
         parser.add_basic_arguments()
-        output = parser.parse_args([])
+        output = parser.parser.parse_args([])
         out_dict = vars(output)
         for key, value in self.DEFAULT_VALUES.items():
             assert out_dict[key] == value
@@ -62,5 +62,5 @@ class TestMainOptionParser:
     @pytest.mark.unit_test
     def test_studies_in_get_correctly_set(self, parser):
         parser.add_basic_arguments()
-        output = parser.parse_args(["--studies-in-dir=hello"])
+        output = parser.parser.parse_args(["--studies-in-dir=hello"])
         assert output.studies_in == "hello"

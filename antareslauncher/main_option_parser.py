@@ -7,6 +7,7 @@ import pathlib
 from argparse import RawTextHelpFormatter
 from dataclasses import dataclass
 import typing as t
+from pathlib import Path
 
 
 @dataclass
@@ -25,46 +26,24 @@ class ParserParameters:
 class MainOptionParser:
     def __init__(self, parameters: ParserParameters) -> None:
         self.parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
-        self.default_argument_values = {}
-        self.parameters = parameters
-        self._set_default_argument_values()
-
-    def _set_default_argument_values(self) -> None:
-        """Fills the "default_argument_values" dictionary"""
-        self.default_argument_values = {
+        defaults = {
             "wait_mode": False,
-            "wait_time": self.parameters.default_wait_time,
-            "studies_in": str(self.parameters.studies_in_dir),
-            "output_dir": str(self.parameters.finished_dir),
+            "wait_time": parameters.default_wait_time,
+            "studies_in": str(parameters.studies_in_dir),
+            "output_dir": str(parameters.finished_dir),
             "check_queue": False,
-            "time_limit": self.parameters.default_time_limit,
-            "json_ssh_config": look_for_default_ssh_conf_file(self.parameters),
-            "log_dir": str(self.parameters.log_dir),
-            "n_cpu": self.parameters.default_n_cpu,
+            "time_limit": parameters.default_time_limit,
+            "json_ssh_config": look_for_default_ssh_conf_file(parameters),
+            "log_dir": str(parameters.log_dir),
+            "n_cpu": parameters.default_n_cpu,
+            "antares_version": 0,
             "job_id_to_kill": None,
             "xpansion_mode": None,
             "version": False,
             "post_processing": False,
             "other_options": None,
         }
-
-    def parse_args(self, args: t.Sequence[str] = ()) -> argparse.Namespace:
-        """Parses the args given with the selected options.
-        If args is None, the standard input will be parsed
-
-        Args:
-            args: Arguments given to the program
-
-        Returns:
-            argparse.Namespace: namespace containing all the options
-
-        """
-        output: argparse.Namespace = self.parser.parse_args(args)
-
-        for key, value in self.default_argument_values.items():
-            if not hasattr(output, key):
-                setattr(output, key, value)
-        return output
+        self.parser.set_defaults(**defaults)
 
     def add_basic_arguments(
         self, *, antares_versions: t.Sequence[str] = ()
@@ -75,19 +54,18 @@ class MainOptionParser:
             "--wait-mode",
             action="store_true",
             dest="wait_mode",
-            default=self.default_argument_values["wait_mode"],
             help=(
                 "Activate the wait mode: the Antares_Launcher waits for all the jobs to finish\n"
                 "it check every WAIT_TIME seconds (default value = 900 = 15 minutes)."
             ),
         )
 
-        delta = datetime.timedelta(seconds=self.default_argument_values["wait_time"])
+        wait_time = self.parser.get_default("wait_time")
+        delta = datetime.timedelta(seconds=wait_time)
         self.parser.add_argument(
             "--wait-time",
             dest="wait_time",
             type=int,
-            default=int(delta.total_seconds()),
             help=(
                 "Number of seconds between each verification of the end of the simulations\n"
                 "changes the value of WAIT_TIME used for the wait-mode.\n"
@@ -99,7 +77,6 @@ class MainOptionParser:
             "-i",
             "--studies-in-dir",
             dest="studies_in",
-            default=self.default_argument_values["studies_in"],
             help=(
                 "Directory containing the studies to be executed.\n"
                 "If the directory does not exist, it will be created (empty).\n"
@@ -111,7 +88,6 @@ class MainOptionParser:
             "-o",
             "--output-dir",
             dest="output_dir",
-            default=self.default_argument_values["output_dir"],
             help=(
                 "Directory where the finished studies will be downloaded and extracted.\n"
                 'If the directory does not exist, it will be created (default value "FINISHED").'
@@ -123,7 +99,6 @@ class MainOptionParser:
             "--check-queue",
             action="store_true",
             dest="check_queue",
-            default=self.default_argument_values["check_queue"],
             help=(
                 "Displays from the remote queue all job statuses.\n"
                 "If the option is used, it will override the standard execution.\n"
@@ -131,13 +106,13 @@ class MainOptionParser:
             ),
         )
 
-        delta = datetime.timedelta(seconds=self.default_argument_values["time_limit"])
+        time_limit = self.parser.get_default("time_limit")
+        delta = datetime.timedelta(seconds=time_limit)
         self.parser.add_argument(
             "-t",
             "--time-limit",
             dest="time_limit",
             type=int,
-            default=int(delta.total_seconds()),
             help=(
                 "Time limit in seconds of a single job.\n"
                 "If nothing is specified here and"
@@ -150,7 +125,6 @@ class MainOptionParser:
             "-x",
             "--xpansion-mode",
             dest="xpansion_mode",
-            default=None,
             help=(
                 "Activate the xpansion mode:\n"
                 "Antares_Launcher will launch all the new studies in xpansion mode if\n"
@@ -164,7 +138,6 @@ class MainOptionParser:
             "--version",
             action="store_true",
             dest="version",
-            default=False,
             help="Shows the version of Antares_Launcher",
         )
 
@@ -173,7 +146,6 @@ class MainOptionParser:
             "--post-processing",
             action="store_true",
             dest="post_processing",
-            default=False,
             help='Enables the post processing of the antares study by executing the "post_processing.R" file',
         )
 
@@ -188,7 +160,6 @@ class MainOptionParser:
             "--kill-job",
             dest="job_id_to_kill",
             type=int,
-            default=self.default_argument_values["job_id_to_kill"],
             help=(
                 f"JobID of the run to be cancelled on the remote server.\n"
                 f"the JobID can be retrieved with option -q to show the queue."
@@ -196,54 +167,53 @@ class MainOptionParser:
             ),
         )
 
-        antares_version = max(map(int, antares_versions)) if antares_versions else 0
         self.parser.add_argument(
             "--solver-version",
             dest="antares_version",
             type=int,
-            default=antares_version,
+            choices=[int(v) for v in antares_versions],
             help="Antares Solver version to use for simulation",
         )
 
         return self
 
-    def add_advanced_arguments(self) -> MainOptionParser:
+    def add_advanced_arguments(
+        self, ssh_config_required: bool, *, alt_ssh_paths: t.Sequence[Path] = ()
+    ) -> MainOptionParser:
         """Adds to the parser all the arguments for the advanced mode"""
+        n_cpu = self.parser.get_default("n_cpu")
         self.parser.add_argument(
             "-n",
             "--n-cores",
             dest="n_cpu",
             type=int,
-            default=self.default_argument_values["n_cpu"],
             help=(
                 f"Number of cores to be used for a single job.\n"
                 f"If nothing is specified here and "
                 f"if the study is not initialised with a specific value,\n"
-                f"the default value will be used: n_cpu=={self.parameters.default_n_cpu}"
+                f"the default value will be used: n_cpu=={n_cpu}"
             ),
         )
 
         self.parser.add_argument(
             "--log-dir",
             dest="log_dir",
-            default=self.default_argument_values["log_dir"],
             help=(
                 "Directory where the logs of the jobs will be found.\n"
                 "If the directory does not exist, it will be created."
             ),
         )
 
+        ssh_paths = "\n".join(f"'{p}'" for p in dict.fromkeys(alt_ssh_paths))
         self.parser.add_argument(
             "--ssh-settings-file",
             dest="json_ssh_config",
-            default=self.default_argument_values["json_ssh_config"],
-            required=self.parameters.ssh_config_file_is_required,
+            required=ssh_config_required,
             help=(
                 f"Path to the configuration file for the ssh connection.\n"
                 f"If no value is given, "
                 f"it will look for it in default location with this order:\n"
-                f"1st: {self.parameters.ssh_configfile_path_alternate1}\n"
-                f"2nd: {self.parameters.ssh_configfile_path_alternate2}\n"
+                f"{ssh_paths}"
             ),
         )
         return self
@@ -251,26 +221,24 @@ class MainOptionParser:
 
 def look_for_default_ssh_conf_file(
     parameters: ParserParameters,
-) -> pathlib.Path:
+) -> t.Union[None, pathlib.Path]:
     """Checks if the ssh config file exists.
 
     Returns:
         path to the ssh config file is it exists, None otherwise
     """
-    ssh_conf_file: pathlib.Path
     if (
         parameters.ssh_configfile_path_alternate1
         and parameters.ssh_configfile_path_alternate1.is_file()
     ):
-        ssh_conf_file = parameters.ssh_configfile_path_alternate1
+        return parameters.ssh_configfile_path_alternate1
     elif (
         parameters.ssh_configfile_path_alternate2
         and parameters.ssh_configfile_path_alternate2.is_file()
     ):
-        ssh_conf_file = parameters.ssh_configfile_path_alternate2
+        return parameters.ssh_configfile_path_alternate2
     else:
-        ssh_conf_file = None
-    return ssh_conf_file
+        return None
 
 
 def get_default_db_name() -> str:

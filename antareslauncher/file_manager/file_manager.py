@@ -1,4 +1,3 @@
-import configparser
 import json
 import logging
 import os
@@ -12,21 +11,6 @@ class FileManager:
     def __init__(self, display_terminal: DisplayTerminal):
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.display = display_terminal
-
-    def get_config_from_file(self, file_path):
-        """Reads the configuration file of antares
-
-        Args:
-            file_path: Path to the configuration file
-
-        Returns:
-            The corresponding config object
-        """
-        self.logger.info(f"Getting config from file {file_path}")
-        config_parser = configparser.ConfigParser()
-        if Path(file_path).exists():
-            config_parser.read(file_path)
-        return config_parser
 
     def listdir_of(self, directory):
         """Make a list of all the folders inside a directory
