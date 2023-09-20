@@ -6,8 +6,8 @@ import shlex
 import socket
 import textwrap
 import time
+import typing as t
 from pathlib import Path, PurePosixPath
-from typing import List, Optional
 
 from antareslauncher.remote_environnement.slurm_script_features import (
     ScriptParametersDTO,
@@ -250,7 +250,7 @@ class RemoteEnvironmentWithSlurm:
         *,
         attempts=5,
         sleep_time=0.5,
-    ) -> [bool, bool, bool]:
+    ) -> t.Tuple[bool, bool, bool]:
         """
         Retrieves the current state of a SLURM job with the given job ID and name.
 
@@ -310,7 +310,7 @@ class RemoteEnvironmentWithSlurm:
         self,
         job_id: int,
         job_name: str,
-    ) -> Optional[JobStateCodes]:
+    ) -> t.Optional[JobStateCodes]:
         """
         Use the `scontrol` command to retrieve job status information in SLURM.
         See: https://slurm.schedmd.com/scontrol.html
@@ -346,7 +346,7 @@ class RemoteEnvironmentWithSlurm:
         *,
         attempts: int = 5,
         sleep_time: float = 0.5,
-    ) -> Optional[JobStateCodes]:
+    ) -> t.Optional[JobStateCodes]:
         # Construct the command line arguments used to check the jobs state.
         # See the man page: https://slurm.schedmd.com/sacct.html
         # noinspection SpellCheckingInspection
@@ -365,7 +365,7 @@ class RemoteEnvironmentWithSlurm:
 
         # Makes several attempts to get the job state.
         # I don't really know why, but it's better to reproduce the old behavior.
-        output: Optional[str]
+        output: t.Optional[str]
         last_error: str = ""
         for attempt in range(attempts):
             output, error = self.connection.execute_command(command)
@@ -413,7 +413,7 @@ class RemoteEnvironmentWithSlurm:
         dst = f"{self.remote_base_path}/{Path(src).name}"
         return self.connection.upload_file(src, dst)
 
-    def download_logs(self, study: StudyDTO) -> List[Path]:
+    def download_logs(self, study: StudyDTO) -> t.List[Path]:
         """
         Download the slurm logs of a given study.
 
@@ -435,7 +435,7 @@ class RemoteEnvironmentWithSlurm:
             remove=study.finished,
         )
 
-    def download_final_zip(self, study: StudyDTO) -> Optional[Path]:
+    def download_final_zip(self, study: StudyDTO) -> t.Optional[Path]:
         """
         Download the final ZIP file for the specified study from the remote
         server and save it to the local output directory.
