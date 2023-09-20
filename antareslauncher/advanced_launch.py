@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from antareslauncher.config import Config, get_config_path
@@ -15,8 +16,14 @@ def main():
     )
     parser_parameters: ParserParameters = param_reader.get_parser_parameters()
     parser: MainOptionParser = MainOptionParser(parser_parameters)
-    parser.add_basic_arguments().add_advanced_arguments()
-    arguments = parser.parse_args()
+    parser.add_basic_arguments(antares_versions=param_reader.antares_versions)
+    ssh_config_required = parser_parameters.ssh_config_file_is_required
+    alt_ssh_paths = [
+        parser_parameters.ssh_configfile_path_alternate1,
+        parser_parameters.ssh_configfile_path_alternate1,
+    ]
+    parser.add_advanced_arguments(ssh_config_required, alt_ssh_paths=alt_ssh_paths)
+    arguments = parser.parser.parse_args(sys.argv[1:])
     main_parameters: MainParameters = param_reader.get_main_parameters()
     run_with(arguments=arguments, parameters=main_parameters, show_banner=True)
 

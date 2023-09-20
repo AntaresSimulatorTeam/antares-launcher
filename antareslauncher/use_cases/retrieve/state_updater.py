@@ -22,18 +22,18 @@ class StateUpdater:
         if study.done is True:
             self._display.show_message(
                 f'"{Path(study.path).name}"  (JOBID={study.job_id}): everything is done',
-                __name__ + "." + __class__.__name__,
+                __name__ + "." + self.__class__.__name__,
             )
         else:
             if study.job_id:
                 self._display.show_message(
                     f'"{Path(study.path).name}"  (JOBID={study.job_id}): {study.job_state}',
-                    __name__ + "." + __class__.__name__,
+                    __name__ + "." + self.__class__.__name__,
                 )
             else:
                 self._display.show_error(
                     f'"{Path(study.path).name}": Job was not submitted',
-                    __name__ + "." + __class__.__name__,
+                    __name__ + "." + self.__class__.__name__,
                 )
 
     def run(self, study: StudyDTO) -> StudyDTO:
@@ -72,7 +72,7 @@ class StateUpdater:
         message = "Checking status of the studies:"
         self._display.show_message(
             message,
-            __name__ + "." + __class__.__name__,
+            __name__ + "." + self.__class__.__name__,
         )
         study_list.sort(key=lambda x: x.done, reverse=True)
         for study in study_list:
