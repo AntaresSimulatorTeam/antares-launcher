@@ -7,7 +7,7 @@ from antareslauncher.main_option_parser import MainOptionParser, ParserParameter
 from antareslauncher.parameters_reader import ParametersReader
 
 
-def main():
+def main() -> None:
     config_path: Path = get_config_path()
     config = Config.load_config(config_path)
     param_reader = ParametersReader(
@@ -22,7 +22,10 @@ def main():
         parser_parameters.ssh_configfile_path_alternate1,
         parser_parameters.ssh_configfile_path_alternate1,
     ]
-    parser.add_advanced_arguments(ssh_config_required, alt_ssh_paths=alt_ssh_paths)
+    parser.add_advanced_arguments(
+        ssh_config_required=ssh_config_required,
+        alt_ssh_paths=alt_ssh_paths,
+    )
     arguments = parser.parser.parse_args(sys.argv[1:])
     main_parameters: MainParameters = param_reader.get_main_parameters()
     run_with(arguments=arguments, parameters=main_parameters, show_banner=True)
