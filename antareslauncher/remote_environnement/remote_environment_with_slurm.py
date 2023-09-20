@@ -75,7 +75,7 @@ class JobStateCodes(enum.Enum):
     COMPLETED = "COMPLETED"
 
     # Indicates that the only job on the node or that all jobs on the node are in the process of completing.
-    COMPETING = "COMPLETING"
+    COMPLETING = "COMPLETING"
 
     # Job terminated on deadline.
     DEADLINE = "DEADLINE"
@@ -271,7 +271,7 @@ class RemoteEnvironmentWithSlurm:
             JobStateCodes.BOOT_FAIL: (False, False, False),
             JobStateCodes.CANCELLED: (True, True, True),
             JobStateCodes.COMPLETED: (True, True, False),
-            JobStateCodes.COMPETING: (True, False, False),
+            JobStateCodes.COMPLETING: (True, False, False),
             JobStateCodes.DEADLINE: (True, True, True),  # similar to timeout
             JobStateCodes.FAILED: (True, True, True),
             JobStateCodes.NODE_FAIL: (True, True, True),
