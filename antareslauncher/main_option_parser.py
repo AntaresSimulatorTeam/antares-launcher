@@ -4,9 +4,9 @@ import argparse
 import datetime
 import getpass
 import pathlib
+import typing as t
 from argparse import RawTextHelpFormatter
 from dataclasses import dataclass
-import typing as t
 from pathlib import Path
 
 

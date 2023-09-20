@@ -140,7 +140,7 @@ class SshConnection:
             "password" (not compulsory if private_key_file is given), "private_key_file": path to private rsa key
         """
         super(SshConnection, self).__init__()
-        self.logger = logging.getLogger(f"{__name__}.{__class__.__name__}")
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.__client = None
         self.__home_dir = None
         self.timeout = 10

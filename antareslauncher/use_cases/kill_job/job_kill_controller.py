@@ -24,11 +24,11 @@ class JobKillController:
         """
         if self._check_if_job_is_killable(job_id):
             self.display.show_message(
-                f"Killing job {job_id}", __name__ + "." + __class__.__name__
+                f"Killing job {job_id}", __name__ + "." + self.__class__.__name__
             )
             self.env.kill_remote_job(job_id)
         else:
             self.display.show_message(
                 f"You are not authorized to kill job {job_id}",
-                __name__ + "." + __class__.__name__,
+                __name__ + "." + self.__class__.__name__,
             )

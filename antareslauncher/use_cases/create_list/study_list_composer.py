@@ -143,7 +143,7 @@ class StudyListComposer:
         if not antares_version:
             self._display.show_message(
                 "... not a valid Antares study",
-                __name__ + "." + __class__.__name__,
+                __name__ + "." + self.__class__.__name__,
             )
         elif antares_version not in self.ANTARES_VERSIONS_ON_REMOTE_SERVER:
             message = (
@@ -152,10 +152,12 @@ class StudyListComposer:
             )
             self._display.show_message(
                 message,
-                __name__ + "." + __class__.__name__,
+                __name__ + "." + self.__class__.__name__,
             )
         else:
-            candidates_file_path = directory_path.joinpath("user", "expansion", "candidates.ini")
+            candidates_file_path = directory_path.joinpath(
+                "user", "expansion", "candidates.ini"
+            )
             is_xpansion_study = candidates_file_path.is_file()
             xpansion_mode = is_xpansion_study and self.xpansion_mode
 
@@ -180,6 +182,6 @@ class StudyListComposer:
             f"(mode = {buffer_study.run_mode.name}, "
             f"version={buffer_study.antares_version}): "
             f'"{buffer_study.path}"',
-            __name__ + "." + __class__.__name__,
+            __name__ + "." + self.__class__.__name__,
         )
         self._new_study_added = True
