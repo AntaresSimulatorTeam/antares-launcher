@@ -45,6 +45,10 @@ class MainOptionParser:
         }
         self.parser.set_defaults(**defaults)
 
+    # NOTE: keep this delegation to preserve backward compatibility with v1.3.0
+    def parse_args(self, args: t.Union[t.Sequence[str], None]) -> argparse.Namespace:
+        return self.parser.parse_args(args)
+
     def add_basic_arguments(
         self, *, antares_versions: t.Sequence[str] = ()
     ) -> MainOptionParser:
@@ -178,7 +182,10 @@ class MainOptionParser:
         return self
 
     def add_advanced_arguments(
-        self, ssh_config_required: bool, *, alt_ssh_paths: t.Sequence[Path] = ()
+        self,
+        *,
+        ssh_config_required: bool = False,
+        alt_ssh_paths: t.Sequence[t.Optional[Path]] = (),
     ) -> MainOptionParser:
         """Adds to the parser all the arguments for the advanced mode"""
         n_cpu = self.parser.get_default("n_cpu")
