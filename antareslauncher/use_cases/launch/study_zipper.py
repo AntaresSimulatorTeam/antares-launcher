@@ -3,14 +3,14 @@ import getpass
 from dataclasses import dataclass
 from pathlib import Path
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.study_dto import StudyDTO
 
 
 @dataclass
 class StudyZipper:
-    def __init__(self, file_manager: FileManager, display: IDisplay):
+    def __init__(self, file_manager: FileManager, display: DisplayTerminal):
         self.file_manager = file_manager
         self.display = display
         self._current_study: StudyDTO = None

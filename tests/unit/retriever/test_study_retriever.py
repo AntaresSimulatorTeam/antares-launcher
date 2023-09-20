@@ -4,7 +4,7 @@ import pytest
 
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
@@ -24,7 +24,7 @@ from antareslauncher.use_cases.retrieve.study_retriever import StudyRetriever
 class TestStudyRetriever:
     def setup_method(self):
         env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
-        display = mock.Mock(spec_set=IDisplay)
+        display = mock.Mock(spec_set=DisplayTerminal)
         file_manager = mock.Mock(spec_set=FileManager)
         repo = mock.Mock(spec_set=IDataRepo)
         self.reporter = DataReporter(repo)

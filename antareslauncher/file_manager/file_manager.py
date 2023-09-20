@@ -5,12 +5,12 @@ import os
 import zipfile
 from pathlib import Path
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 
 
 class FileManager:
-    def __init__(self, display_terminal: IDisplay):
-        self.logger = logging.getLogger(__name__ + "." + __class__.__name__)
+    def __init__(self, display_terminal: DisplayTerminal):
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.display = display_terminal
 
     def get_config_from_file(self, file_path):

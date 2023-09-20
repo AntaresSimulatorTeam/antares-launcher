@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -12,7 +12,7 @@ class StateUpdater:
     def __init__(
         self,
         env: RemoteEnvironmentWithSlurm,
-        display: IDisplay,
+        display: DisplayTerminal,
     ):
         self._env = env
         self._display = display

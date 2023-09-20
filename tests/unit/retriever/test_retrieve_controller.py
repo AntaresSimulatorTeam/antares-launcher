@@ -6,7 +6,7 @@ import pytest
 
 import antareslauncher
 import antareslauncher.remote_environnement.remote_environment_with_slurm
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -114,7 +114,7 @@ class TestRetrieveController:
         study = StudyDTO("path")
         study.done = True
         study_list = [deepcopy(study), deepcopy(study)]
-        display_mock = mock.Mock(spec=IDisplay)
+        display_mock = mock.Mock(spec=DisplayTerminal)
         my_retriever = RetrieveController(
             self.data_repo,
             self.remote_env_mock,

@@ -12,7 +12,7 @@ class DataRepoTinydb(IDataRepo):
     def __init__(self, database_file_path, db_primary_key: str):
         super(DataRepoTinydb, self).__init__()
         self.database_file_path = database_file_path
-        self.logger = logging.getLogger(f"{__name__}.{__class__.__name__}")
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.db_primary_key = db_primary_key
 
     @property

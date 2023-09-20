@@ -5,7 +5,7 @@ from unittest.mock import call
 
 import pytest
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -19,7 +19,7 @@ from antareslauncher.use_cases.retrieve.download_final_zip import (
 class TestFinalZipDownloader:
     def setup_method(self):
         self.remote_env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
-        self.display_mock = mock.Mock(spec_set=IDisplay)
+        self.display_mock = mock.Mock(spec_set=DisplayTerminal)
         self.final_zip_downloader = FinalZipDownloader(
             self.remote_env, self.display_mock
         )

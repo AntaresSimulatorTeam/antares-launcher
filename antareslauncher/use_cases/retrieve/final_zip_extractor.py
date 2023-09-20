@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.study_dto import StudyDTO
 
@@ -10,7 +10,7 @@ class ResultNotExtractedException(Exception):
 
 
 class FinalZipExtractor:
-    def __init__(self, file_manager: FileManager, display: IDisplay):
+    def __init__(self, file_manager: FileManager, display: DisplayTerminal):
         self._file_manager = file_manager
         self._display = display
         self._current_study: StudyDTO = None

@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.study_dto import Modes, StudyDTO
 
@@ -27,7 +27,7 @@ class StudyListComposer:
         self,
         repo: IDataRepo,
         file_manager: FileManager,
-        display: IDisplay,
+        display: DisplayTerminal,
         parameters: StudyListComposerParameters,
     ):
         self._repo = repo
