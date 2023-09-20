@@ -3,15 +3,16 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.use_cases.create_list.study_list_composer import (
     StudyListComposer,
-    get_solver_version,
     StudyListComposerParameters,
+    get_solver_version,
 )
-from unit.assets import ASSETS_DIR
+from tests.unit.assets import ASSETS_DIR
 
 CONFIG_NOMINAL_VERSION = """\
 [antares]
