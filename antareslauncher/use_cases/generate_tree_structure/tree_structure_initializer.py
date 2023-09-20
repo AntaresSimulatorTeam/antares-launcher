@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 
 
 @dataclass
 class TreeStructureInitializer:
-    display: IDisplay
+    display: DisplayTerminal
     file_manager: FileManager
     studies_in: str
     log_dir: str

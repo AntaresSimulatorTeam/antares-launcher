@@ -1,6 +1,6 @@
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
@@ -61,7 +61,7 @@ class LaunchController:
         repo: IDataRepo,
         env: RemoteEnvironmentWithSlurm,
         file_manager: FileManager,
-        display: IDisplay,
+        display: DisplayTerminal,
     ):
         self.repo = repo
         self.env = env

@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 
 import antareslauncher.remote_environnement.remote_environment_with_slurm
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -17,7 +17,7 @@ class TestLogDownloader:
     def setup_method(self):
         self.remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         self.file_manager = mock.Mock()
-        self.display_mock = mock.Mock(spec_set=IDisplay)
+        self.display_mock = mock.Mock(spec_set=DisplayTerminal)
         self.log_downloader = LogDownloader(
             self.remote_env_mock, self.file_manager, self.display_mock
         )

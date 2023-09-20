@@ -3,10 +3,8 @@ import logging
 
 from tqdm import tqdm
 
-from antareslauncher.display.idisplay import IDisplay
 
-
-class DisplayTerminal(IDisplay):
+class DisplayTerminal:
     def __init__(self):
         # Use the ISO8601 date format to display messages on the console
         self.format = "%Y-%m-%d %H:%M:%S%z"

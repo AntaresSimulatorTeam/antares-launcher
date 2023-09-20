@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.final_zip_extractor import (
@@ -14,7 +14,7 @@ from antareslauncher.use_cases.retrieve.final_zip_extractor import (
 class TestFinalZipExtractor:
     def setup_method(self):
         self.file_manager = mock.Mock(spec_set=FileManager)
-        self.display_mock = mock.Mock(spec_set=IDisplay)
+        self.display_mock = mock.Mock(spec_set=DisplayTerminal)
         self.zip_extractor = FinalZipExtractor(self.file_manager, self.display_mock)
 
     @pytest.fixture(scope="function")

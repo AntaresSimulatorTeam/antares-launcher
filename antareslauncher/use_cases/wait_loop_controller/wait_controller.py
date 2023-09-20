@@ -1,12 +1,12 @@
 import time
 from dataclasses import dataclass
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 
 
 @dataclass
 class WaitController:
-    display: IDisplay
+    display: DisplayTerminal
 
     def countdown(self, seconds_to_wait: int):
         """

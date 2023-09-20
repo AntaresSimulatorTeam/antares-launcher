@@ -1,7 +1,7 @@
 import copy
 from pathlib import Path
 
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
@@ -14,7 +14,7 @@ class LogDownloader:
         self,
         env: RemoteEnvironmentWithSlurm,
         file_manager: FileManager,
-        display: IDisplay,
+        display: DisplayTerminal,
     ):
         self.env = env
         self.display = display

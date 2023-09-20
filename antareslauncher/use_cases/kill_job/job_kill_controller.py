@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -10,7 +10,7 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
 @dataclass
 class JobKillController:
     env: RemoteEnvironmentWithSlurm
-    display: IDisplay
+    display: DisplayTerminal
     repo: IDataRepo
 
     def _check_if_job_is_killable(self, job_id):

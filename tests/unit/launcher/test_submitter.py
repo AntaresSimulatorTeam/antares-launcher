@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 import antareslauncher.use_cases
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -15,7 +15,7 @@ from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 class TestStudySubmitter:
     def setup_method(self):
         self.remote_env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
-        self.display_mock = mock.Mock(spec_set=IDisplay)
+        self.display_mock = mock.Mock(spec_set=DisplayTerminal)
         self.study_submitter = StudySubmitter(self.remote_env, self.display_mock)
 
     @pytest.mark.unit_test

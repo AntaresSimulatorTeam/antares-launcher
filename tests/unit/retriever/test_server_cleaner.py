@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 
 import antareslauncher.remote_environnement.remote_environment_with_slurm
-from antareslauncher.display.idisplay import IDisplay
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -19,7 +19,7 @@ from antareslauncher.use_cases.retrieve.clean_remote_server import (
 class TestServerCleaner:
     def setup_method(self):
         self.remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
-        self.display_mock = mock.Mock(spec_set=IDisplay)
+        self.display_mock = mock.Mock(spec_set=DisplayTerminal)
         self.remote_server_cleaner = RemoteServerCleaner(
             self.remote_env_mock, self.display_mock
         )
