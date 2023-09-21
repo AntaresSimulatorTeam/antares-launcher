@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+import typing as t
 
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
@@ -68,12 +68,11 @@ class StateUpdater:
         else:
             self._current_study.job_state = "Pending"
 
-    def run_on_list(self, study_list: List[StudyDTO]):
+    def run_on_list(self, studies: t.Sequence[StudyDTO]):
         message = "Checking status of the studies:"
         self._display.show_message(
             message,
             __name__ + "." + self.__class__.__name__,
         )
-        study_list.sort(key=lambda x: x.done, reverse=True)
-        for study in study_list:
+        for study in sorted(studies, key=lambda x: x.done, reverse=True):
             self.run(study)

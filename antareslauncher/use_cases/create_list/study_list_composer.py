@@ -3,7 +3,7 @@ import typing as t
 from dataclasses import dataclass
 from pathlib import Path
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.study_dto import Modes, StudyDTO
@@ -51,7 +51,7 @@ class StudyListComposerParameters:
 class StudyListComposer:
     def __init__(
         self,
-        repo: IDataRepo,
+        repo: DataRepoTinydb,
         file_manager: FileManager,
         display: DisplayTerminal,
         parameters: StudyListComposerParameters,

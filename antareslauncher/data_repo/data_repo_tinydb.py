@@ -4,11 +4,10 @@ from typing import List
 import tinydb
 from tinydb import TinyDB, where
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.study_dto import StudyDTO
 
 
-class DataRepoTinydb(IDataRepo):
+class DataRepoTinydb:
     def __init__(self, database_file_path, db_primary_key: str):
         super(DataRepoTinydb, self).__init__()
         self.database_file_path = database_file_path

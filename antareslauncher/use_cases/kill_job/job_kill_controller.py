@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
@@ -11,7 +11,7 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
 class JobKillController:
     env: RemoteEnvironmentWithSlurm
     display: DisplayTerminal
-    repo: IDataRepo
+    repo: DataRepoTinydb
 
     def _check_if_job_is_killable(self, job_id):
         return self.repo.is_job_id_inside_database(job_id)

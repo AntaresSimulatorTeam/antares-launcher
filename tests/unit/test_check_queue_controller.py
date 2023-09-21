@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
     CheckQueueController,
@@ -13,7 +13,7 @@ from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
 class TestCheckQueueController:
     def setup_method(self):
-        self.repo_mock = mock.Mock(spec=IDataRepo)
+        self.repo_mock = mock.Mock(spec=DataRepoTinydb)
         self.env = mock.Mock()
         self.display = mock.Mock()
         self.slurm_queue_show = SlurmQueueShow(env=self.env, display=self.display)

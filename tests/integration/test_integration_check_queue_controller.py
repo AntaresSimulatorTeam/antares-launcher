@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
@@ -33,7 +33,7 @@ class TestIntegrationCheckQueueController:
         display_mock = mock.Mock()
         slurm_queue_show = SlurmQueueShow(env_mock, display_mock)
         state_updater = StateUpdater(env_mock, display_mock)
-        repo = mock.MagicMock(spec=IDataRepo)
+        repo = mock.MagicMock(spec=DataRepoTinydb)
         self.check_queue_controller = CheckQueueController(
             slurm_queue_show, state_updater, repo
         )
