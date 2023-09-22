@@ -26,10 +26,6 @@ class FileManager:
         list_dir.sort()
         return list_dir
 
-    @staticmethod
-    def is_dir(dir_path: Path):
-        return Path(dir_path).is_dir()
-
     def _get_list_dir_without_subdir(self, dir_path, subdir_to_exclude):
         """Make a list of all the folders inside a directory except one
 
@@ -117,34 +113,6 @@ class FileManager:
             zipfile_path, file_paths, root_dir
         )
         return Path(zipfile_path).is_file()
-
-    def unzip(self, file_path: str):
-        """Unzips the result of the antares job once is has been downloaded
-
-        Args:
-            file_path: The path to the file
-
-        Returns:
-            True if the file has been extracted, False otherwise
-        """
-        self.logger.info(f"Unzipping {file_path}")
-        try:
-            with zipfile.ZipFile(file=file_path) as zip_file:
-                progress_bar = self.display.generate_progress_bar(
-                    zip_file.namelist(),
-                    desc="Extracting archive:",
-                    total=len(zip_file.namelist()),
-                )
-                for file in progress_bar:
-                    zip_file.extract(
-                        member=file,
-                        path=Path(file_path).parent,
-                    )
-            return True
-        except ValueError:
-            return False
-        except FileNotFoundError:
-            return False
 
     def make_dir(self, directory_name):
         self.logger.info(f"Creating directory {directory_name}")

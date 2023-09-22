@@ -138,7 +138,6 @@ def run_with(
     )
     study_list_composer = StudyListComposer(
         repo=data_repo,
-        file_manager=file_manager,
         display=display,
         parameters=StudyListComposerParameters(
             studies_in_dir=arguments.studies_in,

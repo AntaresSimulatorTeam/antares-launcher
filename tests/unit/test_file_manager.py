@@ -7,7 +7,6 @@ import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager import file_manager
-from antareslauncher.study_dto import StudyDTO
 from tests.data import DATA_DIR
 
 DIR_TO_ZIP = DATA_DIR / "file-manager-test" / "to-zip"
@@ -47,22 +46,6 @@ class TestFileManager:
         result_zip_file = Path(zip_name)
         assert result_zip_file.is_file()
         result_zip_file.unlink()
-
-    @pytest.mark.unit_test
-    def test_unzip(self):
-        """
-        Tests the scenario where the specified zip file does not exist. The expected outcome is
-        that the function returns False, indicating that the zip file could not be unzipped.
-        This test is checking that the function correctly handles the case where the input file is not present.
-        """
-        # given
-        study = StudyDTO("path")
-        display_terminal = DisplayTerminal()
-        my_file_manager = file_manager.FileManager(display_terminal)
-        # when
-        output = my_file_manager.unzip(study.local_final_zipfile_path)
-        # then
-        assert output is False
 
     @pytest.mark.unit_test
     def test__get_list_dir_without_subdir(self):

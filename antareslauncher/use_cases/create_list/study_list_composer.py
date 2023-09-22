@@ -52,12 +52,10 @@ class StudyListComposer:
     def __init__(
         self,
         repo: DataRepoTinydb,
-        file_manager: FileManager,
         display: DisplayTerminal,
         parameters: StudyListComposerParameters,
     ):
         self._repo = repo
-        self._file_manager = file_manager
         self._display = display
         self._studies_in_dir = parameters.studies_in_dir
         self.time_limit = parameters.time_limit
@@ -116,10 +114,9 @@ class StudyListComposer:
 
         self._new_study_added = False
 
-        directories = self._file_manager.listdir_of(self._studies_in_dir)
-        for directory in directories:
-            directory_path = Path(self._studies_in_dir) / Path(directory)
-            if self._file_manager.is_dir(directory_path):
+        directories = Path(self._studies_in_dir).iterdir()
+        for directory_path in sorted(directories):
+            if directory_path.is_dir():
                 self._update_database_with_directory(directory_path)
 
         if not self._new_study_added:
@@ -136,8 +133,7 @@ class StudyListComposer:
         )
         self._update_database_with_study(buffer_study)
 
-    def _update_database_with_directory(self, directory_path: t.Union[str, Path]):
-        directory_path = Path(directory_path)
+    def _update_database_with_directory(self, directory_path: Path):
         solver_version = get_solver_version(directory_path)
         antares_version = self.antares_version or solver_version
         if not antares_version:
