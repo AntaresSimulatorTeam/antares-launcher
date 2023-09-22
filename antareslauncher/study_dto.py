@@ -39,11 +39,11 @@ class StudyDTO:
     post_processing: bool = False
     other_options: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.name = Path(self.path).name
 
     @classmethod
-    def from_dict(cls, doc: t.Mapping) -> "StudyDTO":
+    def from_dict(cls, doc: t.Mapping[str, t.Any]) -> "StudyDTO":
         """
         Create a Study DTO from a mapping.
         """

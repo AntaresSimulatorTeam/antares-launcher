@@ -163,7 +163,6 @@ def run_with(
     retrieve_controller = RetrieveController(
         repo=data_repo,
         env=environment,
-        file_manager=file_manager,
         display=display,
         state_updater=state_updater,
     )

@@ -41,7 +41,7 @@ class AntaresLauncher:
     def run_wait_mode(self):
         """Run antares_launcher once then it keeps
         checking the status of the unfinished jobs until all jobs are finished,
-        The code exit when all job are finished the the results are retrieved and extracted
+        The code exits when all jobs are finished, the results are retrieved and extracted
         """
         self.run_once_mode()
         while not self.retrieve_controller.all_studies_done:

@@ -1,15 +1,16 @@
 import datetime
 import logging
+import typing as t
 
 from tqdm import tqdm
 
 
 class DisplayTerminal:
-    def __init__(self):
+    def __init__(self) -> None:
         # Use the ISO8601 date format to display messages on the console
         self.format = "%Y-%m-%d %H:%M:%S%z"
 
-    def show_message(self, message: str, class_name: str, end: str = "\n"):
+    def show_message(self, message: str, class_name: str, end: str = "\n") -> None:
         """Displays a message on the terminal
 
         Args:
@@ -22,7 +23,7 @@ class DisplayTerminal:
         if end != "\r":
             logging.getLogger(class_name).info(message)
 
-    def show_error(self, error: str, class_name: str):
+    def show_error(self, error: str, class_name: str) -> None:
         """Displays a error on the terminal
 
         Args:
@@ -33,7 +34,12 @@ class DisplayTerminal:
         print(f"ERROR - [{now.strftime(self.format)}] " + error)
         logging.getLogger(class_name).error(error)
 
-    def generate_progress_bar(self, iterator, desc="", total=None):
+    def generate_progress_bar(
+        self,
+        iterator: t.Iterable[t.Any],
+        desc: str = "",
+        total: t.Optional[int] = None,
+    ) -> t.Iterable[t.Any]:
         """Generates al loading bar and shows it in the terminal
 
         Args:

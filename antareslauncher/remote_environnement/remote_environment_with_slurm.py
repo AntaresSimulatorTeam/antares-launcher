@@ -401,7 +401,7 @@ class RemoteEnvironmentWithSlurm:
         )
         raise GetJobStateError(job_id, job_name, reason)
 
-    def upload_file(self, src):
+    def upload_file(self, src) -> bool:
         """Uploads a file to the remote server
 
         Args:
@@ -423,8 +423,7 @@ class RemoteEnvironmentWithSlurm:
             to download the log files.
 
         Returns:
-            True if all the logs have been downloaded, False if all the logs
-            have not been downloaded or if there are no files to download
+            The paths of the downloaded logs on the local filesystem.
         """
         src_dir = PurePosixPath(self.remote_base_path)
         dst_dir = Path(study.job_log_dir)
@@ -464,7 +463,7 @@ class RemoteEnvironmentWithSlurm:
         )
         return next(iter(downloaded_files), None)
 
-    def remove_input_zipfile(self, study: StudyDTO):
+    def remove_input_zipfile(self, study: StudyDTO) -> bool:
         """Removes initial zipfile
 
         Args:
@@ -480,7 +479,7 @@ class RemoteEnvironmentWithSlurm:
             )
         return study.input_zipfile_removed
 
-    def remove_remote_final_zipfile(self, study: StudyDTO):
+    def remove_remote_final_zipfile(self, study: StudyDTO) -> bool:
         """Removes final zipfile
 
         Args:
@@ -493,7 +492,7 @@ class RemoteEnvironmentWithSlurm:
             f"{self.remote_base_path}/{Path(study.local_final_zipfile_path).name}"
         )
 
-    def clean_remote_server(self, study: StudyDTO):
+    def clean_remote_server(self, study: StudyDTO) -> bool:
         """
         Removes the input and the output zipfile from the remote host
 

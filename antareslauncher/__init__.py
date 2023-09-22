@@ -19,7 +19,7 @@ __credits__ = "(c) Réseau de Transport de l’Électricité (RTE)"
 __project_name__ = "Antares_Launcher"
 
 
-def _check_metadata():
+def _check_metadata() -> None:
     # noinspection SpellCheckingInspection
     """
     Check the project metadata.
