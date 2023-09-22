@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
@@ -9,7 +9,7 @@ from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 class CheckQueueController:
     slurm_queue_show: SlurmQueueShow
     state_updater: StateUpdater
-    repo: IDataRepo
+    repo: DataRepoTinydb
 
     def check_queue(self):
         """Displays all the jobs un the slurm queue"""

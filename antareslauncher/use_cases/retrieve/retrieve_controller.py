@@ -1,5 +1,5 @@
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.data_repo.data_reporter import DataReporter
-from antareslauncher.data_repo.idata_repo import IDataRepo
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
@@ -16,7 +16,7 @@ from antareslauncher.use_cases.retrieve.study_retriever import StudyRetriever
 class RetrieveController:
     def __init__(
         self,
-        repo: IDataRepo,
+        repo: DataRepoTinydb,
         env: RemoteEnvironmentWithSlurm,
         file_manager: FileManager,
         display: DisplayTerminal,

@@ -1,7 +1,7 @@
+import typing as t
 from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
-from typing import Optional
 
 
 class Modes(IntEnum):
@@ -29,15 +29,24 @@ class StudyDTO:
     remote_server_is_clean: bool = False
     final_zip_extracted: bool = False
     done: bool = False
-    job_id: Optional[int] = None
+    job_id: t.Optional[int] = None
     job_state: str = ""
-    time_limit: Optional[int] = None
-    n_cpu: Optional[int] = None
-    antares_version: Optional[str] = None
-    xpansion_mode: Optional[str] = None
+    time_limit: t.Optional[int] = None
+    n_cpu: t.Optional[int] = None
+    antares_version: t.Optional[str] = None
+    xpansion_mode: t.Optional[str] = None
     run_mode: Modes = Modes.antares
     post_processing: bool = False
     other_options: str = ""
 
     def __post_init__(self):
         self.name = Path(self.path).name
+
+    @classmethod
+    def from_dict(cls, doc: t.Mapping) -> "StudyDTO":
+        """
+        Create a Study DTO from a mapping.
+        """
+        attrs = dict(**doc)
+        attrs.pop("name", None)  # calculated
+        return cls(**attrs)
