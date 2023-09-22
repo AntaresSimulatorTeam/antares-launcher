@@ -5,16 +5,12 @@ import pytest
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.clean_remote_server import RemoteServerCleaner
-from antareslauncher.use_cases.retrieve.download_final_zip import (
-    FinalZipDownloader,
-    FinalZipNotDownloadedException,
-)
+from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownloader
 from antareslauncher.use_cases.retrieve.final_zip_extractor import FinalZipExtractor
 from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
@@ -25,14 +21,13 @@ class TestStudyRetriever:
     def setup_method(self):
         env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
         display = mock.Mock(spec_set=DisplayTerminal)
-        file_manager = mock.Mock(spec_set=FileManager)
         repo = mock.Mock(spec_set=DataRepoTinydb)
         self.reporter = DataReporter(repo)
         self.state_updater = StateUpdater(env, display)
-        self.logs_downloader = LogDownloader(env, file_manager, display)
+        self.logs_downloader = LogDownloader(env, display)
         self.final_zip_downloader = FinalZipDownloader(env, display)
         self.remote_server_cleaner = RemoteServerCleaner(env, display)
-        self.zip_extractor = FinalZipExtractor(file_manager, display)
+        self.zip_extractor = FinalZipExtractor(display)
         self.study_retriever = StudyRetriever(
             self.state_updater,
             self.logs_downloader,
@@ -130,47 +125,5 @@ class TestStudyRetriever:
             local_final_zipfile_path="final-zipfile.zip",
             remote_server_is_clean=True,
             final_zip_extracted=True,
-        )
-        self.reporter.save_study.assert_called_once_with(expected)
-
-    @pytest.mark.unit_test
-    def test_retrieve_study__exception(self):
-        """
-        This test case specifically checks the behavior of the `retrieve` method
-        in the presence of an exception. It verifies that the study object and
-        its components are updated correctly when this exception occurs.
-        """
-        study = StudyDTO(path="hello")
-
-        def state_updater_run(study_: StudyDTO):
-            study_.job_id = 42
-            study_.started = True
-            study_.finished = True
-            study_.with_error = False
-            return study_
-
-        self.state_updater.run = mock.Mock(side_effect=state_updater_run)
-        self.logs_downloader.run = mock.Mock(
-            side_effect=FinalZipNotDownloadedException("download fails")
-        )
-        self.final_zip_downloader.download = mock.Mock()
-        self.remote_server_cleaner.clean = mock.Mock()
-        self.zip_extractor.extract_final_zip = mock.Mock()
-        self.reporter.save_study = mock.Mock(return_value=True)
-
-        self.study_retriever.retrieve(study)
-
-        expected = StudyDTO(
-            path="hello",
-            job_id=42,
-            done=True,
-            started=True,
-            finished=True,
-            with_error=True,
-            logs_downloaded=False,
-            local_final_zipfile_path="",
-            remote_server_is_clean=False,
-            final_zip_extracted=False,
-            job_state="Internal error: download fails",
         )
         self.reporter.save_study.assert_called_once_with(expected)

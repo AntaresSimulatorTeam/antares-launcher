@@ -1,7 +1,6 @@
-from copy import copy
+import typing as t
 from pathlib import Path
 from unittest import mock
-from unittest.mock import call
 
 import pytest
 
@@ -10,110 +9,146 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
 )
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.retrieve.download_final_zip import (
-    FinalZipDownloader,
-    FinalZipNotDownloadedException,
-)
+from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownloader
+
+
+def download_final_zip(study: StudyDTO) -> t.Optional[Path]:
+    """Simulate the download of the final ZIP."""
+    dst_dir = Path(study.output_dir)  # must exist
+    out_path = dst_dir.joinpath(f"finished_{study.name}_{study.job_id}.zip")
+    out_path.write_bytes(b"PK fake zip")
+    return out_path
 
 
 class TestFinalZipDownloader:
-    def setup_method(self):
-        self.remote_env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
-        self.display_mock = mock.Mock(spec_set=DisplayTerminal)
-        self.final_zip_downloader = FinalZipDownloader(
-            self.remote_env, self.display_mock
-        )
+    @pytest.mark.unit_test
+    def test_download__pending_study(self, pending_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        display = mock.Mock(spec=DisplayTerminal)
 
-    @pytest.fixture(scope="function")
-    def successfully_finished_zip_study(self):
-        return StudyDTO(
-            path="path/hello",
-            started=True,
-            finished=True,
-            with_error=False,
-            job_id=42,
-        )
+        # Initialize and execute the download
+        downloader = FinalZipDownloader(env=env, display=display)
+        downloader.download(pending_study)
+
+        # Check the result
+        env.download_final_zip.assert_not_called()
+        display.show_message.assert_not_called()
+        display.show_error.assert_not_called()
 
     @pytest.mark.unit_test
-    def test_download_study_shows_message_if_succeeds(
-        self, successfully_finished_zip_study
-    ):
-        final_zipfile_path = "results.zip"
-        self.remote_env.download_final_zip = mock.Mock(return_value=final_zipfile_path)
+    def test_download__started_study(self, started_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        display = mock.Mock(spec=DisplayTerminal)
 
-        self.final_zip_downloader.download(successfully_finished_zip_study)
-        expected_message1 = '"hello": downloading final ZIP...'
-        expected_message2 = '"hello": Final ZIP downloaded'
-        calls = [
-            call(expected_message1, mock.ANY),
-            call(expected_message2, mock.ANY),
-        ]
-        self.display_mock.show_message.assert_has_calls(calls)
+        # Initialize and execute the download
+        downloader = FinalZipDownloader(env=env, display=display)
+        downloader.download(started_study)
+
+        # Check the result
+        env.download_final_zip.assert_not_called()
+        display.show_message.assert_not_called()
+        display.show_error.assert_not_called()
 
     @pytest.mark.unit_test
-    def test_download_study_shows_error_and_raises_exceptions_if_failure(
-        self, successfully_finished_zip_study
-    ):
-        self.remote_env.download_final_zip = mock.Mock(return_value=None)
+    def test_download__with_error_study(self, with_error_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        display = mock.Mock(spec=DisplayTerminal)
 
-        with pytest.raises(FinalZipNotDownloadedException):
-            self.final_zip_downloader.download(successfully_finished_zip_study)
+        # Initialize and execute the download
+        downloader = FinalZipDownloader(env=env, display=display)
+        downloader.download(with_error_study)
 
-        expected_welcome_message = '"hello": downloading final ZIP...'
-        expected_error_message = '"hello": Final ZIP not downloaded'
-        self.display_mock.show_message.assert_called_once_with(
-            expected_welcome_message, mock.ANY
-        )
-        self.display_mock.show_error.assert_called_once_with(
-            expected_error_message, mock.ANY
-        )
+        # Check the result
+        env.download_final_zip.assert_not_called()
+        display.show_message.assert_not_called()
+        display.show_error.assert_not_called()
 
     @pytest.mark.unit_test
-    def test_remote_env_not_called_if_final_zip_already_downloaded(self):
-        self.remote_env.download_final_zip = mock.Mock()
-        downloaded_study = StudyDTO("hello")
-        downloaded_study.local_final_zipfile_path = "results.zip"
+    def test_download__finished_study__download_ok(
+        self, finished_study: StudyDTO
+    ) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.download_final_zip = download_final_zip
+        display = mock.Mock(spec=DisplayTerminal)
 
-        new_study = self.final_zip_downloader.download(downloaded_study)
+        # Initialize and execute the download
+        downloader = FinalZipDownloader(env=env, display=display)
+        downloader.download(finished_study)
 
-        self.remote_env.download_final_zip.assert_not_called()
-        assert new_study == downloaded_study
-
-    @pytest.mark.unit_test
-    @pytest.mark.parametrize(
-        "finished,with_error",
-        [
-            (False, False),
-            (True, True),
-        ],
-    )
-    def test_remote_env_not_called_if_final_zip_not_successfully_finished(
-        self, finished, with_error
-    ):
-        self.remote_env.download_final_zip = mock.Mock()
-        not_finished_study = StudyDTO("hello", finished=finished, with_error=with_error)
-
-        new_study = self.final_zip_downloader.download(not_finished_study)
-
-        self.remote_env.download_final_zip.assert_not_called()
-        assert new_study == not_finished_study
+        # Check the result: one ZIP file is downloaded
+        assert finished_study.local_final_zipfile_path
+        assert display.show_message.call_count == 2  # two messages
+        assert display.show_error.call_count == 0  # no error
+        output_dir = Path(finished_study.output_dir)
+        assert output_dir.is_dir()
+        zip_files = list(output_dir.iterdir())
+        assert len(zip_files) == 1
 
     @pytest.mark.unit_test
-    def test_remote_env_is_called_if_final_zip_not_yet_downloaded(
-        self, successfully_finished_zip_study
-    ):
-        final_zipfile_path = "results.zip"
-        self.remote_env.download_final_zip = mock.Mock(
-            return_value=Path(final_zipfile_path)
-        )
+    def test_download__finished_study__reentrancy(
+        self, finished_study: StudyDTO
+    ) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.download_final_zip = download_final_zip
+        display = mock.Mock(spec=DisplayTerminal)
 
-        new_study = self.final_zip_downloader.download(successfully_finished_zip_study)
+        # Initialize and execute the download twice
+        downloader = FinalZipDownloader(env=env, display=display)
+        downloader.download(finished_study)
 
-        self.remote_env.download_final_zip.assert_called_once()
-        first_call = self.remote_env.download_final_zip.call_args_list[0]
-        first_argument = first_call[0][0]
-        assert first_argument == successfully_finished_zip_study
+        output_dir1 = Path(finished_study.output_dir)
+        zip_files1 = set(output_dir1.iterdir())
+        downloader.download(finished_study)
 
-        expected_final_study = copy(successfully_finished_zip_study)
-        expected_final_study.local_final_zipfile_path = final_zipfile_path
-        assert new_study == expected_final_study
+        # Check the result: one ZIP file is downloaded
+        assert finished_study.local_final_zipfile_path
+        assert display.show_message.call_count == 2
+        assert display.show_error.call_count == 0
+
+        # ZIP files are not duplicated
+        output_dir2 = Path(finished_study.output_dir)
+        zip_files2 = set(output_dir2.iterdir())
+        assert zip_files1 == zip_files2
+
+    @pytest.mark.unit_test
+    def test_download__finished_study__download_nothing(
+        self, finished_study: StudyDTO
+    ) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.download_final_zip = lambda _: []
+        display = mock.Mock(spec=DisplayTerminal)
+
+        # Initialize and execute the download
+        downloader = FinalZipDownloader(env=env, display=display)
+        downloader.download(finished_study)
+
+        # Check the result: no ZIP file is downloaded
+        assert not finished_study.local_final_zipfile_path
+        assert display.show_message.call_count == 1  # only the first message
+        assert display.show_error.call_count == 1
+        output_dir = Path(finished_study.output_dir)
+        assert output_dir.is_dir()
+        zip_files = list(output_dir.iterdir())
+        assert not zip_files
+
+    @pytest.mark.unit_test
+    def test_download__finished_study__download_error(
+        self, finished_study: StudyDTO
+    ) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.download_final_zip.side_effect = Exception("Connection error")
+        display = mock.Mock(spec=DisplayTerminal)
+
+        # Initialize and execute the download
+        downloader = FinalZipDownloader(env=env, display=display)
+        with pytest.raises(Exception, match=r"Connection\s+error"):
+            downloader.download(finished_study)
+
+        # Check the result: the exception is not managed
+        assert not finished_study.local_final_zipfile_path
+        assert display.show_message.call_count == 1  # only the first message
+        display.show_error.assert_not_called()
+        output_dir = Path(finished_study.output_dir)
+        assert output_dir.is_dir()
+        zip_files = list(output_dir.iterdir())
+        assert not zip_files

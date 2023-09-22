@@ -12,28 +12,25 @@ from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 from antareslauncher.use_cases.retrieve.study_retriever import StudyRetriever
 
+LOG_NAME = f"{__name__}.RetrieveController"
+
 
 class RetrieveController:
     def __init__(
         self,
         repo: DataRepoTinydb,
         env: RemoteEnvironmentWithSlurm,
-        file_manager: FileManager,
         display: DisplayTerminal,
         state_updater: StateUpdater,
     ):
         self.repo = repo
         self.env = env
-        self.file_manager = file_manager
         self.display = display
         self.state_updater = state_updater
-        DataReporter(repo)
-        logs_downloader = LogDownloader(
-            env=self.env, file_manager=file_manager, display=self.display
-        )
+        logs_downloader = LogDownloader(env=self.env, display=self.display)
         final_zip_downloader = FinalZipDownloader(env=self.env, display=self.display)
-        remote_server_cleaner = RemoteServerCleaner(env, display)
-        zip_extractor = FinalZipExtractor(file_manager, display)
+        remote_server_cleaner = RemoteServerCleaner(env=self.env, display=self.display)
+        zip_extractor = FinalZipExtractor(display=self.display)
         self.study_retriever = StudyRetriever(
             state_updater,
             logs_downloader,
@@ -64,15 +61,9 @@ class RetrieveController:
         5. extract result
         """
         studies = self.repo.get_list_of_studies()
-        self.display.show_message(
-            "Retrieving all studies",
-            __name__ + "." + __class__.__name__,
-        )
+        self.display.show_message("Retrieving all studies...", LOG_NAME)
         for study in studies:
             self.study_retriever.retrieve(study)
         if self.all_studies_done:
-            self.display.show_message(
-                "Everything is done",
-                __name__ + "." + __class__.__name__,
-            )
+            self.display.show_message("All retrievals are done.", LOG_NAME)
         return self.all_studies_done

@@ -41,8 +41,6 @@ class StudyRetriever:
 
             except Exception as e:
                 # The exception is not re-raised, but the job is marked as failed
-                study.done = True
-                study.finished = True
                 study.with_error = True
                 study.job_state = f"Internal error: {e}"
 
