@@ -82,9 +82,7 @@ class TestParametersReader:
             ParametersReader(empty_json, empty_yaml).get_main_parameters()
 
     @pytest.mark.unit_test
-    def test_get_option_parameters_raises_exception_if_params_are_missing(
-        self, tmp_path
-    ):
+    def test_get_option_parameters_raises_exception_if_params_are_missing(self, tmp_path):
         empty_json = tmp_path / "dummy.json"
         config_yaml = tmp_path / "empty.yaml"
         config_yaml.write_text(
@@ -119,23 +117,16 @@ class TestParametersReader:
         empty_json.write_text("{}")
         config_yaml = tmp_path / "empty.yaml"
         config_yaml.write_text(self.yaml_compulsory_content)
-        options_parameters = ParametersReader(
-            empty_json, config_yaml
-        ).get_parser_parameters()
+        options_parameters = ParametersReader(empty_json, config_yaml).get_parser_parameters()
         assert options_parameters.log_dir == self.LOG_DIR
         assert options_parameters.studies_in_dir == self.STUDIES_IN_DIR
         assert options_parameters.finished_dir == self.FINISHED_DIR
         assert options_parameters.default_time_limit == self.DEFAULT_TIME_LIMIT
         assert options_parameters.default_n_cpu == self.DEFAULT_N_CPU
         assert options_parameters.default_wait_time == self.DEFAULT_WAIT_TIME
-        assert (
-            options_parameters.ssh_config_file_is_required
-            == self.SSH_CONFIG_FILE_IS_REQUIRED
-        )
+        assert options_parameters.ssh_config_file_is_required == self.SSH_CONFIG_FILE_IS_REQUIRED
         alternate1 = Path.cwd() / self.DEFAULT_SSH_CONFIGFILE_NAME
-        alternate2 = (
-            Path.home() / "antares_launcher_settings" / self.DEFAULT_SSH_CONFIGFILE_NAME
-        )
+        alternate2 = Path.home() / "antares_launcher_settings" / self.DEFAULT_SSH_CONFIGFILE_NAME
         assert options_parameters.ssh_configfile_path_alternate1 == alternate1
         assert options_parameters.ssh_configfile_path_alternate2 == alternate2
 
@@ -146,23 +137,15 @@ class TestParametersReader:
         config_yaml.write_text(self.yaml_compulsory_content)
         empty_json = tmp_path / "dummy.json"
         empty_json.write_text("{}")
-        main_parameters = ParametersReader(
-            empty_json, config_yaml
-        ).get_main_parameters()
+        main_parameters = ParametersReader(empty_json, config_yaml).get_main_parameters()
         assert main_parameters.json_dir == Path(self.JSON_DIR)
         assert main_parameters.slurm_script_path == self.SLURM_SCRIPT_PATH
-        assert (
-            main_parameters.default_json_db_name
-            == f"{getpass.getuser()}_antares_launcher_db.json"
-        )
+        assert main_parameters.default_json_db_name == f"{getpass.getuser()}_antares_launcher_db.json"
         assert main_parameters.partition == self.PARTITION
         assert main_parameters.quality_of_service == self.QUALITY_OF_SERVICE
         assert main_parameters.db_primary_key == self.DB_PRIMARY_KEY
         assert not main_parameters.default_ssh_dict
-        assert (
-            main_parameters.antares_versions_on_remote_server
-            == self.ANTARES_SUPPORTED_VERSIONS
-        )
+        assert main_parameters.antares_versions_on_remote_server == self.ANTARES_SUPPORTED_VERSIONS
 
     @pytest.mark.unit_test
     def test_get_main_parameters_initializes_default_ssh_dict_correctly(self, tmp_path):
@@ -172,7 +155,5 @@ class TestParametersReader:
         with open(ssh_json, "w") as file:
             json.dump(self.json_dict, file)
 
-        main_parameters = ParametersReader(
-            json_ssh_conf=ssh_json, yaml_filepath=config_yaml
-        ).get_main_parameters()
+        main_parameters = ParametersReader(json_ssh_conf=ssh_json, yaml_filepath=config_yaml).get_main_parameters()
         assert main_parameters.default_ssh_dict == self.json_dict

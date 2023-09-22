@@ -9,10 +9,7 @@ import time
 import typing as t
 from pathlib import Path, PurePosixPath
 
-from antareslauncher.remote_environnement.slurm_script_features import (
-    ScriptParametersDTO,
-    SlurmScriptFeatures,
-)
+from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
 
@@ -25,20 +22,13 @@ class RemoteEnvBaseError(Exception):
 
 class GetJobStateError(RemoteEnvBaseError):
     def __init__(self, job_id: int, job_name: str, reason: str):
-        msg = (
-            f"Unable to retrieve the status of the SLURM job {job_id}"
-            f" (study job '{job_name})."
-            f" {reason}"
-        )
+        msg = f"Unable to retrieve the status of the SLURM job {job_id} (study job '{job_name}). {reason}"
         super().__init__(msg)
 
 
 class JobNotFoundError(RemoteEnvBaseError):
     def __init__(self, job_id: int, job_name: str):
-        msg = (
-            f"Unable to retrieve the status of the SLURM job {job_id}"
-            f" (study job '{job_name}): Job not found."
-        )
+        msg = f"Unable to retrieve the status of the SLURM job {job_id} (study job '{job_name}): Job not found."
         super().__init__(msg)
 
 
@@ -141,9 +131,7 @@ class RemoteEnvironmentWithSlurm:
 
     def _initialise_remote_path(self):
         remote_home_dir = PurePosixPath(self.connection.home_dir)
-        remote_base_path = remote_home_dir.joinpath(
-            f"REMOTE_{getpass.getuser()}_{socket.gethostname()}"
-        )
+        remote_base_path = remote_home_dir.joinpath(f"REMOTE_{getpass.getuser()}_{socket.gethostname()}")
         self.remote_base_path = str(remote_base_path)
         if not self.connection.make_dir(self.remote_base_path):
             raise NoRemoteBaseDirError(remote_base_path)
@@ -212,9 +200,7 @@ class RemoteEnvironmentWithSlurm:
         Raises:
             SubmitJobErrorException if the job has not been successfully submitted
         """
-        time_limit = self.convert_time_limit_from_seconds_to_minutes(
-            my_study.time_limit
-        )
+        time_limit = self.convert_time_limit_from_seconds_to_minutes(my_study.time_limit)
         script_params = ScriptParametersDTO(
             study_dir_name=Path(my_study.path).name,
             input_zipfile_name=Path(my_study.zipfile_path).name,
@@ -233,15 +219,10 @@ class RemoteEnvironmentWithSlurm:
             raise SubmitJobError(my_study.name, reason)
 
         # should match "Submitted batch job 123456"
-        if match := re.match(
-            r"Submitted.*?(?P<job_id>\d+)", output, flags=re.IGNORECASE
-        ):
+        if match := re.match(r"Submitted.*?(?P<job_id>\d+)", output, flags=re.IGNORECASE):
             return int(match["job_id"])
 
-        reason = (
-            f"The command [{command}] return an non-parsable output:"
-            f"\n{textwrap.indent(output, 'OUTPUT> ')}"
-        )
+        reason = f"The command [{command}] return an non-parsable output:\n{textwrap.indent(output, 'OUTPUT> ')}"
         raise SubmitJobError(my_study.name, reason)
 
     def get_job_state_flags(
@@ -270,8 +251,7 @@ class RemoteEnvironmentWithSlurm:
         if job_state is None:
             # noinspection SpellCheckingInspection
             logger.info(
-                f"Job '{study.job_id}' no longer active in SLURM,"
-                f" the job status is read from the SACCT database..."
+                f"Job '{study.job_id}' no longer active in SLURM, the job status is read from the SACCT database..."
             )
             job_state = self._retrieve_slurm_acct_state(
                 study.job_id,
@@ -333,10 +313,7 @@ class RemoteEnvironmentWithSlurm:
         if match := re.search(r"JobState=(\w+)", output):
             return JobStateCodes(match[1])
 
-        reason = (
-            f"The command [{command}] return an non-parsable output:"
-            f"\n{textwrap.indent(output, 'OUTPUT> ')}"
-        )
+        reason = f"The command [{command}] return an non-parsable output:\n{textwrap.indent(output, 'OUTPUT> ')}"
         raise GetJobStateError(job_id, job_name, reason)
 
     def _retrieve_slurm_acct_state(
@@ -374,10 +351,7 @@ class RemoteEnvironmentWithSlurm:
             last_error = error
             time.sleep(sleep_time)
         else:
-            reason = (
-                f"The command [{command}] failed after {attempts} attempts:"
-                f" {last_error}"
-            )
+            reason = f"The command [{command}] failed after {attempts} attempts: {last_error}"
             raise GetJobStateError(job_id, job_name, reason)
 
         # When the output is empty it mean that the job is not found
@@ -395,10 +369,7 @@ class RemoteEnvironmentWithSlurm:
                     job_state_str = re.match(r"(\w+)", out_state)[1]
                     return JobStateCodes(job_state_str)
 
-        reason = (
-            f"The command [{command}] return an non-parsable output:"
-            f"\n{textwrap.indent(output, 'OUTPUT> ')}"
-        )
+        reason = f"The command [{command}] return an non-parsable output:\n{textwrap.indent(output, 'OUTPUT> ')}"
         raise GetJobStateError(job_id, job_name, reason)
 
     def upload_file(self, src) -> bool:
@@ -474,9 +445,7 @@ class RemoteEnvironmentWithSlurm:
         """
         if not study.input_zipfile_removed:
             zip_name = Path(study.zipfile_path).name
-            study.input_zipfile_removed = self.connection.remove_file(
-                f"{self.remote_base_path}/{zip_name}"
-            )
+            study.input_zipfile_removed = self.connection.remove_file(f"{self.remote_base_path}/{zip_name}")
         return study.input_zipfile_removed
 
     def remove_remote_final_zipfile(self, study: StudyDTO) -> bool:
@@ -488,9 +457,7 @@ class RemoteEnvironmentWithSlurm:
         Returns:
             True if the file has been successfully removed, False otherwise
         """
-        return self.connection.remove_file(
-            f"{self.remote_base_path}/{Path(study.local_final_zipfile_path).name}"
-        )
+        return self.connection.remove_file(f"{self.remote_base_path}/{Path(study.local_final_zipfile_path).name}")
 
     def clean_remote_server(self, study: StudyDTO) -> bool:
         """
@@ -505,6 +472,5 @@ class RemoteEnvironmentWithSlurm:
         return (
             False
             if study.remote_server_is_clean
-            else self.remove_remote_final_zipfile(study)
-            & self.remove_input_zipfile(study)
+            else self.remove_remote_final_zipfile(study) & self.remove_input_zipfile(study)
         )

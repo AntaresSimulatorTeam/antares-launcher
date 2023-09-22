@@ -6,12 +6,8 @@ from unittest import mock
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
-from antareslauncher.remote_environnement.slurm_script_features import (
-    SlurmScriptFeatures,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
+from antareslauncher.remote_environnement.slurm_script_features import SlurmScriptFeatures
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
 
@@ -89,20 +85,20 @@ class TestIntegrationLaunchController:
         )
         home_dir = "Submitted"
 
-        remote_base_path = (
-            f"{home_dir}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
-        )
+        remote_base_path = f"{home_dir}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
 
         zipfile_name = Path(study1.zipfile_path).name
         job_type = "ANTARES"
         post_processing = False
         other_options = ""
         bash_options = (
+            # fmt: off
             f" {zipfile_name}"
             f" {study1.antares_version}"
             f" {job_type}"
             f" {post_processing}"
             f" '{other_options}'"
+            # fmt: on
         )
         command = (
             f"cd {remote_base_path} && "

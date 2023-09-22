@@ -20,11 +20,7 @@ from antareslauncher.config import (
     get_user_config_dir,
     parse_config,
 )
-from antareslauncher.exceptions import (
-    ConfigFileNotFoundError,
-    InvalidConfigValueError,
-    UnknownFileSuffixError,
-)
+from antareslauncher.exceptions import ConfigFileNotFoundError, InvalidConfigValueError, UnknownFileSuffixError
 
 
 class TestParseConfig:
@@ -223,9 +219,7 @@ class TestConfig:
         assert config.db_primary_key == data["db_primary_key"]
         assert config.ssh_config_file_is_required == data["ssh_config_file_is_required"]
         assert config.slurm_script_path == slurm_script_path
-        assert (
-            config.remote_solver_versions == data["antares_versions_on_remote_server"]
-        )
+        assert config.remote_solver_versions == data["antares_versions_on_remote_server"]
 
     def test_save_config__nominal(self, tmp_path, ssh_config):
         config_path = tmp_path.joinpath("configuration.yaml")
@@ -262,13 +256,9 @@ class TestConfig:
         assert actual["default_n_cpu"] == config.default_n_cpu
         assert actual["default_wait_time"] == config.default_wait_time
         assert actual["db_primary_key"] == config.db_primary_key
-        assert (
-            actual["ssh_config_file_is_required"] == config.ssh_config_file_is_required
-        )
+        assert actual["ssh_config_file_is_required"] == config.ssh_config_file_is_required
         assert actual["slurm_script_path"] == slurm_script_path.as_posix()
-        assert (
-            actual["antares_versions_on_remote_server"] == config.remote_solver_versions
-        )
+        assert actual["antares_versions_on_remote_server"] == config.remote_solver_versions
         assert "ssh_config" not in actual
 
     @pytest.mark.parametrize(
@@ -364,12 +354,8 @@ class TestGetConfigPath:
         with pytest.raises(ConfigFileNotFoundError):
             get_config_path()
 
-    @pytest.mark.parametrize(
-        "config_name", [None, CONFIGURATION_YAML, "my_config.yaml"]
-    )
-    def test_get_config_path__from_user_config_dir(
-        self, monkeypatch, tmp_path, config_name
-    ):
+    @pytest.mark.parametrize("config_name", [None, CONFIGURATION_YAML, "my_config.yaml"])
+    def test_get_config_path__from_user_config_dir(self, monkeypatch, tmp_path, config_name):
         config_path = tmp_path.joinpath(config_name or CONFIGURATION_YAML)
         config_path.touch()
         monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)
@@ -380,17 +366,11 @@ class TestGetConfigPath:
         assert actual == config_path
 
     @pytest.mark.parametrize("relpath", ["", "data"])
-    @pytest.mark.parametrize(
-        "config_name", [None, CONFIGURATION_YAML, "my_config.yaml"]
-    )
-    def test_get_config_path__from_curr_dir(
-        self, monkeypatch, tmp_path, relpath, config_name
-    ):
+    @pytest.mark.parametrize("config_name", [None, CONFIGURATION_YAML, "my_config.yaml"])
+    def test_get_config_path__from_curr_dir(self, monkeypatch, tmp_path, relpath, config_name):
         data_dir = tmp_path.joinpath(relpath)
         data_dir.mkdir(exist_ok=True)
-        config_path: pathlib.Path = tmp_path.joinpath(
-            data_dir, config_name or CONFIGURATION_YAML
-        )
+        config_path: pathlib.Path = tmp_path.joinpath(data_dir, config_name or CONFIGURATION_YAML)
         config_path.touch()
         monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)
         monkeypatch.chdir(tmp_path)
@@ -399,9 +379,7 @@ class TestGetConfigPath:
         assert actual == config_path.relative_to(tmp_path)
 
     @pytest.mark.parametrize("relpath", ["", "data"])
-    def test_get_config_path__from_curr_dir__not_found(
-        self, monkeypatch, tmp_path, relpath
-    ):
+    def test_get_config_path__from_curr_dir__not_found(self, monkeypatch, tmp_path, relpath):
         data_dir = tmp_path.joinpath(relpath)
         data_dir.mkdir(exist_ok=True)
         monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)

@@ -5,9 +5,7 @@ import pytest
 
 import antareslauncher.use_cases
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 
@@ -26,9 +24,7 @@ class TestStudySubmitter:
         new_study = self.study_submitter.submit_job(study)
 
         expected_message = f'"hello": was submitted'
-        self.display_mock.show_message.assert_called_once_with(
-            expected_message, mock.ANY
-        )
+        self.display_mock.show_message.assert_called_once_with(expected_message, mock.ANY)
         assert new_study.job_id == 42
 
     @pytest.mark.unit_test
@@ -38,15 +34,11 @@ class TestStudySubmitter:
         self.remote_env.submit_job = mock.Mock(return_value=None)
         study = StudyDTO(path="hello")
 
-        with pytest.raises(
-            antareslauncher.use_cases.launch.study_submitter.FailedSubmissionException
-        ):
+        with pytest.raises(antareslauncher.use_cases.launch.study_submitter.FailedSubmissionException):
             self.study_submitter.submit_job(study)
 
         expected_error_message = f'"hello": was not submitted'
-        self.display_mock.show_error.assert_called_once_with(
-            expected_error_message, mock.ANY
-        )
+        self.display_mock.show_error.assert_called_once_with(expected_error_message, mock.ANY)
 
     @pytest.mark.unit_test
     def test_remote_env_not_called_if_study_has_already_a_jobid(self):

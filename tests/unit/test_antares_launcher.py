@@ -4,9 +4,7 @@ from unittest.mock import Mock, PropertyMock
 import pytest
 
 from antareslauncher.antares_launcher import AntaresLauncher
-from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
-    WaitController,
-)
+from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
 
 
 class TestAntaresLauncher:
@@ -33,9 +31,7 @@ class TestAntaresLauncher:
         # when
         antares_launcher.run()
         # then
-        antares_launcher.job_kill_controller.kill_job.assert_called_once_with(
-            job_id_to_kill
-        )
+        antares_launcher.job_kill_controller.kill_job.assert_called_once_with(job_id_to_kill)
 
     @pytest.mark.unit_test
     def test_given_true_check_queue_bool_when_run_then_check_queue_controller_checks_queue(

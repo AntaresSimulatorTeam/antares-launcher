@@ -2,9 +2,7 @@ from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 from antareslauncher.use_cases.launch.study_zip_cleaner import StudyZipCleaner
@@ -38,9 +36,7 @@ class StudyLauncher:
 
     def _remove_input_zipfile(self):
         if self._current_study.zip_is_sent is True:
-            self._current_study = self._zipfile_cleaner.remove_input_zipfile(
-                self._current_study
-            )
+            self._current_study = self._zipfile_cleaner.remove_input_zipfile(self._current_study)
         self.reporter.save_study(self._current_study)
 
     def _submit_job(self):

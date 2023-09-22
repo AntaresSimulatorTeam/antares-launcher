@@ -22,20 +22,14 @@ def pending_study_fixture(tmp_path: Path) -> StudyDTO:
 
 @pytest.fixture(name="started_study")
 def started_study_fixture(pending_study: StudyDTO) -> StudyDTO:
-    return dataclasses.replace(
-        pending_study, started=True, finished=False, with_error=False
-    )
+    return dataclasses.replace(pending_study, started=True, finished=False, with_error=False)
 
 
 @pytest.fixture(name="finished_study")
 def finished_study_fixture(pending_study: StudyDTO) -> StudyDTO:
-    return dataclasses.replace(
-        pending_study, started=True, finished=True, with_error=False
-    )
+    return dataclasses.replace(pending_study, started=True, finished=True, with_error=False)
 
 
 @pytest.fixture(name="with_error_study")
 def with_error_study_fixture(pending_study: StudyDTO) -> StudyDTO:
-    return dataclasses.replace(
-        pending_study, started=True, finished=True, with_error=True
-    )
+    return dataclasses.replace(pending_study, started=True, finished=True, with_error=True)

@@ -17,6 +17,4 @@ class TreeStructureInitializer:
         self.file_manager.make_dir(self.studies_in)
         self.file_manager.make_dir(self.log_dir)
         self.file_manager.make_dir(self.finished)
-        self.display.show_message(
-            "Tree structure initialized", __name__ + "." + __class__.__name__
-        )
+        self.display.show_message("Tree structure initialized", __name__ + "." + __class__.__name__)

@@ -23,9 +23,7 @@ class TestStudyZipper:
         self.study_zipper.zip(study)
 
         expected_message = '"hello": was zipped'
-        self.display_mock.show_message.assert_called_once_with(
-            expected_message, mock.ANY
-        )
+        self.display_mock.show_message.assert_called_once_with(expected_message, mock.ANY)
 
     @pytest.mark.unit_test
     def test_zip_study_show_error_if_zip_fails(self):
@@ -61,7 +59,5 @@ class TestStudyZipper:
         new_study = self.study_zipper.zip(study)
 
         expected_zipfile_path = f"{study.path}-{getpass.getuser()}.zip"
-        self.file_manager.zip_dir_excluding_subdir.assert_called_once_with(
-            study_path, expected_zipfile_path, None
-        )
+        self.file_manager.zip_dir_excluding_subdir.assert_called_once_with(study_path, expected_zipfile_path, None)
         assert new_study.zipfile_path == expected_zipfile_path

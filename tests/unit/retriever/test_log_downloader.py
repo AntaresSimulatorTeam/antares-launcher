@@ -5,9 +5,7 @@ from unittest import mock
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 
@@ -81,9 +79,7 @@ class TestLogDownloader:
         assert log_files1 == log_files2
 
     @pytest.mark.unit_test
-    def test_run__started_study__download_nothing(
-        self, started_study: StudyDTO
-    ) -> None:
+    def test_run__started_study__download_nothing(self, started_study: StudyDTO) -> None:
         env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         env.download_logs = lambda _: []
         display = mock.Mock(spec=DisplayTerminal)

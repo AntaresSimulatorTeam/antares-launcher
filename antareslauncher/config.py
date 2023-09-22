@@ -12,11 +12,7 @@ from typing import Any, Dict, List, Optional
 import yaml
 
 from antareslauncher import __author__, __project_name__, __version__
-from antareslauncher.exceptions import (
-    ConfigFileNotFoundError,
-    InvalidConfigValueError,
-    UnknownFileSuffixError,
-)
+from antareslauncher.exceptions import ConfigFileNotFoundError, InvalidConfigValueError, UnknownFileSuffixError
 
 APP_NAME = __project_name__
 APP_AUTHOR = __author__.split(",")[0]
@@ -119,9 +115,7 @@ class SSHConfig:
         obj = parse_config(ssh_config_path)
         kwargs = {k.lower(): v for k, v in obj.items()}
         private_key_file = kwargs.pop("private_key_file", None)
-        kwargs["private_key_file"] = (
-            None if private_key_file is None else pathlib.Path(private_key_file)
-        )
+        kwargs["private_key_file"] = None if private_key_file is None else pathlib.Path(private_key_file)
         try:
             return cls(config_path=ssh_config_path, **kwargs)
         except TypeError as exc:
@@ -139,11 +133,7 @@ class SSHConfig:
         """
         obj = dataclasses.asdict(self)
         del obj["config_path"]
-        obj = {
-            k: v
-            for k, v in obj.items()
-            if v or k not in {"private_key_file", "key_password", "password"}
-        }
+        obj = {k: v for k, v in obj.items() if v or k not in {"private_key_file", "key_password", "password"}}
         if "private_key_file" in obj:
             obj["private_key_file"] = obj["private_key_file"].as_posix()
         dump_config(ssh_config_path, obj)
@@ -212,9 +202,7 @@ class Config:
         obj = parse_config(config_path)
         kwargs = {k.lower(): v for k, v in obj.items()}
         try:
-            kwargs["remote_solver_versions"] = kwargs.pop(
-                "antares_versions_on_remote_server"
-            )
+            kwargs["remote_solver_versions"] = kwargs.pop("antares_versions_on_remote_server")
             # handle paths
             for key in [
                 "log_dir",
@@ -226,9 +214,7 @@ class Config:
                 kwargs[key] = pathlib.Path(kwargs[key])
             ssh_configfile_name = kwargs.pop("default_ssh_configfile_name")
         except KeyError as exc:
-            raise InvalidConfigValueError(
-                config_path, f"missing parameter '{exc}'"
-            ) from None
+            raise InvalidConfigValueError(config_path, f"missing parameter '{exc}'") from None
         # handle SSH configuration
         config_dir = config_path.parent
         ssh_config_path = config_dir.joinpath(ssh_configfile_name)
@@ -287,9 +273,7 @@ def get_user_config_dir(system: str = ""):
     username = getpass.getuser()
     system = system or sys.platform
     if system == "win32":
-        config_dir = pathlib.WindowsPath(
-            rf"C:\Users\{username}\AppData\Local\{APP_AUTHOR}"
-        )
+        config_dir = pathlib.WindowsPath(rf"C:\Users\{username}\AppData\Local\{APP_AUTHOR}")
     elif system == "darwin":
         config_dir = pathlib.PosixPath("~/Library/Preferences").expanduser()
     else:

@@ -1,0 +1,16 @@
+[tool.black]
+target-version = ["py38"]
+line-length = 120
+exclude = "(data/*|docs/*|remote_scripts_templates/*|target/*)"
+
+[tool.isort]
+profile = "black"
+line_length = 120
+src_paths = ["antareslauncher", "tests"]
+skip_gitignore = true
+extend_skip_glob = [
+    "data/*",
+    "doc/*",
+    "remote_scripts_templates/*",
+    "target/*",
+]

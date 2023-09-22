@@ -1,9 +1,7 @@
 from pathlib import Path
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 
 LOG_NAME = f"{__name__}.FinalZipDownloader"
@@ -30,11 +28,7 @@ class FinalZipDownloader(object):
             The updated data transfer object, with its `local_final_zipfile_path`
             attribute set if the download was successful.
         """
-        if (
-            study.finished
-            and not study.with_error
-            and not study.local_final_zipfile_path
-        ):
+        if study.finished and not study.with_error and not study.local_final_zipfile_path:
             self._display.show_message(
                 f'"{study.name}": downloading final ZIP...',
                 LOG_NAME,

@@ -68,9 +68,7 @@ class StudyListComposer:
         self.antares_version = parameters.antares_version
         self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
-        self.ANTARES_VERSIONS_ON_REMOTE_SERVER = [
-            int(v) for v in parameters.antares_versions_on_remote_server
-        ]
+        self.ANTARES_VERSIONS_ON_REMOTE_SERVER = [int(v) for v in parameters.antares_versions_on_remote_server]
 
     def get_list_of_studies(self):
         """Retrieve the list of studies from the repo
@@ -125,12 +123,8 @@ class StudyListComposer:
                 f"{__name__}.{__class__.__name__}",
             )
 
-    def _update_database_with_new_study(
-        self, antares_version, directory_path, xpansion_mode: str
-    ):
-        buffer_study = self._create_study(
-            directory_path, antares_version, xpansion_mode
-        )
+    def _update_database_with_new_study(self, antares_version, directory_path, xpansion_mode: str):
+        buffer_study = self._create_study(directory_path, antares_version, xpansion_mode)
         self._update_database_with_study(buffer_study)
 
     def _update_database_with_directory(self, directory_path: Path):
@@ -151,21 +145,15 @@ class StudyListComposer:
                 __name__ + "." + self.__class__.__name__,
             )
         else:
-            candidates_file_path = directory_path.joinpath(
-                "user", "expansion", "candidates.ini"
-            )
+            candidates_file_path = directory_path.joinpath("user", "expansion", "candidates.ini")
             is_xpansion_study = candidates_file_path.is_file()
             xpansion_mode = is_xpansion_study and self.xpansion_mode
 
-            valid_xpansion_candidate = (
-                self.xpansion_mode in ["r", "cpp"] and is_xpansion_study
-            )
+            valid_xpansion_candidate = self.xpansion_mode in ["r", "cpp"] and is_xpansion_study
             valid_antares_candidate = not self.xpansion_mode
 
             if valid_antares_candidate or valid_xpansion_candidate:
-                self._update_database_with_new_study(
-                    antares_version, directory_path, xpansion_mode
-                )
+                self._update_database_with_new_study(antares_version, directory_path, xpansion_mode)
 
     def _update_database_with_study(self, buffer_study):
         if not self._repo.is_study_inside_database(buffer_study):

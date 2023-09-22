@@ -19,12 +19,7 @@ class FinalZipExtractor:
         Args:
             study: The current study
         """
-        if (
-            study.finished
-            and not study.with_error
-            and study.local_final_zipfile_path
-            and not study.final_zip_extracted
-        ):
+        if study.finished and not study.with_error and study.local_final_zipfile_path and not study.final_zip_extracted:
             zip_path = Path(study.local_final_zipfile_path)
             target_dir = zip_path.with_suffix("")
             try:

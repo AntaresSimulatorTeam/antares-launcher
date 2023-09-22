@@ -5,9 +5,7 @@ import pytest
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.clean_remote_server import RemoteServerCleaner
 from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownloader
@@ -91,25 +89,19 @@ class TestStudyRetriever:
             study_.local_final_zipfile_path = "final-zipfile.zip"
             return study_
 
-        self.final_zip_downloader.download = mock.Mock(
-            side_effect=final_zip_downloader_download
-        )
+        self.final_zip_downloader.download = mock.Mock(side_effect=final_zip_downloader_download)
 
         def remote_server_cleaner_clean(study_: StudyDTO):
             study_.remote_server_is_clean = True
             return study_
 
-        self.remote_server_cleaner.clean = mock.Mock(
-            side_effect=remote_server_cleaner_clean
-        )
+        self.remote_server_cleaner.clean = mock.Mock(side_effect=remote_server_cleaner_clean)
 
         def zip_extractor_extract_final_zip(study_: StudyDTO):
             study_.final_zip_extracted = True
             return study_
 
-        self.zip_extractor.extract_final_zip = mock.Mock(
-            side_effect=zip_extractor_extract_final_zip
-        )
+        self.zip_extractor.extract_final_zip = mock.Mock(side_effect=zip_extractor_extract_final_zip)
         self.reporter.save_study = mock.Mock(return_value=True)
 
         self.study_retriever.retrieve(study)

@@ -5,9 +5,7 @@ from unittest import mock
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownloader
 
@@ -64,9 +62,7 @@ class TestFinalZipDownloader:
         display.show_error.assert_not_called()
 
     @pytest.mark.unit_test
-    def test_download__finished_study__download_ok(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_download__finished_study__download_ok(self, finished_study: StudyDTO) -> None:
         env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         env.download_final_zip = download_final_zip
         display = mock.Mock(spec=DisplayTerminal)
@@ -85,9 +81,7 @@ class TestFinalZipDownloader:
         assert len(zip_files) == 1
 
     @pytest.mark.unit_test
-    def test_download__finished_study__reentrancy(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_download__finished_study__reentrancy(self, finished_study: StudyDTO) -> None:
         env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         env.download_final_zip = download_final_zip
         display = mock.Mock(spec=DisplayTerminal)
@@ -111,9 +105,7 @@ class TestFinalZipDownloader:
         assert zip_files1 == zip_files2
 
     @pytest.mark.unit_test
-    def test_download__finished_study__download_nothing(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_download__finished_study__download_nothing(self, finished_study: StudyDTO) -> None:
         env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         env.download_final_zip = lambda _: []
         display = mock.Mock(spec=DisplayTerminal)
@@ -132,9 +124,7 @@ class TestFinalZipDownloader:
         assert not zip_files
 
     @pytest.mark.unit_test
-    def test_download__finished_study__download_error(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_download__finished_study__download_error(self, finished_study: StudyDTO) -> None:
         env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         env.download_final_zip.side_effect = Exception("Connection error")
         display = mock.Mock(spec=DisplayTerminal)

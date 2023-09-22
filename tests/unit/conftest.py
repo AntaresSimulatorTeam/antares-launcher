@@ -3,12 +3,10 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.use_cases.create_list.study_list_composer import (
-    StudyListComposer,
-    StudyListComposerParameters,
-)
+from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, StudyListComposerParameters
 from tests.unit.assets import ASSETS_DIR
 
 

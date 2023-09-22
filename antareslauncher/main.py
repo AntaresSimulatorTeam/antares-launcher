@@ -10,30 +10,17 @@ from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.logger_initializer import LoggerInitializer
 from antareslauncher.remote_environnement import ssh_connection
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
-from antareslauncher.remote_environnement.slurm_script_features import (
-    SlurmScriptFeatures,
-)
-from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
-    CheckQueueController,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
+from antareslauncher.remote_environnement.slurm_script_features import SlurmScriptFeatures
+from antareslauncher.use_cases.check_remote_queue.check_queue_controller import CheckQueueController
 from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
-from antareslauncher.use_cases.create_list.study_list_composer import (
-    StudyListComposer,
-    StudyListComposerParameters,
-)
-from antareslauncher.use_cases.generate_tree_structure.tree_structure_initializer import (
-    TreeStructureInitializer,
-)
+from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, StudyListComposerParameters
+from antareslauncher.use_cases.generate_tree_structure.tree_structure_initializer import TreeStructureInitializer
 from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
 from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
-from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
-    WaitController,
-)
+from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
 
 
 class NoJsonConfigFileError(Exception):
@@ -88,9 +75,7 @@ class MainParameters:
     quality_of_service: str = ""
 
 
-def run_with(
-    arguments: argparse.Namespace, parameters: MainParameters, show_banner=False
-):
+def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_banner=False):
     """Instantiates all the objects necessary to antares-launcher, and runs the program"""
     if arguments.version:
         print(f"Antares_Launcher v{__version__}")
@@ -113,9 +98,7 @@ def run_with(
     )
 
     tree_structure_initializer.init_tree_structure()
-    logger_initializer = LoggerInitializer(
-        str(Path(arguments.log_dir) / "antares_launcher.log")
-    )
+    logger_initializer = LoggerInitializer(str(Path(arguments.log_dir) / "antares_launcher.log"))
     logger_initializer.init_logger()
 
     # connection
@@ -133,9 +116,7 @@ def run_with(
         quality_of_service=parameters.quality_of_service,
     )
     environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
-    data_repo = DataRepoTinydb(
-        database_file_path=db_json_file_path, db_primary_key=parameters.db_primary_key
-    )
+    data_repo = DataRepoTinydb(database_file_path=db_json_file_path, db_primary_key=parameters.db_primary_key)
     study_list_composer = StudyListComposer(
         repo=data_repo,
         display=display,

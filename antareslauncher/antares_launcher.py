@@ -1,16 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
-    CheckQueueController,
-)
+from antareslauncher.use_cases.check_remote_queue.check_queue_controller import CheckQueueController
 from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer
 from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
 from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
-from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
-    WaitController,
-)
+from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
 
 
 @dataclass

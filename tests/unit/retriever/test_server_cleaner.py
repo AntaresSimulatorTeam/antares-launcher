@@ -3,9 +3,7 @@ from unittest import mock
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.clean_remote_server import RemoteServerCleaner
 
@@ -73,9 +71,7 @@ class TestServerCleaner:
         assert finished_study.remote_server_is_clean
 
     @pytest.mark.unit_test
-    def test_clean__finished_study__cleaning_failed(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_clean__finished_study__cleaning_failed(self, finished_study: StudyDTO) -> None:
         env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         env.clean_remote_server.return_value = False
         display = mock.Mock(spec=DisplayTerminal)
@@ -95,9 +91,7 @@ class TestServerCleaner:
         assert finished_study.remote_server_is_clean
 
     @pytest.mark.unit_test
-    def test_clean__finished_study__cleaning_raise(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_clean__finished_study__cleaning_raise(self, finished_study: StudyDTO) -> None:
         env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
         env.clean_remote_server.side_effect = Exception("cleaning error")
         display = mock.Mock(spec=DisplayTerminal)

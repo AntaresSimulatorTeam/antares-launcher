@@ -3,15 +3,9 @@ from unittest import mock
 import pytest
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
-from antareslauncher.remote_environnement.slurm_script_features import (
-    SlurmScriptFeatures,
-)
-from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
-    CheckQueueController,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
+from antareslauncher.remote_environnement.slurm_script_features import SlurmScriptFeatures
+from antareslauncher.use_cases.check_remote_queue.check_queue_controller import CheckQueueController
 from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
@@ -34,9 +28,7 @@ class TestIntegrationCheckQueueController:
         slurm_queue_show = SlurmQueueShow(env_mock, display_mock)
         state_updater = StateUpdater(env_mock, display_mock)
         repo = mock.MagicMock(spec=DataRepoTinydb)
-        self.check_queue_controller = CheckQueueController(
-            slurm_queue_show, state_updater, repo
-        )
+        self.check_queue_controller = CheckQueueController(slurm_queue_show, state_updater, repo)
 
     @pytest.mark.integration_test
     def test_check_queue_controller_check_queue_calls_connection_execute_command(

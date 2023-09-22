@@ -55,9 +55,7 @@ class TestFinalZipExtractor:
         assert not started_study.final_zip_extracted
 
     @pytest.mark.unit_test
-    def test_extract_final_zip__finished_study__no_output(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_extract_final_zip__finished_study__no_output(self, finished_study: StudyDTO) -> None:
         display = mock.Mock(spec=DisplayTerminal)
 
         # Initialize and execute the ZIP extraction
@@ -70,9 +68,7 @@ class TestFinalZipExtractor:
         assert not finished_study.final_zip_extracted
 
     @pytest.mark.unit_test
-    def test_extract_final_zip__finished_study__nominal(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_extract_final_zip__finished_study__nominal(self, finished_study: StudyDTO) -> None:
         display = mock.Mock(spec=DisplayTerminal)
         display.generate_progress_bar = lambda names, *args, **kwargs: names
 
@@ -94,9 +90,7 @@ class TestFinalZipExtractor:
         assert result_dir.joinpath("simulation.log").is_file()
 
     @pytest.mark.unit_test
-    def test_extract_final_zip__finished_study__reentrancy(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_extract_final_zip__finished_study__reentrancy(self, finished_study: StudyDTO) -> None:
         display = mock.Mock(spec=DisplayTerminal)
         display.generate_progress_bar = lambda names, *args, **kwargs: names
 
@@ -115,16 +109,12 @@ class TestFinalZipExtractor:
         assert study_state1 == study_state2
 
     @pytest.mark.unit_test
-    def test_extract_final_zip__finished_study__missing(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_extract_final_zip__finished_study__missing(self, finished_study: StudyDTO) -> None:
         display = mock.Mock(spec=DisplayTerminal)
         display.generate_progress_bar = lambda names, *args, **kwargs: names
 
         # Prepare a missing final ZIP
-        finished_study.local_final_zipfile_path = create_final_zip(
-            finished_study, scenario="missing"
-        )
+        finished_study.local_final_zipfile_path = create_final_zip(finished_study, scenario="missing")
 
         # Initialize and execute the ZIP extraction
         extractor = FinalZipExtractor(display=display)
@@ -141,16 +131,12 @@ class TestFinalZipExtractor:
         assert not result_dir.joinpath("simulation.log").exists()
 
     @pytest.mark.unit_test
-    def test_extract_final_zip__finished_study__corrupted(
-        self, finished_study: StudyDTO
-    ) -> None:
+    def test_extract_final_zip__finished_study__corrupted(self, finished_study: StudyDTO) -> None:
         display = mock.Mock(spec=DisplayTerminal)
         display.generate_progress_bar = lambda names, *args, **kwargs: names
 
         # Prepare a corrupted final ZIP
-        finished_study.local_final_zipfile_path = create_final_zip(
-            finished_study, scenario="corrupted"
-        )
+        finished_study.local_final_zipfile_path = create_final_zip(finished_study, scenario="corrupted")
 
         # Initialize and execute the ZIP extraction
         extractor = FinalZipExtractor(display=display)

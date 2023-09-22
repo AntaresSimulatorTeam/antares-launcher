@@ -51,9 +51,7 @@ class FileManager:
         Returns:
             List of all the files inside a directory recursively
         """
-        self.logger.info(
-            f"Getting list of all files inside the directory {element_path}"
-        )
+        self.logger.info(f"Getting list of all files inside the directory {element_path}")
         element_file_paths = []
         for root, _, files in os.walk(element_path):
             for filename in files:
@@ -71,9 +69,7 @@ class FileManager:
                 file_paths.extend(element_file_paths)
         return file_paths
 
-    def zip_file_paths_with_rootdir_to_zipfile_path(
-        self, zipfile_path, file_paths, root_dir
-    ):
+    def zip_file_paths_with_rootdir_to_zipfile_path(self, zipfile_path, file_paths, root_dir):
         """Zips all the files in file_paths inside zipfile_path
         while printing a progress bar on the terminal
 
@@ -85,12 +81,8 @@ class FileManager:
             root_dir: Root directory
         """
         self.logger.info(f"Zipping list of files to archive {zipfile_path}")
-        with zipfile.ZipFile(
-            zipfile_path, "w", compression=zipfile.ZIP_DEFLATED
-        ) as my_zip:
-            loading_bar = self.display.generate_progress_bar(
-                file_paths, desc="Compressing files: "
-            )
+        with zipfile.ZipFile(zipfile_path, "w", compression=zipfile.ZIP_DEFLATED) as my_zip:
+            loading_bar = self.display.generate_progress_bar(file_paths, desc="Compressing files: ")
             for f in loading_bar:
                 my_zip.write(f, os.path.relpath(f, root_dir))
 
@@ -105,13 +97,9 @@ class FileManager:
             subdir_to_exclude: Subdirectory that will not be zipped
         """
         list_dir = self._get_list_dir_without_subdir(dir_path, subdir_to_exclude)
-        file_paths = self._get_complete_list_of_files_and_dirs_in_list_dir(
-            dir_path, list_dir
-        )
+        file_paths = self._get_complete_list_of_files_and_dirs_in_list_dir(dir_path, list_dir)
         root_dir = str(Path(dir_path).parent)
-        self.zip_file_paths_with_rootdir_to_zipfile_path(
-            zipfile_path, file_paths, root_dir
-        )
+        self.zip_file_paths_with_rootdir_to_zipfile_path(zipfile_path, file_paths, root_dir)
         return Path(zipfile_path).is_file()
 
     def make_dir(self, directory_name):
@@ -124,9 +112,7 @@ class FileManager:
             with open(file_path, "r") as readFile:
                 config = json.load(readFile)
         except OSError:
-            self.logger.error(
-                f"Unable to convert {file_path} to json (file not found or invalid type)"
-            )
+            self.logger.error(f"Unable to convert {file_path} to json (file not found or invalid type)")
             config = None
         return config
 

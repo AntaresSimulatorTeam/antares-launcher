@@ -24,9 +24,7 @@ class StudyZipper:
 
     def _do_zip(self):
         zipfile_path = f"{self._current_study.path}-{getpass.getuser()}.zip"
-        success = self.file_manager.zip_dir_excluding_subdir(
-            self._current_study.path, zipfile_path, None
-        )
+        success = self.file_manager.zip_dir_excluding_subdir(self._current_study.path, zipfile_path, None)
         if success is True:
             self._current_study.zipfile_path = zipfile_path
             self._display_success_message()

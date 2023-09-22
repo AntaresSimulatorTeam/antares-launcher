@@ -87,7 +87,5 @@ class ParametersReader:
         with open(self.json_ssh_conf) as ssh_connection_json:
             ssh_dict = json.load(ssh_connection_json)
         if "private_key_file" in ssh_dict:
-            ssh_dict["private_key_file"] = os.path.expanduser(
-                ssh_dict["private_key_file"]
-            )
+            ssh_dict["private_key_file"] = os.path.expanduser(ssh_dict["private_key_file"])
         return ssh_dict

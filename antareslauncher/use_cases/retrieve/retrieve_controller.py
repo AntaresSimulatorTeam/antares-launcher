@@ -1,10 +1,7 @@
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.use_cases.retrieve.clean_remote_server import RemoteServerCleaner
 from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownloader
 from antareslauncher.use_cases.retrieve.final_zip_extractor import FinalZipExtractor

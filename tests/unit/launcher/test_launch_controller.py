@@ -12,9 +12,7 @@ from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch import launch_controller
 from antareslauncher.use_cases.launch.launch_controller import StudyLauncher
@@ -97,20 +95,14 @@ class TestLauncherController:
         file_manager = mock.Mock(spec_set=FileManager)
         file_manager.zip_dir_excluding_subdir = mock.Mock()
 
-        my_launcher = launch_controller.LaunchController(
-            self.data_repo, remote_env_mock, file_manager, self.display
-        )
+        my_launcher = launch_controller.LaunchController(self.data_repo, remote_env_mock, file_manager, self.display)
         my_launcher.launch_all_studies()
 
         zipfile_path = f"{my_study.path}-{getpass.getuser()}.zip"
-        file_manager.zip_dir_excluding_subdir.assert_called_once_with(
-            my_study.path, zipfile_path, None
-        )
+        file_manager.zip_dir_excluding_subdir.assert_called_once_with(my_study.path, zipfile_path, None)
 
     @pytest.mark.unit_test
-    def test_given_one_study_then_repo_is_called_to_save_the_study_with_updated_zip_is_sent(
-        self, my_launch_controller
-    ):
+    def test_given_one_study_then_repo_is_called_to_save_the_study_with_updated_zip_is_sent(self, my_launch_controller):
         # given
         my_launcher, expected_study = my_launch_controller
         # when
@@ -142,9 +134,7 @@ class TestLauncherController:
         assert first_argument.job_id == 42
 
     @pytest.mark.unit_test
-    def test_given_one_study_when_submit_fails_then_exception_is_raised(
-        self, my_launch_controller
-    ):
+    def test_given_one_study_when_submit_fails_then_exception_is_raised(self, my_launch_controller):
         # given
         my_launcher, expected_study = my_launch_controller
         # when
@@ -152,20 +142,14 @@ class TestLauncherController:
         my_launcher.env.submit_job = mock.Mock(return_value=None)
         my_launcher.repo.save_study = mock.Mock()
         # then
-        with pytest.raises(
-            antareslauncher.use_cases.launch.study_submitter.FailedSubmissionException
-        ):
+        with pytest.raises(antareslauncher.use_cases.launch.study_submitter.FailedSubmissionException):
             my_launcher.launch_all_studies()
 
     @pytest.mark.unit_test
-    def test_given_one_study_when_zip_fails_then_return_none(
-        self, my_launch_controller
-    ):
+    def test_given_one_study_when_zip_fails_then_return_none(self, my_launch_controller):
         # given
         my_launcher, expected_study = my_launch_controller
-        my_launcher.file_manager.zip_dir_excluding_subdir = mock.Mock(
-            return_value=False
-        )
+        my_launcher.file_manager.zip_dir_excluding_subdir = mock.Mock(return_value=False)
         # when
         my_launcher.launch_all_studies()
         # then

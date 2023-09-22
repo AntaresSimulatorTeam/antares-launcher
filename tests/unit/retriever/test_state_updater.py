@@ -4,9 +4,7 @@ from unittest.mock import call
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
@@ -21,13 +19,9 @@ from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
         (None, None, True, "Ended with error"),
     ],
 )
-def test_given_a_submitted_study_then_study_flags_are_updated(
-    started_flag, finished_flag, with_error_flag, status
-):
+def test_given_a_submitted_study_then_study_flags_are_updated(started_flag, finished_flag, with_error_flag, status):
     env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
-    env.get_job_state_flags = mock.Mock(
-        return_value=(started_flag, finished_flag, with_error_flag)
-    )
+    env.get_job_state_flags = mock.Mock(return_value=(started_flag, finished_flag, with_error_flag))
     display = mock.Mock(spec=DisplayTerminal)
 
     my_study = StudyDTO(path="study_path", job_id=42)

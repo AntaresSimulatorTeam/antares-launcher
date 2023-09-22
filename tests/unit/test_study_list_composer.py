@@ -2,10 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from antareslauncher.use_cases.create_list.study_list_composer import (
-    StudyListComposer,
-    get_solver_version,
-)
+from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, get_solver_version
 
 CONFIG_NOMINAL_VERSION = """\
 [antares]

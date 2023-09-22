@@ -2,11 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from antareslauncher.main_option_parser import (
-    MainOptionParser,
-    ParserParameters,
-    look_for_default_ssh_conf_file,
-)
+from antareslauncher.main_option_parser import MainOptionParser, ParserParameters, look_for_default_ssh_conf_file
 
 
 class TestMainOptionParser:
@@ -34,9 +30,7 @@ class TestMainOptionParser:
             "n_cpu": 42,
             "job_id_to_kill": None,
             "post_processing": False,
-            "json_ssh_config": look_for_default_ssh_conf_file(
-                self.main_options_parameters
-            ),
+            "json_ssh_config": look_for_default_ssh_conf_file(self.main_options_parameters),
         }
 
     @pytest.fixture(scope="function")

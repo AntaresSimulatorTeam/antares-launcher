@@ -58,8 +58,6 @@ class DisplayTerminal:
             desc=desc,
             leave=False,
             dynamic_ncols=True,
-            bar_format="["
-            + str(now.strftime(self.format))
-            + "] {l_bar}{bar}| {n_fmt}/{total_fmt} ",
+            bar_format="[" + str(now.strftime(self.format)) + "] {l_bar}{bar}| {n_fmt}/{total_fmt} ",
         )
         return progress_bar

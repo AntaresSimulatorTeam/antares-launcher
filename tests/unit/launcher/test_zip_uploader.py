@@ -5,14 +5,9 @@ from unittest.mock import call
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.launch.study_zip_uploader import (
-    FailedUploadException,
-    StudyZipfileUploader,
-)
+from antareslauncher.use_cases.launch.study_zip_uploader import FailedUploadException, StudyZipfileUploader
 
 
 class TestZipfileUploader:
@@ -48,12 +43,8 @@ class TestZipfileUploader:
 
         expected_welcome_message = f'"hello": uploading study ...'
         expected_error_message = f'"hello": was not uploaded'
-        self.display_mock.show_message.assert_called_once_with(
-            expected_welcome_message, mock.ANY
-        )
-        self.display_mock.show_error.assert_called_once_with(
-            expected_error_message, mock.ANY
-        )
+        self.display_mock.show_message.assert_called_once_with(expected_welcome_message, mock.ANY)
+        self.display_mock.show_error.assert_called_once_with(expected_error_message, mock.ANY)
 
     @pytest.mark.unit_test
     def test_remote_env_not_called_if_upload_was_done(self):

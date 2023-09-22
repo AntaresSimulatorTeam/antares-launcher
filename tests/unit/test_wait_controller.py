@@ -3,9 +3,7 @@ from unittest import mock
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
-    WaitController,
-)
+from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
 
 
 class TestWaitController:
