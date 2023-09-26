@@ -1,38 +1,23 @@
-import copy
 from pathlib import Path
 
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 
-
-class FailedSubmissionException(Exception):
-    pass
+LOG_NAME = f"{__name__}.StudySubmitter"
 
 
 class StudySubmitter(object):
     def __init__(self, env: RemoteEnvironmentWithSlurm, display: DisplayTerminal):
         self.env = env
         self.display = display
-        self._current_study: StudyDTO = None
 
-    def submit_job(self, study: StudyDTO) -> StudyDTO:
-        self._current_study = copy.deepcopy(study)
-        if self._current_study.job_id is None:
-            self._do_submit()
-        return self._current_study
-
-    def _do_submit(self):
-        job_id = self.env.submit_job(copy.deepcopy(self._current_study))
-        if job_id is not None:
-            self._current_study.job_id = job_id
-            self.display.show_message(
-                f'"{Path(self._current_study.path).name}": was submitted',
-                __name__ + "." + __class__.__name__,
-            )
+    def submit_job(self, study: StudyDTO) -> None:
+        if study.job_id:
+            self.display.show_message(f'"{Path(study.path).name}": is already submitted', LOG_NAME)
+            return
+        study.job_id = self.env.submit_job(study)  # may raise SubmitJobError
+        if study.job_id:
+            self.display.show_message(f'"{Path(study.path).name}": was submitted', LOG_NAME)
         else:
-            self.display.show_error(
-                f'"{Path(self._current_study.path).name}": was not submitted',
-                __name__ + "." + __class__.__name__,
-            )
-            raise FailedSubmissionException
+            self.display.show_error(f'"{Path(study.path).name}": was not submitted', LOG_NAME)

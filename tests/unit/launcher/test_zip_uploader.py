@@ -1,71 +1,88 @@
-from copy import copy
 from unittest import mock
-from unittest.mock import call
 
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.launch.study_zip_uploader import FailedUploadException, StudyZipfileUploader
+from antareslauncher.use_cases.launch.study_zip_uploader import StudyZipfileUploader
 
 
-class TestZipfileUploader:
-    def setup_method(self):
-        self.remote_env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
-        self.display_mock = mock.Mock(spec_set=DisplayTerminal)
-        self.study_uploader = StudyZipfileUploader(self.remote_env, self.display_mock)
+class TestStudyZipfileUploader:
+    @pytest.mark.parametrize("actual_sent_flag", [True, False])
+    @pytest.mark.unit_test
+    def test_upload__nominal_case(self, pending_study: StudyDTO, actual_sent_flag: bool) -> None:
+        # Given
+        pending_study.zip_is_sent = actual_sent_flag
+        display = mock.Mock(spec=DisplayTerminal)
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.upload_file = mock.Mock(return_value=True)
+        uploader = StudyZipfileUploader(env, display)
+
+        # When
+        uploader.upload(pending_study)
+
+        # Then
+        if actual_sent_flag:
+            env.upload_file.assert_not_called()
+            display.show_message.assert_called_once()
+        else:
+            env.upload_file.assert_called_once_with(pending_study.zipfile_path)
+            assert display.show_message.call_count == 2
+        display.show_error.assert_not_called()
+        assert pending_study.zip_is_sent
 
     @pytest.mark.unit_test
-    def test_upload_study_shows_message_if_upload_succeeds(self):
-        self.remote_env.upload_file = mock.Mock(return_value=True)
-        study = StudyDTO(path="hello")
+    def test_upload__error_case(self, pending_study: StudyDTO) -> None:
+        # Given
+        display = mock.Mock(spec=DisplayTerminal)
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.upload_file = mock.Mock(return_value=False)
+        uploader = StudyZipfileUploader(env, display)
 
-        self.study_uploader.upload(study)
+        # When
+        uploader.upload(pending_study)
 
-        expected_message1 = f'"hello": uploading study ...'
-        expected_message2 = f'"hello": was uploaded'
-        calls = [
-            call(expected_message1, mock.ANY),
-            call(expected_message2, mock.ANY),
-        ]
-        self.display_mock.show_message.assert_has_calls(calls)
+        # Then
+        env.upload_file.assert_called_once_with(pending_study.zipfile_path)
+        assert display.show_message.call_count == 1
+        assert display.show_error.call_count == 1
+        assert not pending_study.zip_is_sent
+
+    @pytest.mark.parametrize("actual_sent_flag", [True, False])
+    @pytest.mark.unit_test
+    def test_remove__nominal_case(self, pending_study: StudyDTO, actual_sent_flag: bool) -> None:
+        # Given
+        pending_study.zip_is_sent = actual_sent_flag
+        display = mock.Mock(spec=DisplayTerminal)
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.remove_input_zipfile = mock.Mock(return_value=True)
+        uploader = StudyZipfileUploader(env, display)
+
+        # When
+        uploader.remove(pending_study)
+
+        # Then
+        # NOTE: The remote ZIP file is always removed even if `zip_is_sent` is `False`.
+        env.remove_input_zipfile.assert_called_once_with(pending_study)
+        display.show_message.assert_called_once()
+        display.show_error.assert_not_called()
+        assert not pending_study.zip_is_sent
 
     @pytest.mark.unit_test
-    def test_upload_study_shows_error_if_upload_fails_and_exception_is_raised(
-        self,
-    ):
-        self.remote_env.upload_file = mock.Mock(return_value=False)
-        study = StudyDTO(path="hello")
+    def test_remove__error_case(self, pending_study: StudyDTO) -> None:
+        # Given
+        pending_study.zip_is_sent = True
+        display = mock.Mock(spec=DisplayTerminal)
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.remove_input_zipfile = mock.Mock(return_value=False)
+        uploader = StudyZipfileUploader(env, display)
 
-        with pytest.raises(FailedUploadException):
-            self.study_uploader.upload(study)
+        # When
+        uploader.remove(pending_study)
 
-        expected_welcome_message = f'"hello": uploading study ...'
-        expected_error_message = f'"hello": was not uploaded'
-        self.display_mock.show_message.assert_called_once_with(expected_welcome_message, mock.ANY)
-        self.display_mock.show_error.assert_called_once_with(expected_error_message, mock.ANY)
-
-    @pytest.mark.unit_test
-    def test_remote_env_not_called_if_upload_was_done(self):
-        self.remote_env.upload_file = mock.Mock()
-        study = StudyDTO(path="hello")
-        study.zip_is_sent = True
-
-        new_study = self.study_uploader.upload(study)
-
-        self.remote_env.upload_file.assert_not_called()
-        assert new_study == study
-
-    @pytest.mark.unit_test
-    def test_remote_env_is_called_if_upload_was_not_done(self):
-        self.remote_env.upload_file = mock.Mock()
-        study = StudyDTO(path="hello")
-        study.zip_is_sent = False
-        expected_study = copy(study)
-        expected_study.zip_is_sent = True
-
-        new_study = self.study_uploader.upload(study)
-
-        self.remote_env.upload_file.assert_called_once_with(study.zipfile_path)
-        assert new_study == expected_study
+        # Then
+        env.remove_input_zipfile.assert_called_once_with(pending_study)
+        display.show_message.assert_not_called()
+        display.show_error.assert_called_once()
+        assert pending_study.zip_is_sent

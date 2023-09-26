@@ -5,7 +5,6 @@ from pathlib import Path
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.study_dto import Modes, StudyDTO
 
 

@@ -133,12 +133,7 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
             antares_version=arguments.antares_version,
         ),
     )
-    launch_controller = LaunchController(
-        repo=data_repo,
-        env=environment,
-        file_manager=file_manager,
-        display=display,
-    )
+    launch_controller = LaunchController(repo=data_repo, env=environment, display=display)
     state_updater = StateUpdater(env=environment, display=display)
     retrieve_controller = RetrieveController(
         repo=data_repo,
