@@ -15,7 +15,6 @@ from antareslauncher.remote_environnement.slurm_script_features import SlurmScri
 from antareslauncher.use_cases.check_remote_queue.check_queue_controller import CheckQueueController
 from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, StudyListComposerParameters
-from antareslauncher.use_cases.generate_tree_structure.tree_structure_initializer import TreeStructureInitializer
 from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
 from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
@@ -88,14 +87,11 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
 
     db_json_file_path = parameters.json_dir / parameters.default_json_db_name
 
-    tree_structure_initializer = TreeStructureInitializer(
-        display,
-        arguments.studies_in,
-        arguments.log_dir,
-        arguments.output_dir,
-    )
+    Path(arguments.studies_in).mkdir(parents=True, exist_ok=True)
+    Path(arguments.log_dir).mkdir(parents=True, exist_ok=True)
+    Path(arguments.output_dir).mkdir(parents=True, exist_ok=True)
+    display.show_message("Tree structure initialized", __name__)
 
-    tree_structure_initializer.init_tree_structure()
     logger_initializer = LoggerInitializer(str(Path(arguments.log_dir) / "antares_launcher.log"))
     logger_initializer.init_logger()
 
