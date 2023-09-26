@@ -1,187 +1,314 @@
-import copy
-import getpass
+import zipfile
+from pathlib import Path, PurePosixPath
 from unittest import mock
-from unittest.mock import call
 
 import pytest
 
-import antareslauncher.remote_environnement.remote_environment_with_slurm
-import antareslauncher.use_cases.launch.study_submitter
-import antareslauncher.use_cases.launch.study_zip_uploader
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
-from antareslauncher.data_repo.data_reporter import DataReporter
-from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.file_manager.file_manager import FileManager
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.display.display_terminal import DisplayTerminal
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.launch import launch_controller
-from antareslauncher.use_cases.launch.launch_controller import StudyLauncher
+from antareslauncher.use_cases.launch.launch_controller import LaunchController, StudyLauncher
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
-from antareslauncher.use_cases.launch.study_zip_cleaner import StudyZipCleaner
 from antareslauncher.use_cases.launch.study_zip_uploader import StudyZipfileUploader
-from antareslauncher.use_cases.launch.study_zipper import StudyZipper
+
+# noinspection SpellCheckingInspection
+STUDY_FILES = [
+    "check-config.json",
+    "Desktop.ini",
+    "input/areas/dummy.txt",
+    "input/wind/dummy.txt",
+    "layers/layers.ini",
+    "output/20230321-1901eco/dummy.txt",
+    "output/20230321-1901eco.zip",
+    "output/20230926-1230adq/dummy.txt",
+    "settings/comments.txt",
+    "settings/generaldata.ini",
+    "settings/resources/dummy.txt",
+    "settings/scenariobuilder.dat",
+    "study.antares",
+]
+
+
+def prepare_study_data(study_dir: Path) -> None:
+    for file in STUDY_FILES:
+        file_path = study_dir.joinpath(file)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.touch()
+
+
+@pytest.fixture(name="ready_study")
+def ready_study_fixture(pending_study: StudyDTO) -> StudyDTO:
+    """Prepare the study data and return the study."""
+    study_dir = Path(pending_study.path)
+    prepare_study_data(study_dir)
+    return pending_study
+
+
+@pytest.fixture(name="study_uploaded")
+def study_uploaded_fixture(tmp_path: Path) -> StudyDTO:
+    study_path = tmp_path.joinpath("upload-failure")
+    job_log_dir = tmp_path.joinpath("LOG_DIR")
+    output_dir = tmp_path.joinpath("OUTPUT_DIR")
+    study = StudyDTO(
+        path=str(study_path),
+        started=False,
+        job_log_dir=str(job_log_dir),
+        output_dir=str(output_dir),
+        zipfile_path="",
+        zip_is_sent=False,
+        job_id=0,
+    )
+    study_dir = Path(study.path)
+    prepare_study_data(study_dir)
+    return study
+
+
+@pytest.fixture(name="study_submitted")
+def study_submitted_fixture(tmp_path: Path) -> StudyDTO:
+    study_path = tmp_path.joinpath("submit-failure")
+    job_log_dir = tmp_path.joinpath("LOG_DIR")
+    output_dir = tmp_path.joinpath("OUTPUT_DIR")
+    study = StudyDTO(
+        path=str(study_path),
+        started=False,
+        job_log_dir=str(job_log_dir),
+        output_dir=str(output_dir),
+        zipfile_path="",
+        zip_is_sent=False,
+        job_id=0,
+    )
+    study_dir = Path(study.path)
+    prepare_study_data(study_dir)
+    return study
 
 
 class TestStudyLauncher:
-    def setup_method(self):
-        env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
-        display = mock.Mock(spec_set=IDisplay)
-        file_manager = mock.Mock(spec_set=FileManager)
-        repo = mock.Mock(spec_set=IDataRepo)
-        self.reporter = DataReporter(repo)
-        self.zipper = StudyZipper(file_manager, display)
-        self.study_uploader = StudyZipfileUploader(env, display)
-        self.zipfile_cleaner = StudyZipCleaner(file_manager, display)
-        self.study_submitter = StudySubmitter(env, display)
-        self.study_launcher = StudyLauncher(
-            self.zipper,
-            self.study_uploader,
-            self.zipfile_cleaner,
-            self.study_submitter,
-            self.reporter,
-        )
-
-    def test_launch_study_calls_all_four_steps(self):
-        study = StudyDTO(path="hello")
-        study1 = StudyDTO(path="hello1")
-        self.zipper.zip = mock.Mock(return_value=study1)
-        study2 = StudyDTO(path="hello2", zip_is_sent=True)
-        self.study_uploader.upload = mock.Mock(return_value=study2)
-        study3 = StudyDTO(path="hello3")
-        self.zipfile_cleaner.remove_input_zipfile = mock.Mock(return_value=study3)
-        study4 = StudyDTO(path="hello4")
-        self.study_submitter.submit_job = mock.Mock(return_value=study4)
-        self.reporter.save_study = mock.Mock()
-
-        self.study_launcher.launch_study(study)
-
-        self.zipper.zip.assert_called_once_with(study)
-        self.study_uploader.upload.assert_called_once_with(study1)
-        self.zipfile_cleaner.remove_input_zipfile.assert_called_once_with(study2)
-        self.study_submitter.submit_job.assert_called_once_with(study3)
-
-        assert self.reporter.save_study.call_count == 4
-        calls = self.reporter.save_study.call_args_list
-        assert calls[0] == call(study1)
-        assert calls[1] == call(study2)
-        assert calls[2] == call(study3)
-        assert calls[3] == call(study4)
-
-
-class TestLauncherController:
-    def setup_method(self):
-        self.data_repo = DataRepoTinydb("", "name")
-        self.data_repo.save_study = mock.Mock()
-        self.display = mock.Mock()
-
-    @pytest.fixture(scope="function")
-    def my_launch_controller(self):
-        expected_study = StudyDTO(path="hello")
-        list_of_studies = [copy.deepcopy(expected_study)]
-        self.data_repo.get_list_of_studies = mock.Mock(return_value=list_of_studies)
-        remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
-        file_manager_mock = mock.Mock()
-        my_launcher = launch_controller.LaunchController(
-            self.data_repo, remote_env_mock, file_manager_mock, self.display
-        )
-        return my_launcher, expected_study
-
-    def test_with_one_study_the_compressor_is_called_once(self):
-        my_study = StudyDTO(path="hello")
-        list_of_studies = [my_study]
-        self.data_repo.get_list_of_studies = mock.Mock(return_value=list_of_studies)
-
-        remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
-        file_manager = mock.Mock(spec_set=FileManager)
-        file_manager.zip_dir_excluding_subdir = mock.Mock()
-
-        my_launcher = launch_controller.LaunchController(
-            self.data_repo, remote_env_mock, file_manager, self.display
-        )
-        my_launcher.launch_all_studies()
-
-        zipfile_path = f"{my_study.path}-{getpass.getuser()}.zip"
-        file_manager.zip_dir_excluding_subdir.assert_called_once_with(
-            my_study.path, zipfile_path, None
-        )
+    """
+    The gaol is to test the launching of a study.
+    Every call to the remote environment is mocked.
+    """
 
     @pytest.mark.unit_test
-    def test_given_one_study_then_repo_is_called_to_save_the_study_with_updated_zip_is_sent(
-        self, my_launch_controller
-    ):
-        # given
-        my_launcher, expected_study = my_launch_controller
-        # when
-        my_launcher.env.upload_file = mock.Mock(return_value=True)
-        my_launcher.repo.save_study = mock.Mock()
-        my_launcher.launch_all_studies()
-        # then
-        expected_study.zipfile_path = f"{expected_study.path}-{getpass.getuser()}.zip"
-        second_call = my_launcher.repo.save_study.call_args_list[1]
-        first_argument = second_call[0][0]
-        assert first_argument.zip_is_sent
+    def test_launch_study__nominal_case(self, ready_study: StudyDTO) -> None:
+        """
+        Test the nominal case of launching a study.
 
+        - The study directory must be correctly compressed.
+        - The `upload` method of the `study_uploader` must be called.
+        - The ZIP file must be removed after the upload.
+        - The `submit_job` method of the `study_submitter` must be called.
+        - The `save_study` method of the `data_repo` must be called.
+        """
+
+        class Uploader:
+            def __init__(self):
+                self.actual_names = frozenset()
+
+            def upload(self, study: StudyDTO) -> None:
+                """Simulate the upload and check that the ZIP file has been correctly created."""
+                zip_path = Path(study.zipfile_path)
+                with zipfile.ZipFile(zip_path, mode="r") as zf:
+                    # keep only file names, excluding directories
+                    self.actual_names = frozenset(name for name in zf.namelist() if "." in name)
+                study.zip_is_sent = True
+
+            __call__ = upload
+
+        upload = Uploader()
+
+        def submit_job(study: StudyDTO) -> None:
+            """Simulate the submission of the job."""
+            study.job_id = 40414243
+
+        # Given
+        study_uploader = mock.Mock(spec=StudyZipfileUploader)
+        study_uploader.upload = upload
+        study_uploader.remove = mock.Mock()
+
+        study_submitter = mock.Mock(spec=StudySubmitter)
+        study_submitter.submit_job = submit_job
+
+        data_repo = mock.Mock(spec=DataRepoTinydb)
+        display = mock.Mock(spec=DisplayTerminal)
+        display.generate_progress_bar = mock.Mock(side_effect=lambda x, **kwargs: x)
+        study_launcher = StudyLauncher(study_uploader, study_submitter, data_repo, display)
+
+        # When
+        study_launcher.launch_study(ready_study)
+
+        # Then
+        prefix_path = PurePosixPath(ready_study.name)
+        expected_names = frozenset([prefix_path.joinpath(name).as_posix() for name in STUDY_FILES])
+        assert upload.actual_names == expected_names
+
+        assert ready_study.zipfile_path, "The ZIP file should have been created"
+        assert ready_study.zip_is_sent, "The ZIP file should have been uploaded"
+        assert ready_study.job_id == 40414243, "The job should have been submitted"
+        assert not ready_study.with_error, "The study should not be marked as failed"
+
+        assert not Path(ready_study.zipfile_path).exists(), "The ZIP file should have been removed"
+
+        study_uploader.remove.assert_not_called()
+        data_repo.save_study.assert_called_once()
+
+    @pytest.mark.parametrize("scenario", ["set_false", "raise_exception"])
     @pytest.mark.unit_test
-    def test_given_one_study_when_launcher_is_called_then_study_is_saved_with_job_id_and_submitted_flag(
-        self, my_launch_controller
-    ):
-        # given
-        my_launcher, expected_study = my_launch_controller
-        # when
-        my_launcher.env.upload_file = mock.Mock(return_value=True)
-        my_launcher.env.submit_job = mock.Mock(return_value=42)
-        my_launcher.repo.save_study = mock.Mock()
-        my_launcher.launch_all_studies()
-        # then
-        expected_study.zipfile_path = "ciao.zip"
-        expected_study.zip_is_sent = True
-        fourth_call = my_launcher.repo.save_study.call_args_list[3]
-        first_argument = fourth_call[0][0]
-        assert first_argument.job_id == 42
+    def test_launch_study__upload_fails(self, ready_study: StudyDTO, scenario: str) -> None:
+        def upload(study: StudyDTO) -> None:
+            """Simulate the upload that fails"""
+            if scenario == "set_false":
+                study.zip_is_sent = False
+            elif scenario == "raise_exception":
+                raise Exception("Upload failed")
+            else:
+                raise NotImplementedError(scenario)
 
+        # Given
+        study_uploader = mock.Mock(spec=StudyZipfileUploader)
+        study_uploader.upload = upload
+
+        study_submitter = mock.Mock(spec=StudySubmitter)
+
+        data_repo = mock.Mock(spec=DataRepoTinydb)
+        display = mock.Mock(spec=DisplayTerminal)
+        display.generate_progress_bar = mock.Mock(side_effect=lambda x, **kwargs: x)
+        study_launcher = StudyLauncher(study_uploader, study_submitter, data_repo, display)
+
+        # When
+        study_launcher.launch_study(ready_study)
+
+        # Then
+        assert ready_study.zipfile_path, "The ZIP file should have been created"
+        assert not ready_study.zip_is_sent, "The ZIP file should not have been uploaded"
+        assert not ready_study.job_id, "The job should not have been submitted"
+        assert ready_study.with_error, "The study should be marked as failed"
+
+        assert not Path(ready_study.zipfile_path).exists(), "The ZIP file should have been removed"
+
+        study_submitter.submit_job.assert_not_called()
+        study_uploader.remove.assert_called_once()
+        data_repo.save_study.assert_called_once()
+
+    @pytest.mark.parametrize("scenario", ["set_null", "raise_exception"])
     @pytest.mark.unit_test
-    def test_given_one_study_when_submit_fails_then_exception_is_raised(
-        self, my_launch_controller
-    ):
-        # given
-        my_launcher, expected_study = my_launch_controller
-        # when
-        my_launcher.env.upload_file = mock.Mock(return_value=True)
-        my_launcher.env.submit_job = mock.Mock(return_value=None)
-        my_launcher.repo.save_study = mock.Mock()
-        # then
-        with pytest.raises(
-            antareslauncher.use_cases.launch.study_submitter.FailedSubmissionException
-        ):
-            my_launcher.launch_all_studies()
+    def test_launch_study__submit_job_fails(self, ready_study: StudyDTO, scenario: str) -> None:
+        def upload(study: StudyDTO) -> None:
+            study.zip_is_sent = True
 
-    @pytest.mark.unit_test
-    def test_given_one_study_when_zip_fails_then_return_none(
-        self, my_launch_controller
-    ):
-        # given
-        my_launcher, expected_study = my_launch_controller
-        my_launcher.file_manager.zip_dir_excluding_subdir = mock.Mock(
-            return_value=False
-        )
-        # when
-        my_launcher.launch_all_studies()
-        # then
-        assert expected_study.zipfile_path is ""
+        def submit_job(study: StudyDTO) -> None:
+            """Simulate the submission of the job that fails"""
+            if scenario == "set_null":
+                study.job_id = 0
+            elif scenario == "raise_exception":
+                raise Exception("Simulation of submission failure")
+            else:
+                raise NotImplementedError(scenario)
 
-    @pytest.mark.unit_test
-    def test_given_a_sent_study_when_launch_all_studies_called_then_file_manager_remove_zip_file_is_called_once(
-        self, my_launch_controller
-    ):
-        # given
-        my_launcher, expected_study = my_launch_controller
-        my_launcher._upload_zipfile = mock.Mock(return_value=True)
-        my_launcher.file_manager.remove_file = mock.Mock()
+        # Given
+        study_uploader = mock.Mock(spec=StudyZipfileUploader)
+        study_uploader.upload = upload
+        study_submitter = mock.Mock(spec=StudySubmitter)
+        study_submitter.submit_job = submit_job
 
-        # when
-        my_launcher.launch_all_studies()
-        # then
-        my_launcher.file_manager.remove_file.assert_called_once()
+        data_repo = mock.Mock(spec=DataRepoTinydb)
+        display = mock.Mock(spec=DisplayTerminal)
+        display.generate_progress_bar = mock.Mock(side_effect=lambda x, **kwargs: x)
+        study_launcher = StudyLauncher(study_uploader, study_submitter, data_repo, display)
+
+        # When
+        study_launcher.launch_study(ready_study)
+
+        # Then
+        assert ready_study.zipfile_path, "The ZIP file should have been created"
+        assert ready_study.zip_is_sent, "The ZIP file should have been uploaded"
+        assert not ready_study.job_id, "The job should not have been submitted"
+        assert ready_study.with_error, "The study should be marked as failed"
+
+        assert not Path(ready_study.zipfile_path).exists(), "The ZIP file should have been removed"
+
+        study_uploader.remove.assert_called_once()
+        data_repo.save_study.assert_called_once()
+
+
+class TestLaunchController:
+    def test_launch_all_studies__nominal_case(self, ready_study: StudyDTO) -> None:
+        # Given
+        data_repo = mock.Mock(spec=DataRepoTinydb)
+        data_repo.get_list_of_studies = mock.Mock(return_value=[ready_study])
+
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.upload_file = mock.Mock(return_value=True)
+        env.submit_job = mock.Mock(return_value=40414243)
+
+        display = mock.Mock(spec=DisplayTerminal)
+        display.generate_progress_bar = mock.Mock(side_effect=lambda x, **kwargs: x)
+
+        launch_controller = LaunchController(data_repo, env, display)
+
+        # When
+        launch_controller.launch_all_studies()
+
+        # Then
+        assert ready_study.zipfile_path, "The ZIP file should have been created"
+        assert ready_study.zip_is_sent, "The ZIP file should have been uploaded"
+        assert ready_study.job_id == 40414243, "The job should have been submitted"
+        assert not ready_study.with_error, "The study should not be marked as failed"
+
+        assert not Path(ready_study.zipfile_path).exists(), "The ZIP file should have been removed"
+
+        data_repo.save_study.assert_called_once()
+
+    def test_launch_all_studies__bad_studies(
+        self,
+        study_uploaded: StudyDTO,
+        study_submitted: StudyDTO,
+        ready_study: StudyDTO,
+    ) -> None:
+        """
+        We want to check that even if some studies fail on download or submission,
+        all valid studies are processed correctly.
+        """
+
+        def upload_file(src: str) -> bool:
+            return "upload-failure" not in src
+
+        class JobSubmitter:
+            def __init__(self):
+                self.job_id = 0
+
+            def __call__(self, study: StudyDTO) -> int:
+                self.job_id += 1
+                return 0 if study.name == "submit-failure" else self.job_id
+
+        # Given
+        data_repo = mock.Mock(spec=DataRepoTinydb)
+        studies = [study_uploaded, study_submitted, ready_study]
+        data_repo.get_list_of_studies = mock.Mock(return_value=studies)
+
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.upload_file = upload_file
+        env.submit_job = JobSubmitter()
+        env.remove_input_zipfile = mock.Mock(return_value=True)
+
+        display = mock.Mock(spec=DisplayTerminal)
+        display.generate_progress_bar = mock.Mock(side_effect=lambda x, **kwargs: x)
+
+        launch_controller = LaunchController(data_repo, env, display)
+
+        # When
+        launch_controller.launch_all_studies()
+
+        # Then
+        actual_states = [
+            {"zip_is_sent": study.zip_is_sent, "job_id": study.job_id, "with_error": study.with_error}
+            for study in studies
+        ]
+
+        # In case of upload failure, the remote ZIP file is
+        expected_states = [
+            {"zip_is_sent": False, "job_id": 0, "with_error": True},
+            {"zip_is_sent": False, "job_id": 0, "with_error": True},
+            {"zip_is_sent": True, "job_id": 2, "with_error": False},
+        ]
+        assert actual_states == expected_states

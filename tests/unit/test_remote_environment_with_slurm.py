@@ -17,10 +17,7 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     RemoteEnvironmentWithSlurm,
     SubmitJobError,
 )
-from antareslauncher.remote_environnement.slurm_script_features import (
-    ScriptParametersDTO,
-    SlurmScriptFeatures,
-)
+from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
 from antareslauncher.study_dto import Modes, StudyDTO
 
 
@@ -53,7 +50,7 @@ class TestRemoteEnvironmentWithSlurm:
             path="path/to/study/91f1f911-4f4a-426f-b127-d0c2a2465b5f",
             n_cpu=42,
             zipfile_path="path/to/study/91f1f911-4f4a-426f-b127-d0c2a2465b5f-foo.zip",
-            antares_version="700",
+            antares_version=700,
             local_final_zipfile_path="local_final_zipfile_path",
             run_mode=Modes.antares,
         )
@@ -64,7 +61,11 @@ class TestRemoteEnvironmentWithSlurm:
         remote_home_dir = "remote_home_dir"
         connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
     @pytest.mark.unit_test
@@ -73,14 +74,16 @@ class TestRemoteEnvironmentWithSlurm:
     ):
         # given
         remote_home_dir = "remote_home_dir"
-        remote_base_dir = (
-            f"{remote_home_dir}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
-        )
+        remote_base_dir = f"{remote_home_dir}/REMOTE_{getpass.getuser()}_{socket.gethostname()}"
         connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -92,7 +95,11 @@ class TestRemoteEnvironmentWithSlurm:
     ):
         # given
         connection = mock.Mock(home_dir="path/to/home")
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         # when
         connection.make_dir = mock.Mock(return_value=False)
         # then
@@ -107,7 +114,11 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock(home_dir="path/to/home")
         connection.make_dir = mock.Mock(return_value=True)
         connection.check_file_not_empty = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         # when
         RemoteEnvironmentWithSlurm(connection, slurm_script_features)
         # then
@@ -123,7 +134,11 @@ class TestRemoteEnvironmentWithSlurm:
         connection = mock.Mock(home_dir="path/to/home")
         connection.home_dir = remote_home_dir
         connection.make_dir = mock.Mock(return_value=True)
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         # when
         connection.check_file_not_empty = mock.Mock(return_value=False)
         # then
@@ -131,9 +146,7 @@ class TestRemoteEnvironmentWithSlurm:
             RemoteEnvironmentWithSlurm(connection, slurm_script_features)
 
     @pytest.mark.unit_test
-    def test_get_queue_info_calls_connection_execute_command_with_correct_argument(
-        self, remote_env
-    ):
+    def test_get_queue_info_calls_connection_execute_command_with_correct_argument(self, remote_env):
         # given
         username = "username"
         host = "host"
@@ -149,9 +162,7 @@ class TestRemoteEnvironmentWithSlurm:
         remote_env.connection.execute_command.assert_called_with(command)
 
     @pytest.mark.unit_test
-    def test_when_connection_exec_command_has_an_error_then_get_queue_info_returns_the_error_string(
-        self, remote_env
-    ):
+    def test_when_connection_exec_command_has_an_error_then_get_queue_info_returns_the_error_string(self, remote_env):
         # given
         username = "username"
         remote_env.connection.username = username
@@ -174,9 +185,7 @@ class TestRemoteEnvironmentWithSlurm:
         remote_env.connection.execute_command.assert_called_with(command)
 
     @pytest.mark.unit_test
-    def test_when_kill_remote_job_is_called_and_exec_command_returns_error_exception_is_raised(
-        self, remote_env
-    ):
+    def test_when_kill_remote_job_is_called_and_exec_command_returns_error_exception_is_raised(self, remote_env):
         # when
         output = None
         error = "error"
@@ -204,15 +213,11 @@ class TestRemoteEnvironmentWithSlurm:
             post_processing=study.post_processing,
             other_options="",
         )
-        command = remote_env.slurm_script_features.compose_launch_command(
-            remote_env.remote_base_path, script_params
-        )
+        command = remote_env.slurm_script_features.compose_launch_command(remote_env.remote_base_path, script_params)
         remote_env.connection.execute_command.assert_called_once_with(command)
 
     @pytest.mark.unit_test
-    def test_when_submit_job_is_called_and_receives_submitted_420_returns_job_id_420(
-        self, remote_env, study
-    ):
+    def test_when_submit_job_is_called_and_receives_submitted_420_returns_job_id_420(self, remote_env, study):
         # when
         output = "Submitted 420"
         error = None
@@ -221,9 +226,7 @@ class TestRemoteEnvironmentWithSlurm:
         assert remote_env.submit_job(study) == 420
 
     @pytest.mark.unit_test
-    def test_when_submit_job_is_called_and_receives_error_then_exception_is_raised(
-        self, remote_env, study
-    ):
+    def test_when_submit_job_is_called_and_receives_error_then_exception_is_raised(self, remote_env, study):
         # when
         output = ""
         error = "error"
@@ -356,6 +359,7 @@ class TestRemoteEnvironmentWithSlurm:
             call(command),
         ]
 
+    # noinspection SpellCheckingInspection
     @pytest.mark.unit_test
     @pytest.mark.parametrize(
         "state, expected",
@@ -367,12 +371,11 @@ class TestRemoteEnvironmentWithSlurm:
             ("CANCELLED by 123456", (True, True, True)),
             ("TIMEOUT", (True, True, True)),
             ("COMPLETED", (True, True, False)),
+            ("COMPLETING", (True, False, False)),
             ("FAILED", (True, True, True)),
         ],
     )
-    def test_get_job_state_flags__sacct_nominal_case(
-        self, remote_env, study, state, expected
-    ):
+    def test_get_job_state_flags__sacct_nominal_case(self, remote_env, study, state, expected):
         """
         Check that the "get_job_state_flags" method is correctly returning
         the status flags ("started", "finished", and "with_error")
@@ -530,9 +533,7 @@ class TestRemoteEnvironmentWithSlurm:
         assert output is True
 
     @pytest.mark.unit_test
-    def test_given_a_study_when_remove_input_zipfile_then_connection_remove_file_is_called(
-        self, remote_env, study
-    ):
+    def test_given_a_study_when_remove_input_zipfile_then_connection_remove_file_is_called(self, remote_env, study):
         # given
         study.input_zipfile_removed = False
         study.zipfile_path = "zipfile_path"
@@ -564,9 +565,7 @@ class TestRemoteEnvironmentWithSlurm:
         # given
         study.input_zipfile_removed = False
         study.zipfile_path = "zipfile_path"
-        command = (
-            f"{remote_env.remote_base_path}/{Path(study.local_final_zipfile_path).name}"
-        )
+        command = f"{remote_env.remote_base_path}/{Path(study.local_final_zipfile_path).name}"
         remote_env.connection.execute_command = mock.Mock(return_value=("", ""))
         # when
         remote_env.remove_remote_final_zipfile(study)
@@ -586,9 +585,7 @@ class TestRemoteEnvironmentWithSlurm:
         assert output is False
 
     @pytest.mark.unit_test
-    def test_given_a_study_when_clean_remote_server_called_then_remove_zip_methods_are_called(
-        self, remote_env, study
-    ):
+    def test_given_a_study_when_clean_remote_server_called_then_remove_zip_methods_are_called(self, remote_env, study):
         # given
         study.remote_server_is_clean = False
         remote_env.remove_remote_final_zipfile = mock.Mock(return_value=False)
@@ -600,9 +597,7 @@ class TestRemoteEnvironmentWithSlurm:
         remote_env.remove_input_zipfile.assert_called_once_with(study)
 
     @pytest.mark.unit_test
-    def test_given_a_study_when_clean_remote_server_called_then_return_correct_result(
-        self, remote_env, study
-    ):
+    def test_given_a_study_when_clean_remote_server_called_then_return_correct_result(self, remote_env, study):
         # given
         study.remote_server_is_clean = False
         remote_env.remove_remote_final_zipfile = mock.Mock(return_value=False)
@@ -643,9 +638,7 @@ class TestRemoteEnvironmentWithSlurm:
         # given
         time_lim_sec = 42
         # when
-        output = RemoteEnvironmentWithSlurm.convert_time_limit_from_seconds_to_minutes(
-            time_lim_sec
-        )
+        output = RemoteEnvironmentWithSlurm.convert_time_limit_from_seconds_to_minutes(time_lim_sec)
         # then
         assert output == 1
 
@@ -689,11 +682,13 @@ class TestRemoteEnvironmentWithSlurm:
         change_dir = f"cd {remote_env.remote_base_path}"
         reference_submit_command = (
             f"sbatch"
-            f' --job-name="{Path(study.path).name}"'
+            " --partition=fake_partition"
+            " --qos=user1_qos"
+            f" --job-name={Path(study.path).name}"
             f" --time={study.time_limit // 60}"
             f" --cpus-per-task={study.n_cpu}"
             f" {filename_launch_script}"
-            f' "{Path(study.zipfile_path).name}"'
+            f" {Path(study.zipfile_path).name}"
             f" {study.antares_version}"
             f" {job_type}"
             f" {post_processing}"

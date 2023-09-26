@@ -1,7 +1,7 @@
+import typing as t
 from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
-from typing import Optional
 
 
 class Modes(IntEnum):
@@ -16,28 +16,47 @@ class StudyDTO:
 
     path: str
     name: str = field(init=False)
-    zipfile_path: str = ""
-    zip_is_sent: bool = False
+
+    # Job state flags
     started: bool = False
     finished: bool = False
+    done: bool = False
     with_error: bool = False
-    local_final_zipfile_path: str = ""
+
+    # Job state message
+    job_state: str = "Pending"  # "Running", "Finished", "Ended with error", "Internal error: ..."
+
+    # Processing stage flags
+    zip_is_sent: bool = False
     input_zipfile_removed: bool = False
     logs_downloaded: bool = False
-    job_log_dir: str = ""
-    output_dir: str = ""
     remote_server_is_clean: bool = False
     final_zip_extracted: bool = False
-    done: bool = False
-    job_id: Optional[int] = None
-    job_state: str = ""
-    time_limit: Optional[int] = None
-    n_cpu: Optional[int] = None
-    antares_version: Optional[str] = None
-    xpansion_mode: Optional[str] = None
+
+    # Processing stage data
+    job_id: int = 0  # sbatch job id
+    zipfile_path: str = ""
+    local_final_zipfile_path: str = ""
+    job_log_dir: str = ""
+    output_dir: str = ""
+
+    # Simulation stage data
+    time_limit: t.Optional[int] = None
+    n_cpu: int = 1
+    antares_version: int = 0
+    xpansion_mode: str = ""  # "", "r", "cpp"
     run_mode: Modes = Modes.antares
     post_processing: bool = False
     other_options: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.name = Path(self.path).name
+
+    @classmethod
+    def from_dict(cls, doc: t.Mapping[str, t.Any]) -> "StudyDTO":
+        """
+        Create a Study DTO from a mapping.
+        """
+        attrs = dict(**doc)
+        attrs.pop("name", None)  # calculated
+        return cls(**attrs)

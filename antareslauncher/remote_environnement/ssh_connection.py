@@ -6,19 +6,12 @@ import stat
 import textwrap
 import time
 from pathlib import Path, PurePosixPath
-from typing import List, Tuple
+import typing as t
 
 import paramiko
 
-try:
-    # noinspection PyUnresolvedReferences
-    from typing import TypeAlias
-except ImportError:
-    RemotePath = PurePosixPath
-    LocalPath = Path
-else:
-    RemotePath: TypeAlias = PurePosixPath
-    LocalPath: TypeAlias = Path
+RemotePath = PurePosixPath
+LocalPath = Path
 
 
 class SshConnectionError(Exception):
@@ -109,9 +102,7 @@ class DownloadMonitor:
             # 0        duration                    total_duration
             # 0%       percent                         100%
             duration = time.time() - self._start_time
-            eta = int(
-                duration * (self.total_size - total_transferred) / total_transferred
-            )
+            eta = int(duration * (self.total_size - total_transferred) / total_transferred)
             return f"{self.msg:<20} ETA: {eta}s [{rate:.0%}]"
         return f"{self.msg:<20} ETA: ??? [{rate:.0%}]"
 
@@ -131,7 +122,7 @@ class DownloadMonitor:
 class SshConnection:
     """Class to _connect to remote server"""
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: t.Mapping[str, t.Any]):
         """
         Initialize the SSH connection.
 
@@ -140,9 +131,9 @@ class SshConnection:
             "password" (not compulsory if private_key_file is given), "private_key_file": path to private rsa key
         """
         super(SshConnection, self).__init__()
-        self.logger = logging.getLogger(f"{__name__}.{__class__.__name__}")
-        self.__client = None
-        self.__home_dir = None
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self._client = None
+        self._home_dir = ""
         self.timeout = 10
         self.host = ""
         self.username = ""
@@ -152,19 +143,15 @@ class SshConnection:
 
         if config:
             self.logger.info("Loading ssh connection from config dictionary")
-            self.__init_from_config(config)
+            self._init_from_config(config)
         else:
-            error = InvalidConfigError(
-                config, "missing values: 'hostname', 'username', 'password'..."
-            )
+            error = InvalidConfigError(config, "missing values: 'hostname', 'username', 'password'...")
             self.logger.debug(str(error))
             raise error
         self.initialize_home_dir()
-        self.logger.info(
-            f"Connection created with host = {self.host} and username = {self.username}"
-        )
+        self.logger.info(f"Connection created with host = {self.host} and username = {self.username}")
 
-    def __initialise_public_key(self, key_file_name, key_password):
+    def _init_public_key(self, key_file_name, key_password):
         """Initialises self.private_key
 
         Args:
@@ -174,53 +161,47 @@ class SshConnection:
             True if a valid key was found, False otherwise
         """
         try:
-            self.private_key = paramiko.Ed25519Key.from_private_key_file(
-                filename=key_file_name
-            )
+            self.private_key = paramiko.Ed25519Key.from_private_key_file(filename=key_file_name)
             return True
         except paramiko.SSHException:
             try:
-                self.private_key = paramiko.RSAKey.from_private_key_file(
-                    filename=key_file_name, password=key_password
-                )
+                self.private_key = paramiko.RSAKey.from_private_key_file(filename=key_file_name, password=key_password)
                 return True
             except paramiko.SSHException:
                 self.private_key = None
                 return False
 
-    def __init_from_config(self, config: dict):
+    def _init_from_config(self, config: t.Mapping[str, t.Any]) -> None:
         self.host = config.get("hostname", "")
         self.username = config.get("username", "")
         self.port = config.get("port", 22)
         self.password = config.get("password")
         key_password = config.get("key_password")
         if key_file := config.get("private_key_file"):
-            self.__initialise_public_key(
-                key_file_name=key_file, key_password=key_password
-            )
+            self._init_public_key(key_file_name=key_file, key_password=key_password)
         elif self.password is None:
             error = InvalidConfigError(config, "missing 'password'")
             self.logger.debug(str(error))
             raise error
 
-    def initialize_home_dir(self):
-        """Initializes self.__home_dir with the home directory retrieved by started "echo $HOME" connecting to the
+    def initialize_home_dir(self) -> None:
+        """Initializes self._home_dir with the home directory retrieved by started "echo $HOME" connecting to the
         remote server
         """
         output, _ = self.execute_command("echo $HOME")
-        self.__home_dir = str(output).split()[0]
+        self._home_dir = str(output).split()[0]
 
     @property
-    def home_dir(self):
+    def home_dir(self) -> str:
         """
 
         Returns:
             The home directory of the remote server
         """
-        return self.__home_dir
+        return self._home_dir
 
     @contextlib.contextmanager
-    def ssh_client(self) -> paramiko.SSHClient:
+    def ssh_client(self) -> t.Generator[paramiko.SSHClient, None, None]:
         client = paramiko.SSHClient()
         try:
             try:
@@ -250,27 +231,17 @@ class SshConnection:
                         look_for_keys=False,
                     )
             except paramiko.AuthenticationException as e:
-                self.logger.exception(
-                    f"paramiko.AuthenticationException: {paramiko.AuthenticationException}"
-                )
-                raise ConnectionFailedException(
-                    self.host, self.port, self.username
-                ) from e
+                self.logger.exception(f"paramiko.AuthenticationException: {paramiko.AuthenticationException}")
+                raise ConnectionFailedException(self.host, self.port, self.username) from e
             except paramiko.SSHException as e:
                 self.logger.exception(f"paramiko.SSHException: {paramiko.SSHException}")
-                raise ConnectionFailedException(
-                    self.host, self.port, self.username
-                ) from e
+                raise ConnectionFailedException(self.host, self.port, self.username) from e
             except socket.timeout as e:
                 self.logger.exception(f"socket.timeout: {socket.timeout}")
-                raise ConnectionFailedException(
-                    self.host, self.port, self.username
-                ) from e
+                raise ConnectionFailedException(self.host, self.port, self.username) from e
             except socket.error as e:
                 self.logger.exception(f"socket.error: {socket.error}")
-                raise ConnectionFailedException(
-                    self.host, self.port, self.username
-                ) from e
+                raise ConnectionFailedException(self.host, self.port, self.username) from e
 
             yield client
         finally:
@@ -373,7 +344,7 @@ class SshConnection:
         pattern: str,
         *patterns: str,
         remove: bool = True,
-    ) -> List[LocalPath]:
+    ) -> t.Sequence[LocalPath]:
         """
         Download files matching the specified patterns from the remote
         source directory to the local destination directory,
@@ -394,9 +365,7 @@ class SshConnection:
             The paths of the downloaded files on the local filesystem.
         """
         try:
-            return self._download_files(
-                src_dir, dst_dir, (pattern,) + patterns, remove=remove
-            )
+            return self._download_files(src_dir, dst_dir, (pattern,) + patterns, remove=remove)
         except TimeoutError as exc:
             self.logger.error(f"Timeout: {exc}", exc_info=True)
             return []
@@ -411,10 +380,10 @@ class SshConnection:
         self,
         src_dir: RemotePath,
         dst_dir: LocalPath,
-        patterns: Tuple[str],
+        patterns: t.Tuple[str, ...],
         *,
         remove: bool = True,
-    ) -> List[LocalPath]:
+    ) -> t.Sequence[LocalPath]:
         """
         Download files matching the specified patterns from the remote
         source directory to the local destination directory.
@@ -432,17 +401,13 @@ class SshConnection:
             The paths of the downloaded files on the local filesystem.
         """
         with self.ssh_client() as client:
-            with contextlib.closing(
-                client.open_sftp()
-            ) as sftp:  # type: paramiko.sftp_client.SFTPClient
+            with contextlib.closing(client.open_sftp()) as sftp:  # type: paramiko.sftp_client.SFTPClient
                 # Get list of files to download
                 remote_attrs = sftp.listdir_attr(str(src_dir))
                 remote_files = [file_attr.filename for file_attr in remote_attrs]
                 total_size = sum((file_attr.st_size or 0) for file_attr in remote_attrs)
                 files_to_download = [
-                    f
-                    for f in remote_files
-                    if any(fnmatch.fnmatch(f, pattern) for pattern in patterns)
+                    f for f in remote_files if any(fnmatch.fnmatch(f, pattern) for pattern in patterns)
                 ]
                 # Monitor the download progression
                 monitor = DownloadMonitor(total_size, logger=self.logger)

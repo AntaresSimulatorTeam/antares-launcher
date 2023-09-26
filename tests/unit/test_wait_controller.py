@@ -2,10 +2,8 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
-    WaitController,
-)
+from antareslauncher.display.display_terminal import DisplayTerminal
+from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
 
 
 class TestWaitController:
@@ -13,7 +11,7 @@ class TestWaitController:
     def test_countdown_calls_display_message_4_times_if_it_waits_1_seconds(
         self,
     ):
-        display = IDisplay
+        display = DisplayTerminal()
         display.show_message = mock.Mock()
         display.show_message_no_newline = mock.Mock()
         wait_controller = WaitController(display)

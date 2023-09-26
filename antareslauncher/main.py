@@ -1,45 +1,25 @@
 import argparse
-from dataclasses import dataclass
+import dataclasses
+import json
+import typing as t
 from pathlib import Path
-from typing import List, Dict
 
 from antareslauncher import __version__
 from antareslauncher.antares_launcher import AntaresLauncher
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.logger_initializer import LoggerInitializer
 from antareslauncher.remote_environnement import ssh_connection
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
-from antareslauncher.remote_environnement.slurm_script_features import (
-    SlurmScriptFeatures,
-)
-from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
-    CheckQueueController,
-)
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
-    SlurmQueueShow,
-)
-from antareslauncher.use_cases.create_list.study_list_composer import (
-    StudyListComposer,
-    StudyListComposerParameters,
-)
-from antareslauncher.use_cases.generate_tree_structure.tree_structure_initializer import (
-    TreeStructureInitializer,
-)
-from antareslauncher.use_cases.kill_job.job_kill_controller import (
-    JobKillController,
-)
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
+from antareslauncher.remote_environnement.slurm_script_features import SlurmScriptFeatures
+from antareslauncher.use_cases.check_remote_queue.check_queue_controller import CheckQueueController
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
+from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, StudyListComposerParameters
+from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
-from antareslauncher.use_cases.retrieve.retrieve_controller import (
-    RetrieveController,
-)
+from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
-from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
-    WaitController,
-)
+from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
 
 
 class NoJsonConfigFileError(Exception):
@@ -65,19 +45,36 @@ ANTARES_LAUNCHER_BANNER = (
 # fmt: on
 
 
-@dataclass
+@dataclasses.dataclass
 class MainParameters:
+    """
+    Represents the main parameters of the application.
+
+    Attributes:
+        json_dir: Path to the directory where the JSON database will be stored.
+        default_json_db_name: The default JSON database name.
+        slurm_script_path: Path to the SLURM script used to launch studies (a Shell script).
+        antares_versions_on_remote_server: A list of available Antares Solver versions on the remote server.
+        default_ssh_dict: A dictionary containing the SSH settings read from `ssh_config.json`.
+        db_primary_key: The primary key for the database, default to "name".
+        partition: Extra `sbatch` option to request a specific partition for resource allocation.
+            If not specified, the default behavior is to allow the SLURM controller
+            to select the default partition as designated by the system administrator.
+        quality_of_service: Extra `sbatch` option to request a quality of service for the job.
+            QOS values can be defined for each user/cluster/account association in the Slurm database.
+    """
+
     json_dir: Path
     default_json_db_name: str
     slurm_script_path: str
-    antares_versions_on_remote_server: List[str]
-    default_ssh_dict: Dict
+    antares_versions_on_remote_server: t.Sequence[str]
+    default_ssh_dict: t.Mapping[str, t.Any]
     db_primary_key: str
+    partition: str = ""
+    quality_of_service: str = ""
 
 
-def run_with(
-    arguments: argparse.Namespace, parameters: MainParameters, show_banner=False
-):
+def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_banner=False):
     """Instantiates all the objects necessary to antares-launcher, and runs the program"""
     if arguments.version:
         print(f"Antares_Launcher v{__version__}")
@@ -87,41 +84,31 @@ def run_with(
         print(ANTARES_LAUNCHER_BANNER)
 
     display = DisplayTerminal()
-    file_manager = FileManager(display)
 
     db_json_file_path = parameters.json_dir / parameters.default_json_db_name
 
-    tree_structure_initializer = TreeStructureInitializer(
-        display,
-        file_manager,
-        arguments.studies_in,
-        arguments.log_dir,
-        arguments.output_dir,
-    )
+    Path(arguments.studies_in).mkdir(parents=True, exist_ok=True)
+    Path(arguments.log_dir).mkdir(parents=True, exist_ok=True)
+    Path(arguments.output_dir).mkdir(parents=True, exist_ok=True)
+    display.show_message("Tree structure initialized", __name__)
 
-    tree_structure_initializer.init_tree_structure()
-    logger_initializer = LoggerInitializer(
-        str(Path(arguments.log_dir) / "antares_launcher.log")
-    )
+    logger_initializer = LoggerInitializer(str(Path(arguments.log_dir) / "antares_launcher.log"))
     logger_initializer.init_logger()
 
     # connection
-    ssh_dict = get_ssh_config_dict(
-        file_manager,
-        arguments.json_ssh_config,
-        parameters.default_ssh_dict,
-    )
+    ssh_dict = get_ssh_config_dict(arguments.json_ssh_config, parameters.default_ssh_dict)
     connection = ssh_connection.SshConnection(config=ssh_dict)
     verify_connection(connection, display)
 
-    slurm_script_features = SlurmScriptFeatures(parameters.slurm_script_path)
-    environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
-    data_repo = DataRepoTinydb(
-        database_file_path=db_json_file_path, db_primary_key=parameters.db_primary_key
+    slurm_script_features = SlurmScriptFeatures(
+        parameters.slurm_script_path,
+        partition=parameters.partition,
+        quality_of_service=parameters.quality_of_service,
     )
+    environment = RemoteEnvironmentWithSlurm(connection, slurm_script_features)
+    data_repo = DataRepoTinydb(database_file_path=db_json_file_path, db_primary_key=parameters.db_primary_key)
     study_list_composer = StudyListComposer(
         repo=data_repo,
-        file_manager=file_manager,
         display=display,
         parameters=StudyListComposerParameters(
             studies_in_dir=arguments.studies_in,
@@ -133,19 +120,14 @@ def run_with(
             post_processing=arguments.post_processing,
             antares_versions_on_remote_server=parameters.antares_versions_on_remote_server,
             other_options=arguments.other_options or "",
+            antares_version=arguments.antares_version,
         ),
     )
-    launch_controller = LaunchController(
-        repo=data_repo,
-        env=environment,
-        file_manager=file_manager,
-        display=display,
-    )
+    launch_controller = LaunchController(repo=data_repo, env=environment, display=display)
     state_updater = StateUpdater(env=environment, display=display)
     retrieve_controller = RetrieveController(
         repo=data_repo,
         env=environment,
-        file_manager=file_manager,
         display=display,
         state_updater=state_updater,
     )
@@ -187,11 +169,12 @@ def verify_connection(connection, display):
     # fmt: on
 
 
-def get_ssh_config_dict(file_manager, json_ssh_config, ssh_dict: dict):
-    if json_ssh_config is None:
+def get_ssh_config_dict(
+    json_ssh_config: str,
+    ssh_dict: t.Mapping[str, t.Any],
+) -> t.Mapping[str, t.Any]:
+    if not json_ssh_config:
         ssh_dict = ssh_dict
     else:
-        ssh_dict = file_manager.convert_json_file_to_dict(json_ssh_config)
-    if ssh_dict is None:
-        raise Exception("Could not find any SSH configuration file")
+        ssh_dict = json.loads(Path(json_ssh_config).read_text(encoding="utf-8"))
     return ssh_dict

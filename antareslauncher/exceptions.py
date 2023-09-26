@@ -12,9 +12,7 @@ class AntaresLauncherException(Exception):
 class ConfigFileNotFoundError(AntaresLauncherException):
     """Configuration file not found."""
 
-    def __init__(
-        self, possible_dirs: Sequence[pathlib.Path], config_name: str, *args
-    ) -> None:
+    def __init__(self, possible_dirs: Sequence[pathlib.Path], config_name: str, *args) -> None:
         super().__init__(possible_dirs, config_name, *args)
 
     @property

@@ -1,5 +1,54 @@
 # Changelog
 
+<!--
+This change log can be generated with [`auto-changelog`](https://github.com/CookPete/auto-changelog), for instance :
+
+```shell
+npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
+``` 
+-->
+
+## [1.3.1] - 2023-09-26
+
+### Changed
+
+- feat(database): simplify launcher database implementation [`#66`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/66)
+- feat(cli): add the `--solver-version` option to the command line [`#63`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/63)
+- feat(parameters): handle the `--partition` and `--qos` parameters for the `sbatch` command [`#58`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/58)
+- feat(retrival): correct the retrival of remote files and improve exception handling to avoid infinite loops [`88efc98`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/88efc98af6a8fd494f07cc9a366a52109eb3ac2d)
+- feat(zip-extractor): the uncompress directory is calculated according to the content: study directory or simulation output [`1ffc86e`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/1ffc86e0439814e4549f59c193731c71080c0d59)
+
+### Fixes
+
+- fix(cli): preserve backward compatibility in CLI options [`#65`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/65)
+- fix(job-state): consider the `COMPLETING` value as a possible job state [`#61`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/61)
+- fix(results-retrieval): handle exceptions in log and ZIP result retrival [`#60`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/60)
+- fix(console): use the ISO8601 date format to display messages on the console [`0dbf971`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/0dbf971b1ccc924f4b11cf44b0e0cf16562622c9)
+
+### Refactorings
+
+- refactor: remove `IDisplay` abstract class [`#64`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/64)
+- refactor(launch-controller): simplification of the `LaunchController` class [`4c07551`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/4c07551ae8acf15d784553e7877b9017626b306b)
+- refactor(file-manager): remove unused or trivial methods from `FileManager` [`fbb60e0`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/fbb60e0efca6989e7ea79324ed746b55da3cfb3d)
+- refactoring(file-manager): drop the `FileManager` class [`9797799`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/9797799df6bf4fd626ea1bc997d11503989d5b94)
+- refactoring(tree-structure): drop the `TreeStructureInitializer` class [`8a119af`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/8a119afb06d64f0ccd1e112ef82367f8fdee7ce0)
+- refactoring(data-provider): drop the `DataProvider` class [`272965e`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/272965ed618f94ecf0de718bf7e8e0788c4bbb3a)
+
+### Code Style
+
+- style: reformat source code using iSort and Black [`e243fba`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/e243fbab177c46ffc867440b3701d7672566066c)
+
+### Chore
+
+- chore(typing): improve the typing of study parameters [`f11641d`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/f11641d4d233d61f91b9cbebf6263780ff14eb88)
+- chore(typing): improve typing in source code [`4ff6abf`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/4ff6abf512b03944d0132d868484ef2d677c8b77)
+- chore: replace `COMPETING` with `COMPLETING` (typo) [`e98b7a8`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/e98b7a8627b09a883e48a9b4b883f6b1560da0e9)
+
+### Tests
+
+- test: correct the test fixtures for study retrival [`6f78bd6`](https://github.com/AntaresSimulatorTeam/antares-launcher/commit/6f78bd62a5f7c6b61a6fcb4a9a42c7710e986301)
+
+
 ## [1.3.0] - 2023-06-16
 
 ### Changed
@@ -94,6 +143,8 @@
 - Add proper output for `study_list_composer.py`
 - Remove unnecessary Optional
 - Enable ssh_config_file to be `None`
+
+[1.3.1]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.3.1
 
 [1.3.0]: https://github.com/AntaresSimulatorTeam/antares-launcher/releases/tag/v1.3.0
 

@@ -2,20 +2,16 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
-    CheckQueueController,
-)
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
-    SlurmQueueShow,
-)
+from antareslauncher.use_cases.check_remote_queue.check_queue_controller import CheckQueueController
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
 
 class TestCheckQueueController:
     def setup_method(self):
-        self.repo_mock = mock.Mock(spec=IDataRepo)
+        self.repo_mock = mock.Mock(spec=DataRepoTinydb)
         self.env = mock.Mock()
         self.display = mock.Mock()
         self.slurm_queue_show = SlurmQueueShow(env=self.env, display=self.display)
@@ -30,9 +26,7 @@ class TestCheckQueueController:
     def test_check_queue_controller_calls_slurm_queue_show_once(self):
         # given
         self.slurm_queue_show.run = mock.Mock()
-        self.repo_mock.get_list_of_studies = (
-            mock.MagicMock()
-        )  # mock.Mock(return_value=[])
+        self.repo_mock.get_list_of_studies = mock.MagicMock()  # mock.Mock(return_value=[])
         # when
         self.check_queue_controller.check_queue()
         # then

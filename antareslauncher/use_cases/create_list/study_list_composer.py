@@ -1,11 +1,35 @@
+import configparser
+import typing as t
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.file_manager.file_manager import FileManager
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
+from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.study_dto import Modes, StudyDTO
+
+
+def get_solver_version(study_dir: Path, *, default: int = 0) -> int:
+    """
+    Retrieve the solver version number or else the study version number
+    from the "study.antares" file.
+
+    Args:
+        study_dir: Directory path which contains the "study.antares" file.
+        default: Default version number to use if the version is not found.
+
+    Returns:
+        The value of `solver_version`, `version` or the default version number.
+    """
+    study_path = study_dir.joinpath("study.antares")
+    config = configparser.ConfigParser()
+    config.read(study_path)
+    if "antares" not in config:
+        return default
+    section = config["antares"]
+    for key in "solver_version", "version":
+        if key in section:
+            return int(section[key])
+    return default
 
 
 @dataclass
@@ -14,24 +38,22 @@ class StudyListComposerParameters:
     time_limit: int
     log_dir: str
     n_cpu: int
-    xpansion_mode: Optional[str]
+    xpansion_mode: str  # "", "r", "cpp"
     output_dir: str
     post_processing: bool
-    antares_versions_on_remote_server: List[str]
+    antares_versions_on_remote_server: t.Sequence[str]
     other_options: str
+    antares_version: int = 0
 
 
-@dataclass
 class StudyListComposer:
     def __init__(
         self,
-        repo: IDataRepo,
-        file_manager: FileManager,
-        display: IDisplay,
+        repo: DataRepoTinydb,
+        display: DisplayTerminal,
         parameters: StudyListComposerParameters,
     ):
         self._repo = repo
-        self._file_manager = file_manager
         self._display = display
         self._studies_in_dir = parameters.studies_in_dir
         self.time_limit = parameters.time_limit
@@ -41,11 +63,10 @@ class StudyListComposer:
         self.output_dir = parameters.output_dir
         self.post_processing = parameters.post_processing
         self.other_options = parameters.other_options
+        self.antares_version = parameters.antares_version
         self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
-        self.ANTARES_VERSIONS_ON_REMOTE_SERVER = (
-            parameters.antares_versions_on_remote_server
-        )
+        self.ANTARES_VERSIONS_ON_REMOTE_SERVER = [int(v) for v in parameters.antares_versions_on_remote_server]
 
     def get_list_of_studies(self):
         """Retrieve the list of studies from the repo
@@ -55,14 +76,12 @@ class StudyListComposer:
         """
         return self._repo.get_list_of_studies()
 
-    def _create_study(self, path, antares_version, xpansion_mode: str):
-        if self.xpansion_mode == "r":
-            run_mode = Modes.xpansion_r
-        elif self.xpansion_mode == "cpp":
-            run_mode = Modes.xpansion_cpp
-        else:
-            run_mode = Modes.antares
-
+    def _create_study(self, path: Path, antares_version: int, xpansion_mode: str) -> StudyDTO:
+        run_mode = {
+            "": Modes.antares,
+            "r": Modes.xpansion_r,
+            "cpp": Modes.xpansion_cpp,
+        }.get(self.xpansion_mode, Modes.antares)
         new_study = StudyDTO(
             path=str(path),
             n_cpu=self.n_cpu,
@@ -75,53 +94,7 @@ class StudyListComposer:
             post_processing=self.post_processing,
             other_options=self.other_options,
         )
-
         return new_study
-
-    def get_antares_version(self, directory_path: str):
-        """Checks if the directory is an antares study and returns the version
-
-        Checks if the directory is an antares study by checking the presence of the study.antares file
-        and by checking the presence of the 'antares' field in this file.
-
-        Args:
-            directory_path: Path of the directory to test
-
-        Returns:
-            The version if the directory is an antares study, None otherwise
-        """
-        file_path = Path(directory_path) / "study.antares"
-        config = self._file_manager.get_config_from_file(file_path)
-        if "antares" in config:
-            solver_version = config["antares"].get("solver_version", None)
-            return solver_version or config["antares"].get("version", None)
-
-    def _is_valid_antares_study(self, antares_version):
-        if antares_version is None:
-            self._display.show_message(
-                "... not a valid Antares study",
-                __name__ + "." + __class__.__name__,
-            )
-            return False
-
-        elif antares_version in self.ANTARES_VERSIONS_ON_REMOTE_SERVER:
-            return True
-        else:
-            message = f"... Antares version ({antares_version}) is not supported (supported versions: {self.ANTARES_VERSIONS_ON_REMOTE_SERVER})"
-            self._display.show_message(
-                message,
-                __name__ + "." + __class__.__name__,
-            )
-            return False
-
-    def _is_there_candidates_file(self, directory_path: Path):
-        candidates_file_path = str(
-            Path.joinpath(directory_path, "user", "expansion", "candidates.ini")
-        )
-        return self._file_manager.file_exists(candidates_file_path)
-
-    def _is_xpansion_study(self, xpansion_study_path: str):
-        return self._is_there_candidates_file(Path(xpansion_study_path))
 
     def update_study_database(self):
         """List all directories inside the STUDIES_IN_DIR folder, if a directory is a valid antares study
@@ -134,10 +107,9 @@ class StudyListComposer:
 
         self._new_study_added = False
 
-        directories = self._file_manager.listdir_of(self._studies_in_dir)
-        for directory in directories:
-            directory_path = Path(self._studies_in_dir) / Path(directory)
-            if self._file_manager.is_dir(directory_path):
+        directories = Path(self._studies_in_dir).iterdir()
+        for directory_path in sorted(directories):
+            if directory_path.is_dir():
                 self._update_database_with_directory(directory_path)
 
         if not self._new_study_added:
@@ -146,33 +118,35 @@ class StudyListComposer:
                 f"{__name__}.{__class__.__name__}",
             )
 
-    def _update_database_with_new_study(
-        self, antares_version, directory_path, xpansion_mode: str
-    ):
-        buffer_study = self._create_study(
-            directory_path, antares_version, xpansion_mode
-        )
-        self._update_database_with_study(buffer_study)
-
-    def _update_database_with_directory(self, directory_path):
-        antares_version = self.get_antares_version(directory_path)
-        if self._is_valid_antares_study(antares_version):
-            is_xpansion_study = self._is_xpansion_study(directory_path)
-            xpansion_mode = self.xpansion_mode if is_xpansion_study else None
-
-            valid_xpansion_candidate = (
-                self.xpansion_mode in ["r", "cpp"] and is_xpansion_study
+    def _update_database_with_directory(self, directory_path: Path):
+        solver_version = get_solver_version(directory_path)
+        antares_version = self.antares_version or solver_version
+        if not antares_version:
+            self._display.show_message(
+                "... not a valid Antares study",
+                __name__ + "." + self.__class__.__name__,
             )
-            valid_antares_candidate = self.xpansion_mode is None
+        elif antares_version not in self.ANTARES_VERSIONS_ON_REMOTE_SERVER:
+            message = (
+                f"... Antares version {antares_version} is not supported"
+                f" (supported versions: {self.ANTARES_VERSIONS_ON_REMOTE_SERVER})"
+            )
+            self._display.show_message(
+                message,
+                __name__ + "." + self.__class__.__name__,
+            )
+        else:
+            candidates_file_path = directory_path.joinpath("user", "expansion", "candidates.ini")
+            is_xpansion_study = candidates_file_path.is_file()
+            xpansion_mode = self.xpansion_mode if is_xpansion_study else ""
+
+            valid_xpansion_candidate = self.xpansion_mode in ["r", "cpp"] and is_xpansion_study
+            valid_antares_candidate = not self.xpansion_mode
 
             if valid_antares_candidate or valid_xpansion_candidate:
-                self._update_database_with_new_study(
-                    antares_version, directory_path, xpansion_mode
-                )
-
-    def _update_database_with_study(self, buffer_study):
-        if not self._repo.is_study_inside_database(buffer_study):
-            self._add_study_to_database(buffer_study)
+                buffer_study = self._create_study(directory_path, antares_version, xpansion_mode)
+                if not self._repo.is_study_inside_database(buffer_study):
+                    self._add_study_to_database(buffer_study)
 
     def _add_study_to_database(self, buffer_study):
         self._repo.save_study(buffer_study)
@@ -181,6 +155,6 @@ class StudyListComposer:
             f"(mode = {buffer_study.run_mode.name}, "
             f"version={buffer_study.antares_version}): "
             f'"{buffer_study.path}"',
-            __name__ + "." + __class__.__name__,
+            __name__ + "." + self.__class__.__name__,
         )
         self._new_study_added = True

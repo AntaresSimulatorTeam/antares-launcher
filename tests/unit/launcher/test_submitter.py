@@ -1,74 +1,56 @@
-from dataclasses import asdict
 from unittest import mock
 
 import pytest
 
-import antareslauncher.use_cases
-from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.display.display_terminal import DisplayTerminal
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 
 
 class TestStudySubmitter:
-    def setup_method(self):
-        self.remote_env = mock.Mock(spec_set=RemoteEnvironmentWithSlurm)
-        self.display_mock = mock.Mock(spec_set=IDisplay)
-        self.study_submitter = StudySubmitter(self.remote_env, self.display_mock)
+    @pytest.mark.parametrize("actual_job_id", [0, 123456])
+    @pytest.mark.unit_test
+    def test_submit_job__nominal_case(self, pending_study: StudyDTO, actual_job_id: int) -> None:
+        # Given
+        pending_study.job_id = actual_job_id
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.submit_job = mock.Mock(return_value=987654)
+        display = mock.Mock(spec=DisplayTerminal)
+        submitter = StudySubmitter(env, display)
+
+        # When
+        submitter.submit_job(pending_study)
+
+        # Then
+        if actual_job_id:
+            # The study job_id is not changed
+            assert pending_study.job_id == actual_job_id
+            # The display shows a message
+            display.show_message.assert_called_once()
+            display.show_error.assert_not_called()
+        else:
+            # The study job_id is changed
+            assert pending_study.job_id == 987654
+            # The display shows a message
+            display.show_message.assert_called_once()
+            display.show_error.assert_not_called()
 
     @pytest.mark.unit_test
-    def test_submit_study_shows_message_if_submit_succeeds(self):
-        self.remote_env.submit_job = mock.Mock(return_value=42)
-        study = StudyDTO(path="hello")
+    def test_submit_job__error_case(self, pending_study: StudyDTO) -> None:
+        # Given
+        pending_study.job_id = 0
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.submit_job = mock.Mock(return_value=0)
+        display = mock.Mock(spec=DisplayTerminal)
+        submitter = StudySubmitter(env, display)
 
-        new_study = self.study_submitter.submit_job(study)
+        # When
+        submitter.submit_job(pending_study)
 
-        expected_message = f'"hello": was submitted'
-        self.display_mock.show_message.assert_called_once_with(
-            expected_message, mock.ANY
-        )
-        assert new_study.job_id == 42
-
-    @pytest.mark.unit_test
-    def test_submit_study_shows_error_if_submit_fails_and_exception_is_raised(
-        self,
-    ):
-        self.remote_env.submit_job = mock.Mock(return_value=None)
-        study = StudyDTO(path="hello")
-
-        with pytest.raises(
-            antareslauncher.use_cases.launch.study_submitter.FailedSubmissionException
-        ):
-            self.study_submitter.submit_job(study)
-
-        expected_error_message = f'"hello": was not submitted'
-        self.display_mock.show_error.assert_called_once_with(
-            expected_error_message, mock.ANY
-        )
-
-    @pytest.mark.unit_test
-    def test_remote_env_not_called_if_study_has_already_a_jobid(self):
-        self.remote_env.submit_job = mock.Mock()
-        study = StudyDTO(path="hello")
-        study.job_id = 42
-
-        self.study_submitter.submit_job(study)
-
-        self.remote_env.submit_job.assert_not_called()
-
-    @pytest.mark.unit_test
-    def test_remote_env_is_called_if_study_has_no_jobid(self):
-        self.remote_env.submit_job = mock.Mock(return_value=42)
-        study = StudyDTO(path="hello")
-        study.zipfile_path = "ciao.zip"
-        study.job_id = None
-
-        new_study = self.study_submitter.submit_job(study)
-
-        self.remote_env.submit_job.assert_called_once()
-        first_call = self.remote_env.submit_job.call_args_list[0]
-        first_argument = first_call[0][0]
-        assert asdict(first_argument) == asdict(study)
-        assert new_study.job_id is 42
+        # Then
+        # The study job_id is not changed
+        assert pending_study.job_id == 0
+        # The display shows an error
+        display.show_message.assert_not_called()
+        display.show_error.assert_called_once()

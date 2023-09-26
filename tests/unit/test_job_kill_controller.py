@@ -2,9 +2,7 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.use_cases.kill_job.job_kill_controller import (
-    JobKillController,
-)
+from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 
 
 class TestJobKillController:

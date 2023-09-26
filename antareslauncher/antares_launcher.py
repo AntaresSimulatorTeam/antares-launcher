@@ -1,22 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
-    CheckQueueController,
-)
-from antareslauncher.use_cases.create_list.study_list_composer import (
-    StudyListComposer,
-)
-from antareslauncher.use_cases.kill_job.job_kill_controller import (
-    JobKillController,
-)
+from antareslauncher.use_cases.check_remote_queue.check_queue_controller import CheckQueueController
+from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer
+from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 from antareslauncher.use_cases.launch.launch_controller import LaunchController
-from antareslauncher.use_cases.retrieve.retrieve_controller import (
-    RetrieveController,
-)
-from antareslauncher.use_cases.wait_loop_controller.wait_controller import (
-    WaitController,
-)
+from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
+from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
 
 
 @dataclass
@@ -29,7 +19,7 @@ class AntaresLauncher:
     wait_controller: WaitController
     wait_mode: bool
     wait_time: int
-    xpansion_mode: Optional[str]
+    xpansion_mode: str
     check_queue_bool: bool
     job_id_to_kill: Optional[int] = None
 
@@ -47,7 +37,7 @@ class AntaresLauncher:
     def run_wait_mode(self):
         """Run antares_launcher once then it keeps
         checking the status of the unfinished jobs until all jobs are finished,
-        The code exit when all job are finished the the results are retrieved and extracted
+        The code exits when all jobs are finished, the results are retrieved and extracted
         """
         self.run_once_mode()
         while not self.retrieve_controller.all_studies_done:

@@ -1,102 +1,111 @@
-from copy import copy
-from pathlib import Path
 from unittest import mock
 
 import pytest
 
-import antareslauncher.remote_environnement.remote_environment_with_slurm
-from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.display.display_terminal import DisplayTerminal
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
-from antareslauncher.use_cases.retrieve.clean_remote_server import (
-    RemoteServerCleaner,
-    RemoteServerNotCleanException,
-)
+from antareslauncher.use_cases.retrieve.clean_remote_server import RemoteServerCleaner
 
 
 class TestServerCleaner:
-    def setup_method(self):
-        self.remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
-        self.display_mock = mock.Mock(spec_set=IDisplay)
-        self.remote_server_cleaner = RemoteServerCleaner(
-            self.remote_env_mock, self.display_mock
-        )
+    @pytest.mark.unit_test
+    def test_clean__finished_study__nominal(self, finished_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.clean_remote_server.return_value = True
+        display = mock.Mock(spec=DisplayTerminal)
 
-    @pytest.fixture(scope="function")
-    def downloaded_zip_study(self):
-        study = StudyDTO(
-            path=Path("path") / "hello",
-            started=True,
-            finished=True,
-            job_id=42,
-            local_final_zipfile_path=str(Path("final") / "zip" / "path.zip"),
-        )
-        return study
+        # Prepare a fake
+        finished_study.local_final_zipfile_path = "/path/to/result.zip"
+
+        # Initialize and execute the cleaning
+        cleaner = RemoteServerCleaner(env, display)
+        cleaner.clean(finished_study)
+
+        # Check the result
+        env.clean_remote_server.assert_called_once()
+        display.show_message.assert_called()
+        display.show_error.assert_not_called()
+
+        assert finished_study.remote_server_is_clean
 
     @pytest.mark.unit_test
-    def test_clean_server_show_message_if_successful(self, downloaded_zip_study):
-        self.remote_env_mock.clean_remote_server = mock.Mock(return_value=True)
-        self.remote_server_cleaner.clean(downloaded_zip_study)
+    def test_clean__finished_study__no_result(self, finished_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.clean_remote_server.return_value = True
+        display = mock.Mock(spec=DisplayTerminal)
 
-        expected_message = (
-            f'"{downloaded_zip_study.name}": Clean remote server finished'
-        )
-        self.display_mock.show_message.assert_called_once_with(
-            expected_message, mock.ANY
-        )
+        # Prepare a fake
+        finished_study.local_final_zipfile_path = ""
 
-    @pytest.mark.unit_test
-    def test_clean_server_show_error_and_raise_exception_if_fails(
-        self, downloaded_zip_study
-    ):
-        self.remote_env_mock.clean_remote_server = mock.Mock(return_value=False)
+        # Initialize and execute the cleaning
+        cleaner = RemoteServerCleaner(env, display)
+        cleaner.clean(finished_study)
 
-        with pytest.raises(RemoteServerNotCleanException):
-            self.remote_server_cleaner.clean(downloaded_zip_study)
+        # Check the result
+        env.clean_remote_server.assert_not_called()
+        display.show_message.assert_not_called()
+        display.show_error.assert_not_called()
 
-        expected_error = f'"{downloaded_zip_study.name}": Clean remote server failed'
-        self.display_mock.show_error.assert_called_once_with(expected_error, mock.ANY)
+        assert not finished_study.remote_server_is_clean
 
     @pytest.mark.unit_test
-    def test_remote_environment_not_called_if_final_zip_not_downloaded(self):
-        self.remote_env_mock.clean_remote_server = mock.Mock()
-        study = StudyDTO(path="hello")
-        study.local_final_zipfile_path = ""
-        new_study = self.remote_server_cleaner.clean(study)
+    def test_clean__finished_study__reentrancy(self, finished_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.clean_remote_server.return_value = True
+        display = mock.Mock(spec=DisplayTerminal)
 
-        self.remote_env_mock.clean_remote_server.assert_not_called()
-        assert new_study == study
+        # Prepare a fake
+        finished_study.local_final_zipfile_path = "/path/to/result.zip"
 
-        study.local_final_zipfile_path = None
-        new_study = self.remote_server_cleaner.clean(study)
+        # Initialize and execute the cleaning twice
+        cleaner = RemoteServerCleaner(env, display)
+        cleaner.clean(finished_study)
+        cleaner.clean(finished_study)
 
-        self.remote_env_mock.clean_remote_server.assert_not_called()
-        assert new_study == study
+        # Check the result
+        env.clean_remote_server.assert_called_once()
+        display.show_message.assert_called()
+        display.show_error.assert_not_called()
 
-    @pytest.mark.unit_test
-    def test_remote_environment_not_called_if_remote_server_is_already_clean(
-        self,
-    ):
-        self.remote_env_mock.clean_remote_server = mock.Mock()
-        study = StudyDTO(path="hello")
-        study.local_final_zipfile_path = "hello.zip"
-        study.remote_server_is_clean = True
-        new_study = self.remote_server_cleaner.clean(study)
-
-        self.remote_env_mock.clean_remote_server.assert_not_called()
-        assert new_study == study
+        assert finished_study.remote_server_is_clean
 
     @pytest.mark.unit_test
-    def test_remote_environment_is_called_if_final_zip_is_downloaded(
-        self, downloaded_zip_study
-    ):
-        self.remote_env_mock.clean_remote_server = mock.Mock(return_value=True)
-        expected_study = copy(downloaded_zip_study)
+    def test_clean__finished_study__cleaning_failed(self, finished_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.clean_remote_server.return_value = False
+        display = mock.Mock(spec=DisplayTerminal)
 
-        new_study = self.remote_server_cleaner.clean(downloaded_zip_study)
-        first_call = self.remote_env_mock.clean_remote_server.call_args_list[0]
-        first_argument = first_call[0][0]
-        assert first_argument == expected_study
-        assert new_study.remote_server_is_clean
+        # Prepare a fake
+        finished_study.local_final_zipfile_path = "/path/to/result.zip"
+
+        # Initialize and execute the cleaning
+        cleaner = RemoteServerCleaner(env, display)
+        cleaner.clean(finished_study)
+
+        # Check the result
+        env.clean_remote_server.assert_called_once()
+        display.show_message.assert_not_called()
+        display.show_error.assert_called()
+
+        assert finished_study.remote_server_is_clean
+
+    @pytest.mark.unit_test
+    def test_clean__finished_study__cleaning_raise(self, finished_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.clean_remote_server.side_effect = Exception("cleaning error")
+        display = mock.Mock(spec=DisplayTerminal)
+
+        # Prepare a fake
+        finished_study.local_final_zipfile_path = "/path/to/result.zip"
+
+        # Initialize and execute the cleaning
+        cleaner = RemoteServerCleaner(env, display)
+        cleaner.clean(finished_study)
+
+        # Check the result
+        env.clean_remote_server.assert_called_once()
+        display.show_message.assert_not_called()
+        display.show_error.assert_called()
+
+        assert finished_study.remote_server_is_clean

@@ -2,19 +2,11 @@ from unittest import mock
 
 import pytest
 
-from antareslauncher.data_repo.idata_repo import IDataRepo
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
-from antareslauncher.remote_environnement.slurm_script_features import (
-    SlurmScriptFeatures,
-)
-from antareslauncher.use_cases.check_remote_queue.check_queue_controller import (
-    CheckQueueController,
-)
-from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import (
-    SlurmQueueShow,
-)
+from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
+from antareslauncher.remote_environnement.slurm_script_features import SlurmScriptFeatures
+from antareslauncher.use_cases.check_remote_queue.check_queue_controller import CheckQueueController
+from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
 
@@ -23,7 +15,11 @@ class TestIntegrationCheckQueueController:
         self.connection_mock = mock.Mock(home_dir="path/to/home")
         self.connection_mock.username = "username"
         self.connection_mock.execute_command = mock.Mock(return_value=("", ""))
-        slurm_script_features = SlurmScriptFeatures("slurm_script_path")
+        slurm_script_features = SlurmScriptFeatures(
+            "slurm_script_path",
+            partition="fake_partition",
+            quality_of_service="user1_qos",
+        )
         env_mock = RemoteEnvironmentWithSlurm(
             _connection=self.connection_mock,
             slurm_script_features=slurm_script_features,
@@ -31,10 +27,8 @@ class TestIntegrationCheckQueueController:
         display_mock = mock.Mock()
         slurm_queue_show = SlurmQueueShow(env_mock, display_mock)
         state_updater = StateUpdater(env_mock, display_mock)
-        repo = mock.MagicMock(spec=IDataRepo)
-        self.check_queue_controller = CheckQueueController(
-            slurm_queue_show, state_updater, repo
-        )
+        repo = mock.MagicMock(spec=DataRepoTinydb)
+        self.check_queue_controller = CheckQueueController(slurm_queue_show, state_updater, repo)
 
     @pytest.mark.integration_test
     def test_check_queue_controller_check_queue_calls_connection_execute_command(

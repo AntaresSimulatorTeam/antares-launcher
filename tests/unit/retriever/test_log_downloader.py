@@ -1,110 +1,118 @@
-from copy import copy
+import typing as t
 from pathlib import Path
 from unittest import mock
 
 import pytest
 
-import antareslauncher.remote_environnement.remote_environment_with_slurm
-from antareslauncher.display.idisplay import IDisplay
-from antareslauncher.remote_environnement.remote_environment_with_slurm import (
-    RemoteEnvironmentWithSlurm,
-)
+from antareslauncher.display.display_terminal import DisplayTerminal
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.log_downloader import LogDownloader
 
 
+def download_logs(study: StudyDTO) -> t.List[Path]:
+    """Simulate the download of logs."""
+    dst_dir = Path(study.job_log_dir)  # must exist
+    out_path = dst_dir.joinpath(f"antares-out-{study.job_id}.txt")
+    out_path.write_text("Quitting the solver gracefully.")
+    err_path = dst_dir.joinpath(f"antares-err-{study.job_id}.txt")
+    err_path.write_text("No error")
+    return [out_path, err_path]
+
+
 class TestLogDownloader:
-    def setup_method(self):
-        self.remote_env_mock = mock.Mock(spec=RemoteEnvironmentWithSlurm)
-        self.file_manager = mock.Mock()
-        self.display_mock = mock.Mock(spec_set=IDisplay)
-        self.log_downloader = LogDownloader(
-            self.remote_env_mock, self.file_manager, self.display_mock
-        )
+    @pytest.mark.unit_test
+    def test_run__pending_study(self, pending_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        display = mock.Mock(spec=DisplayTerminal)
 
-    @pytest.fixture(scope="function")
-    def started_study(self):
-        study = StudyDTO(path="path/hello")
-        study.started = True
-        study.job_id = 42
-        study.job_log_dir = "ROOT_LOG_DIR"
-        return study
+        # Initialize and execute the download
+        downloader = LogDownloader(env=env, display=display)
+        downloader.run(pending_study)
 
-    def test_download_shows_message_if_successful(self, started_study):
-        self.remote_env_mock.download_logs = mock.Mock(return_value=True)
-        self.log_downloader.run(started_study)
+        # Check the result
+        env.download_logs.assert_not_called()
+        display.show_message.assert_not_called()
+        display.show_error.assert_not_called()
 
-        expected_message = '"hello": Logs downloaded'
-        self.display_mock.show_message.assert_called_once_with(
-            expected_message, mock.ANY
-        )
+    @pytest.mark.unit_test
+    def test_run__started_study__download_ok(self, started_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.download_logs = download_logs
+        display = mock.Mock(spec=DisplayTerminal)
 
-    def test_download_shows_error_if_fails_and_only_study_logdir_is_changed(
-        self, started_study
-    ):
-        self.remote_env_mock.download_logs = mock.Mock(return_value=False)
-        log_dir_name = f"{started_study.name}_{started_study.job_id}"
-        expected_job_log_dir = str(Path(started_study.job_log_dir) / log_dir_name)
-        expected_study = copy(started_study)
-        expected_study.job_log_dir = expected_job_log_dir
+        # Initialize and execute the download
+        downloader = LogDownloader(env=env, display=display)
+        downloader.run(started_study)
 
-        new_study = self.log_downloader.run(started_study)
+        # Check the result: two log files are downloaded
+        assert started_study.logs_downloaded
+        display.show_message.assert_called_once()
+        display.show_error.assert_not_called()
+        job_log_dir = Path(started_study.job_log_dir)
+        assert job_log_dir.is_dir()
+        log_files = list(job_log_dir.iterdir())
+        assert len(log_files) == 2
 
-        expected_message = '"hello": Logs not downloaded'
-        self.display_mock.show_error.assert_called_once_with(expected_message, mock.ANY)
-        assert new_study == expected_study
+    @pytest.mark.unit_test
+    def test_run__started_study__reentrancy(self, started_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.download_logs = download_logs
+        display = mock.Mock(spec=DisplayTerminal)
 
-    def test_file_manager_and_remote_env_not_called_if_study_not_started(self):
-        self.remote_env_mock.download_logs = mock.Mock()
-        self.file_manager.make_dir = mock.Mock()
-        study = StudyDTO(path="hello")
-        study.started = False
-        self.log_downloader.run(study)
+        # Initialize and execute the download twice
+        downloader = LogDownloader(env=env, display=display)
+        downloader.run(started_study)
 
-        self.remote_env_mock.download_logs.assert_not_called()
-        self.file_manager.make_dir.assert_not_called()
+        job_log_dir1 = Path(started_study.job_log_dir)
+        log_files1 = set(job_log_dir1.iterdir())
+        downloader.run(started_study)
 
-    def test_file_manager_is_called_to_create_logdir_if_study_started(
-        self, started_study
-    ):
-        self.remote_env_mock.download_logs = mock.Mock(return_value=True)
-        self.file_manager.make_dir = mock.Mock()
+        # Check the result: two log files are downloaded
+        assert started_study.logs_downloaded
+        assert display.show_message.call_count == 2
+        assert display.show_error.call_count == 0
 
-        self.log_downloader.run(started_study)
+        # Log files are not duplicated
+        job_log_dir2 = Path(started_study.job_log_dir)
+        log_files2 = set(job_log_dir2.iterdir())
+        assert log_files1 == log_files2
 
-        log_dir_name = f"{started_study.name}_{started_study.job_id}"
-        expected_job_log_dir = str(Path(started_study.job_log_dir) / log_dir_name)
-        self.file_manager.make_dir.assert_called_once_with(expected_job_log_dir)
+    @pytest.mark.unit_test
+    def test_run__started_study__download_nothing(self, started_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.download_logs = lambda _: []
+        display = mock.Mock(spec=DisplayTerminal)
 
-    def test_make_manager_is_called_properly_even_if_logdir_was_already_previously_set(
-        self, started_study
-    ):
-        self.remote_env_mock.download_logs = mock.Mock(return_value=True)
-        self.file_manager.make_dir = mock.Mock()
-        log_dir_name = f"{started_study.name}_{started_study.job_id}"
-        expected_job_log_dir = str(Path(started_study.job_log_dir) / log_dir_name)
-        started_study.job_log_dir = expected_job_log_dir
+        # Initialize and execute the download
+        downloader = LogDownloader(env=env, display=display)
+        downloader.run(started_study)
 
-        expected_study = copy(started_study)
-        expected_study.job_log_dir = expected_job_log_dir
+        # Check the result: no log file is downloaded
+        assert not started_study.logs_downloaded
+        display.show_message.assert_not_called()
+        display.show_error.assert_called_once()
+        job_log_dir = Path(started_study.job_log_dir)
+        assert job_log_dir.is_dir()
+        log_files = list(job_log_dir.iterdir())
+        assert not log_files
 
-        self.log_downloader.run(started_study)
+    @pytest.mark.unit_test
+    def test_run__started_study__download_error(self, started_study: StudyDTO) -> None:
+        env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+        env.download_logs.side_effect = Exception("Connection error")
+        display = mock.Mock(spec=DisplayTerminal)
 
-        self.file_manager.make_dir.assert_called_once_with(expected_job_log_dir)
+        # Initialize and execute the download
+        downloader = LogDownloader(env=env, display=display)
+        with pytest.raises(Exception, match=r"Connection\s+error"):
+            downloader.run(started_study)
 
-    def test_environment_download_logs_is_called_if_study_started(self, started_study):
-        log_dir_name = f"{started_study.name}_{started_study.job_id}"
-        log_path = Path(started_study.job_log_dir) / log_dir_name
-        self.remote_env_mock.download_logs = mock.Mock(return_value=[log_path])
-
-        expected_job_log_dir = str(log_path)
-        expected_study = copy(started_study)
-        expected_study.job_log_dir = expected_job_log_dir
-
-        new_study = self.log_downloader.run(started_study)
-
-        first_call = self.remote_env_mock.download_logs.call_args_list[0]
-        first_argument = first_call[0][0]
-        assert first_argument == expected_study
-        assert new_study.job_log_dir == expected_job_log_dir
-        assert new_study.logs_downloaded is True
+        # Check the result: the exception is not managed
+        assert not started_study.logs_downloaded
+        display.show_message.assert_not_called()
+        display.show_error.assert_not_called()
+        job_log_dir = Path(started_study.job_log_dir)
+        assert job_log_dir.is_dir()
+        log_files = list(job_log_dir.iterdir())
+        assert not log_files
