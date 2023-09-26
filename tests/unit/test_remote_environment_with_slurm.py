@@ -50,7 +50,7 @@ class TestRemoteEnvironmentWithSlurm:
             path="path/to/study/91f1f911-4f4a-426f-b127-d0c2a2465b5f",
             n_cpu=42,
             zipfile_path="path/to/study/91f1f911-4f4a-426f-b127-d0c2a2465b5f-foo.zip",
-            antares_version="700",
+            antares_version=700,
             local_final_zipfile_path="local_final_zipfile_path",
             run_mode=Modes.antares,
         )

@@ -38,7 +38,7 @@ class MainOptionParser:
             "n_cpu": parameters.default_n_cpu,
             "antares_version": 0,
             "job_id_to_kill": None,
-            "xpansion_mode": None,
+            "xpansion_mode": "",
             "version": False,
             "post_processing": False,
             "other_options": None,

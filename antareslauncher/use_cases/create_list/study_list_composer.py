@@ -38,15 +38,14 @@ class StudyListComposerParameters:
     time_limit: int
     log_dir: str
     n_cpu: int
-    xpansion_mode: t.Optional[str]
+    xpansion_mode: str  # "", "r", "cpp"
     output_dir: str
     post_processing: bool
-    antares_versions_on_remote_server: t.List[str]
+    antares_versions_on_remote_server: t.Sequence[str]
     other_options: str
     antares_version: int = 0
 
 
-@dataclass
 class StudyListComposer:
     def __init__(
         self,
@@ -77,14 +76,12 @@ class StudyListComposer:
         """
         return self._repo.get_list_of_studies()
 
-    def _create_study(self, path, antares_version, xpansion_mode: str):
-        if self.xpansion_mode == "r":
-            run_mode = Modes.xpansion_r
-        elif self.xpansion_mode == "cpp":
-            run_mode = Modes.xpansion_cpp
-        else:
-            run_mode = Modes.antares
-
+    def _create_study(self, path: Path, antares_version: int, xpansion_mode: str) -> StudyDTO:
+        run_mode = {
+            "": Modes.antares,
+            "r": Modes.xpansion_r,
+            "cpp": Modes.xpansion_cpp,
+        }.get(self.xpansion_mode, Modes.antares)
         new_study = StudyDTO(
             path=str(path),
             n_cpu=self.n_cpu,
@@ -97,7 +94,6 @@ class StudyListComposer:
             post_processing=self.post_processing,
             other_options=self.other_options,
         )
-
         return new_study
 
     def update_study_database(self):
@@ -122,10 +118,6 @@ class StudyListComposer:
                 f"{__name__}.{__class__.__name__}",
             )
 
-    def _update_database_with_new_study(self, antares_version, directory_path, xpansion_mode: str):
-        buffer_study = self._create_study(directory_path, antares_version, xpansion_mode)
-        self._update_database_with_study(buffer_study)
-
     def _update_database_with_directory(self, directory_path: Path):
         solver_version = get_solver_version(directory_path)
         antares_version = self.antares_version or solver_version
@@ -146,17 +138,15 @@ class StudyListComposer:
         else:
             candidates_file_path = directory_path.joinpath("user", "expansion", "candidates.ini")
             is_xpansion_study = candidates_file_path.is_file()
-            xpansion_mode = is_xpansion_study and self.xpansion_mode
+            xpansion_mode = self.xpansion_mode if is_xpansion_study else ""
 
             valid_xpansion_candidate = self.xpansion_mode in ["r", "cpp"] and is_xpansion_study
             valid_antares_candidate = not self.xpansion_mode
 
             if valid_antares_candidate or valid_xpansion_candidate:
-                self._update_database_with_new_study(antares_version, directory_path, xpansion_mode)
-
-    def _update_database_with_study(self, buffer_study):
-        if not self._repo.is_study_inside_database(buffer_study):
-            self._add_study_to_database(buffer_study)
+                buffer_study = self._create_study(directory_path, antares_version, xpansion_mode)
+                if not self._repo.is_study_inside_database(buffer_study):
+                    self._add_study_to_database(buffer_study)
 
     def _add_study_to_database(self, buffer_study):
         self._repo.save_study(buffer_study)

@@ -41,7 +41,7 @@ def study_list_composer_fixture(
             time_limit=42,
             n_cpu=24,
             log_dir=str(tmp_path.joinpath("LOGS")),
-            xpansion_mode=None,
+            xpansion_mode="",
             output_dir=str(tmp_path.joinpath("FINISHED")),
             post_processing=False,
             antares_versions_on_remote_server=[

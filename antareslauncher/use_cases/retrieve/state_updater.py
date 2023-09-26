@@ -17,7 +17,7 @@ class StateUpdater:
         self._display = display
 
     def _show_job_state_message(self, study: StudyDTO) -> None:
-        if study.done is True:
+        if study.done:
             self._display.show_message(
                 f'"{study.name}": (JOBID={study.job_id}): everything is done',
                 LOG_NAME,

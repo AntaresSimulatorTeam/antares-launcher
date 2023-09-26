@@ -6,19 +6,12 @@ import stat
 import textwrap
 import time
 from pathlib import Path, PurePosixPath
-from typing import List, Tuple
+import typing as t
 
 import paramiko
 
-try:
-    # noinspection PyUnresolvedReferences
-    from typing import TypeAlias
-except ImportError:
-    RemotePath = PurePosixPath
-    LocalPath = Path
-else:
-    RemotePath: TypeAlias = PurePosixPath
-    LocalPath: TypeAlias = Path
+RemotePath = PurePosixPath
+LocalPath = Path
 
 
 class SshConnectionError(Exception):
@@ -129,7 +122,7 @@ class DownloadMonitor:
 class SshConnection:
     """Class to _connect to remote server"""
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: t.Mapping[str, t.Any]):
         """
         Initialize the SSH connection.
 
@@ -139,8 +132,8 @@ class SshConnection:
         """
         super(SshConnection, self).__init__()
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        self.__client = None
-        self.__home_dir = None
+        self._client = None
+        self._home_dir = ""
         self.timeout = 10
         self.host = ""
         self.username = ""
@@ -150,7 +143,7 @@ class SshConnection:
 
         if config:
             self.logger.info("Loading ssh connection from config dictionary")
-            self.__init_from_config(config)
+            self._init_from_config(config)
         else:
             error = InvalidConfigError(config, "missing values: 'hostname', 'username', 'password'...")
             self.logger.debug(str(error))
@@ -158,7 +151,7 @@ class SshConnection:
         self.initialize_home_dir()
         self.logger.info(f"Connection created with host = {self.host} and username = {self.username}")
 
-    def __initialise_public_key(self, key_file_name, key_password):
+    def _init_public_key(self, key_file_name, key_password):
         """Initialises self.private_key
 
         Args:
@@ -178,37 +171,37 @@ class SshConnection:
                 self.private_key = None
                 return False
 
-    def __init_from_config(self, config: dict):
+    def _init_from_config(self, config: t.Mapping[str, t.Any]) -> None:
         self.host = config.get("hostname", "")
         self.username = config.get("username", "")
         self.port = config.get("port", 22)
         self.password = config.get("password")
         key_password = config.get("key_password")
         if key_file := config.get("private_key_file"):
-            self.__initialise_public_key(key_file_name=key_file, key_password=key_password)
+            self._init_public_key(key_file_name=key_file, key_password=key_password)
         elif self.password is None:
             error = InvalidConfigError(config, "missing 'password'")
             self.logger.debug(str(error))
             raise error
 
-    def initialize_home_dir(self):
-        """Initializes self.__home_dir with the home directory retrieved by started "echo $HOME" connecting to the
+    def initialize_home_dir(self) -> None:
+        """Initializes self._home_dir with the home directory retrieved by started "echo $HOME" connecting to the
         remote server
         """
         output, _ = self.execute_command("echo $HOME")
-        self.__home_dir = str(output).split()[0]
+        self._home_dir = str(output).split()[0]
 
     @property
-    def home_dir(self):
+    def home_dir(self) -> str:
         """
 
         Returns:
             The home directory of the remote server
         """
-        return self.__home_dir
+        return self._home_dir
 
     @contextlib.contextmanager
-    def ssh_client(self) -> paramiko.SSHClient:
+    def ssh_client(self) -> t.Generator[paramiko.SSHClient, None, None]:
         client = paramiko.SSHClient()
         try:
             try:
@@ -351,7 +344,7 @@ class SshConnection:
         pattern: str,
         *patterns: str,
         remove: bool = True,
-    ) -> List[LocalPath]:
+    ) -> t.Sequence[LocalPath]:
         """
         Download files matching the specified patterns from the remote
         source directory to the local destination directory,
@@ -387,10 +380,10 @@ class SshConnection:
         self,
         src_dir: RemotePath,
         dst_dir: LocalPath,
-        patterns: Tuple[str],
+        patterns: t.Tuple[str, ...],
         *,
         remove: bool = True,
-    ) -> List[LocalPath]:
+    ) -> t.Sequence[LocalPath]:
         """
         Download files matching the specified patterns from the remote
         source directory to the local destination directory.

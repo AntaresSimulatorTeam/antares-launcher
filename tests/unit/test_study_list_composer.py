@@ -117,4 +117,4 @@ class TestStudyListComposer:
             expected_versions = dict.fromkeys(study_names, antares_version)
         else:
             expected_versions = {}
-        assert {n: expected_versions[n] for n in actual_versions} == actual_versions
+        assert actual_versions == {n: expected_versions[n] for n in actual_versions}

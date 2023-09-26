@@ -272,6 +272,7 @@ def get_user_config_dir(system: str = ""):
     """
     username = getpass.getuser()
     system = system or sys.platform
+    config_dir: pathlib.Path
     if system == "win32":
         config_dir = pathlib.WindowsPath(rf"C:\Users\{username}\AppData\Local\{APP_AUTHOR}")
     elif system == "darwin":

@@ -34,7 +34,7 @@ class StudyRetriever:
                 self.zip_extractor.extract_final_zip(study)
                 study.done = study.with_error or (
                     study.logs_downloaded
-                    and study.local_final_zipfile_path
+                    and bool(study.local_final_zipfile_path)
                     and study.remote_server_is_clean
                     and study.final_zip_extracted
                 )

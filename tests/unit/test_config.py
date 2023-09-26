@@ -1,7 +1,6 @@
 import contextlib
 import getpass
 import json
-import pathlib
 from pathlib import Path
 from unittest.mock import patch
 
@@ -26,7 +25,7 @@ from antareslauncher.exceptions import ConfigFileNotFoundError, InvalidConfigVal
 class TestParseConfig:
     @pytest.mark.parametrize("suffix", [".yaml", ".yml", ".json", ".py"])
     @pytest.mark.parametrize("casing", [None, str.upper, str.title])
-    def test_parse_config(self, tmp_path, suffix, casing):
+    def test_parse_config(self, tmp_path: Path, suffix, casing) -> None:
         data = {"key1": "value1", "key2": 56}
         # noinspection PyArgumentList
         new_suffix = suffix if casing is None else casing(suffix)
@@ -49,7 +48,7 @@ class TestParseConfig:
 class TestSaveConfig:
     @pytest.mark.parametrize("suffix", [".yaml", ".yml", ".json", ".py"])
     @pytest.mark.parametrize("casing", [None, str.upper, str.title])
-    def test_save_config(self, tmp_path, suffix, casing):
+    def test_save_config(self, tmp_path: Path, suffix, casing) -> None:
         data = {"key1": "value1", "key2": 56}
         # noinspection PyArgumentList
         new_suffix = suffix if casing is None else casing(suffix)
@@ -69,7 +68,7 @@ class TestSaveConfig:
 
 
 class TestSSHConfig:
-    def test_load_config__with_private_key_file(self, tmp_path):
+    def test_load_config__with_private_key_file(self, tmp_path) -> None:
         data = {
             "username": "john.doe",
             "hostname": "localhost",
@@ -88,7 +87,7 @@ class TestSSHConfig:
         assert config.key_password == data["key_password"]
         assert config.password == ""
 
-    def test_load_config__with_password(self, tmp_path):
+    def test_load_config__with_password(self, tmp_path) -> None:
         data = {
             "username": "john.doe",
             "hostname": "localhost",
@@ -107,7 +106,7 @@ class TestSSHConfig:
         assert config.password == data["password"]
 
     @pytest.mark.parametrize("required", ["username", "hostname"])
-    def test_load_config__missing_parameter(self, tmp_path, required):
+    def test_load_config__missing_parameter(self, tmp_path: Path, required) -> None:
         data = {
             "username": "john.doe",
             "hostname": "localhost",
@@ -120,14 +119,14 @@ class TestSSHConfig:
         with pytest.raises(InvalidConfigValueError):
             SSHConfig.load_config(config_path)
 
-    def test_save_config__with_private_key_file(self, tmp_path):
+    def test_save_config__with_private_key_file(self, tmp_path) -> None:
         config_path = tmp_path.joinpath("my_ssh_config.json")
         config = SSHConfig(
             config_path=config_path,
             username="john.doe",
             hostname="localhost",
             port=22,
-            private_key_file=pathlib.Path("path/to/private.key"),
+            private_key_file=Path("path/to/private.key"),
             key_password="key_password",
         )
         config.save_config(config_path)
@@ -140,7 +139,7 @@ class TestSSHConfig:
         assert actual["key_password"] == config.key_password
         assert "password" not in actual
 
-    def test_save_config__with_password(self, tmp_path):
+    def test_save_config__with_password(self, tmp_path) -> None:
         config_path = tmp_path.joinpath("my_ssh_config.json")
         config = SSHConfig(
             config_path=config_path,
@@ -162,7 +161,7 @@ class TestSSHConfig:
 
 class TestConfig:
     @pytest.fixture(name="ssh_config_path")
-    def fixture_ssh_config_path(self, tmp_path) -> pathlib.Path:
+    def fixture_ssh_config_path(self, tmp_path) -> Path:
         data = {
             "username": "john.doe",
             "hostname": "localhost",
@@ -184,7 +183,7 @@ class TestConfig:
             password="S3Cr3T",
         )
 
-    def test_load_config__nominal(self, tmp_path, ssh_config_path):
+    def test_load_config__nominal(self, tmp_path: Path, ssh_config_path) -> None:
         log_dir = tmp_path.joinpath("log_dir")
         json_dir = tmp_path.joinpath("json_dir")
         studies_in_dir = tmp_path.joinpath("studies_in_dir")
@@ -221,7 +220,7 @@ class TestConfig:
         assert config.slurm_script_path == slurm_script_path
         assert config.remote_solver_versions == data["antares_versions_on_remote_server"]
 
-    def test_save_config__nominal(self, tmp_path, ssh_config):
+    def test_save_config__nominal(self, tmp_path: Path, ssh_config) -> None:
         config_path = tmp_path.joinpath("configuration.yaml")
         log_dir = tmp_path.joinpath("log_dir")
         json_dir = tmp_path.joinpath("json_dir")
@@ -278,7 +277,7 @@ class TestConfig:
             "antares_versions_on_remote_server",
         ],
     )
-    def test_load_config__missing_parameter(self, tmp_path, ssh_config_path, required):
+    def test_load_config__missing_parameter(self, tmp_path: Path, ssh_config_path, required) -> None:
         log_dir = tmp_path.joinpath("log_dir")
         json_dir = tmp_path.joinpath("json_dir")
         studies_in_dir = tmp_path.joinpath("studies_in_dir")
@@ -324,7 +323,7 @@ class TestGetUserConfigDir:
             ),
         ],
     )
-    def test_get_user_config_dir(self, system, expected, monkeypatch):
+    def test_get_user_config_dir(self, system, expected, monkeypatch) -> None:
         # ignore error `XDG_CONFIG_HOME` environment variable
         monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
         # ignore error: "cannot instantiate 'WindowsPath'/'PosixPath' on your system"
@@ -341,21 +340,21 @@ class TestGetUserConfigDir:
 
 
 class TestGetConfigPath:
-    def test_get_config_path__from_env(self, monkeypatch, tmp_path):
+    def test_get_config_path__from_env(self, monkeypatch, tmp_path) -> None:
         config_path = tmp_path.joinpath("my_config.yaml")
         config_path.touch()
         monkeypatch.setenv("ANTARES_LAUNCHER_CONFIG_PATH", str(config_path))
         actual = get_config_path()
         assert actual == config_path
 
-    def test_get_config_path__from_env__not_found(self, monkeypatch, tmp_path):
+    def test_get_config_path__from_env__not_found(self, monkeypatch, tmp_path) -> None:
         config_path = tmp_path.joinpath("my_config.yaml")
         monkeypatch.setenv("ANTARES_LAUNCHER_CONFIG_PATH", str(config_path))
         with pytest.raises(ConfigFileNotFoundError):
             get_config_path()
 
     @pytest.mark.parametrize("config_name", [None, CONFIGURATION_YAML, "my_config.yaml"])
-    def test_get_config_path__from_user_config_dir(self, monkeypatch, tmp_path, config_name):
+    def test_get_config_path__from_user_config_dir(self, monkeypatch, tmp_path: Path, config_name) -> None:
         config_path = tmp_path.joinpath(config_name or CONFIGURATION_YAML)
         config_path.touch()
         monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)
@@ -367,10 +366,10 @@ class TestGetConfigPath:
 
     @pytest.mark.parametrize("relpath", ["", "data"])
     @pytest.mark.parametrize("config_name", [None, CONFIGURATION_YAML, "my_config.yaml"])
-    def test_get_config_path__from_curr_dir(self, monkeypatch, tmp_path, relpath, config_name):
+    def test_get_config_path__from_curr_dir(self, monkeypatch, tmp_path: Path, relpath, config_name) -> None:
         data_dir = tmp_path.joinpath(relpath)
         data_dir.mkdir(exist_ok=True)
-        config_path: pathlib.Path = tmp_path.joinpath(data_dir, config_name or CONFIGURATION_YAML)
+        config_path: Path = tmp_path.joinpath(data_dir, config_name or CONFIGURATION_YAML)
         config_path.touch()
         monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)
         monkeypatch.chdir(tmp_path)
@@ -379,7 +378,7 @@ class TestGetConfigPath:
         assert actual == config_path.relative_to(tmp_path)
 
     @pytest.mark.parametrize("relpath", ["", "data"])
-    def test_get_config_path__from_curr_dir__not_found(self, monkeypatch, tmp_path, relpath):
+    def test_get_config_path__from_curr_dir__not_found(self, monkeypatch, tmp_path: Path, relpath) -> None:
         data_dir = tmp_path.joinpath(relpath)
         data_dir.mkdir(exist_ok=True)
         monkeypatch.delenv("ANTARES_LAUNCHER_CONFIG_PATH", raising=False)

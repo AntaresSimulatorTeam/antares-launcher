@@ -366,8 +366,10 @@ class RemoteEnvironmentWithSlurm:
                 out_job_id, out_job_name, out_state = parts
                 if out_job_id == str(job_id) and out_job_name == job_name:
                     # Match the first word only, e.g.: "CANCEL by 123456798"
-                    job_state_str = re.match(r"(\w+)", out_state)[1]
-                    return JobStateCodes(job_state_str)
+                    match = re.match(r"(\w+)", out_state)
+                    if not match:
+                        raise GetJobStateError(job_id, job_name, f"Unable to parse the job state: '{out_state}'")
+                    return JobStateCodes(match[1])
 
         reason = f"The command [{command}] return an non-parsable output:\n{textwrap.indent(output, 'OUTPUT> ')}"
         raise GetJobStateError(job_id, job_name, reason)
@@ -384,7 +386,7 @@ class RemoteEnvironmentWithSlurm:
         dst = f"{self.remote_base_path}/{Path(src).name}"
         return self.connection.upload_file(src, dst)
 
-    def download_logs(self, study: StudyDTO) -> t.List[Path]:
+    def download_logs(self, study: StudyDTO) -> t.Sequence[Path]:
         """
         Download the slurm logs of a given study.
 

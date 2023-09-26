@@ -1,7 +1,8 @@
 import argparse
 import dataclasses
+import json
 from pathlib import Path
-from typing import Dict, List
+import typing as t
 
 from antareslauncher import __version__
 from antareslauncher.antares_launcher import AntaresLauncher
@@ -68,8 +69,8 @@ class MainParameters:
     json_dir: Path
     default_json_db_name: str
     slurm_script_path: str
-    antares_versions_on_remote_server: List[str]
-    default_ssh_dict: Dict
+    antares_versions_on_remote_server: t.Sequence[str]
+    default_ssh_dict: t.Mapping[str, t.Any]
     db_primary_key: str
     partition: str = ""
     quality_of_service: str = ""
@@ -104,7 +105,7 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
     # connection
     ssh_dict = get_ssh_config_dict(
         file_manager,
-        arguments.json_ssh_config,
+        arguments.json_ssh_config,  # Path to the configuration file for the ssh connection.
         parameters.default_ssh_dict,
     )
     connection = ssh_connection.SshConnection(config=ssh_dict)
@@ -179,11 +180,13 @@ def verify_connection(connection, display):
     # fmt: on
 
 
-def get_ssh_config_dict(file_manager, json_ssh_config, ssh_dict: dict):
-    if json_ssh_config is None:
+def get_ssh_config_dict(
+    file_manager: FileManager,
+    json_ssh_config: str,
+    ssh_dict: t.Mapping[str, t.Any],
+) -> t.Mapping[str, t.Any]:
+    if not json_ssh_config:
         ssh_dict = ssh_dict
     else:
-        ssh_dict = file_manager.convert_json_file_to_dict(json_ssh_config)
-    if ssh_dict is None:
-        raise Exception("Could not find any SSH configuration file")
+        ssh_dict = json.loads(Path(json_ssh_config).read_text(encoding="utf-8"))
     return ssh_dict
