@@ -1,14 +1,13 @@
 import argparse
 import dataclasses
 import json
-from pathlib import Path
 import typing as t
+from pathlib import Path
 
 from antareslauncher import __version__
 from antareslauncher.antares_launcher import AntaresLauncher
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.file_manager.file_manager import FileManager
 from antareslauncher.logger_initializer import LoggerInitializer
 from antareslauncher.remote_environnement import ssh_connection
 from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
@@ -86,13 +85,11 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
         print(ANTARES_LAUNCHER_BANNER)
 
     display = DisplayTerminal()
-    file_manager = FileManager(display)
 
     db_json_file_path = parameters.json_dir / parameters.default_json_db_name
 
     tree_structure_initializer = TreeStructureInitializer(
         display,
-        file_manager,
         arguments.studies_in,
         arguments.log_dir,
         arguments.output_dir,
@@ -103,11 +100,7 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
     logger_initializer.init_logger()
 
     # connection
-    ssh_dict = get_ssh_config_dict(
-        file_manager,
-        arguments.json_ssh_config,  # Path to the configuration file for the ssh connection.
-        parameters.default_ssh_dict,
-    )
+    ssh_dict = get_ssh_config_dict(arguments.json_ssh_config, parameters.default_ssh_dict)
     connection = ssh_connection.SshConnection(config=ssh_dict)
     verify_connection(connection, display)
 
@@ -181,7 +174,6 @@ def verify_connection(connection, display):
 
 
 def get_ssh_config_dict(
-    file_manager: FileManager,
     json_ssh_config: str,
     ssh_dict: t.Mapping[str, t.Any],
 ) -> t.Mapping[str, t.Any]:

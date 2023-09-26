@@ -1,20 +1,19 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.file_manager.file_manager import FileManager
 
 
 @dataclass
 class TreeStructureInitializer:
     display: DisplayTerminal
-    file_manager: FileManager
     studies_in: str
     log_dir: str
-    finished: str
+    output_dir: str
 
     def init_tree_structure(self):
         """Initialize the structure"""
-        self.file_manager.make_dir(self.studies_in)
-        self.file_manager.make_dir(self.log_dir)
-        self.file_manager.make_dir(self.finished)
+        Path(self.studies_in).mkdir(parents=True, exist_ok=True)
+        Path(self.log_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         self.display.show_message("Tree structure initialized", __name__ + "." + __class__.__name__)
