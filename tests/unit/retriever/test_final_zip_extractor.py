@@ -125,8 +125,8 @@ class TestFinalZipExtractor:
         extractor.extract_final_zip(finished_study)
 
         # Check the result
-        display.show_error.assert_not_called()
         display.show_message.assert_called_once()
+        display.show_error.assert_not_called()
 
         assert finished_study.final_zip_extracted
         assert not finished_study.with_error

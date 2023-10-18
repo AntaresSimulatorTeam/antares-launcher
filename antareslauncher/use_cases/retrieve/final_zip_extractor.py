@@ -46,6 +46,7 @@ class FinalZipExtractor:
                     # and the suffix "job_id" that lies before the ".zip".
                     # If these prefix/suffix prefix change, this code needs to be adapted.
                     zip_path.rename(zip_path.parent / (zip_path.name[9:zip_path.name.rfind("_")] + ".zip"))
+                    zf.close()
 
         except (OSError, zipfile.BadZipFile) as exc:
             # If we cannot extract the final ZIP file, either because the file
