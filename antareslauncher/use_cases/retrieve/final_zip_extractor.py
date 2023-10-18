@@ -40,13 +40,12 @@ class FinalZipExtractor:
                     )
                     for file in progress_bar:
                         zf.extract(member=file, path=target_dir)
-                    zf.close()
                 else:
-                    zf.close()
                     # The directory is already an output and does not need to be unzipped.
                     # All we have to do is rename it by removing the prefix "_finished"
                     # and the suffix "job_id" that lies before the ".zip".
                     # If these prefix/suffix prefix change, this code needs to be adapted.
+                    zf.close()
                     zip_path.rename(zip_path.parent / (zip_path.name[9:zip_path.name.rfind("_")] + ".zip"))
 
         except (OSError, zipfile.BadZipFile) as exc:
