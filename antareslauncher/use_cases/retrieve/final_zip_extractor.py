@@ -29,17 +29,17 @@ class FinalZipExtractor:
                         # If all files are in the same directory, we can extract the ZIP
                         # file directly in the target directory.
                         target_dir = zip_path.parent
+                        progress_bar = self._display.generate_progress_bar(
+                            names, desc="Extracting archive:", total=len(names)
+                        )
+                        for file in progress_bar:
+                            zf.extract(member=file, path=target_dir)
                     else:
-                        # Otherwise, we need to create a directory to store the results.
-                        # This situation occurs when the ZIP file contains
-                        # only the simulation results and not the entire study.
-                        target_dir = zip_path.with_suffix("")
-
-                    progress_bar = self._display.generate_progress_bar(
-                        names, desc="Extracting archive:", total=len(names)
-                    )
-                    for file in progress_bar:
-                        zf.extract(member=file, path=target_dir)
+                        # The directory is already an output and does not need to be unzipped.
+                        # All we have to do is rename it by removing the prefix "_finished"
+                        # and the suffix "job_id" that lies before the ".zip".
+                        # If these prefix/suffix prefix change, this code needs to be adapted.
+                        zip_path.rename((zip_path.parent / (zip_path.name[9:zip_path.name.rfind("_")] + ".zip")))
 
             except (OSError, zipfile.BadZipFile) as exc:
                 # If we cannot extract the final ZIP file, either because the file

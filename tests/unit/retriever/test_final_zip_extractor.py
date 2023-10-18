@@ -131,8 +131,10 @@ class TestFinalZipExtractor:
         assert finished_study.final_zip_extracted
         assert not finished_study.with_error
 
-        result_dir = Path(finished_study.local_final_zipfile_path).with_suffix("")
-        assert result_dir.joinpath("simulation.log").is_file()
+        result_dir = Path(Path(finished_study.local_final_zipfile_path).parent / finished_study.name).with_suffix(".zip")
+        assert result_dir.exists()
+        with zipfile.ZipFile(result_dir, "r") as zf:
+            assert zf.namelist() == ["simulation.log"]
 
     @pytest.mark.unit_test
     def test_extract_final_zip__finished_study__reentrancy(self, finished_study: StudyDTO) -> None:
