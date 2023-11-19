@@ -5,13 +5,19 @@ import socket
 import stat
 import textwrap
 import time
-from pathlib import Path, PurePosixPath
 import typing as t
+from pathlib import Path, PurePosixPath
 
 import paramiko
 
 RemotePath = PurePosixPath
 LocalPath = Path
+
+PARAMIKO_SSH_ERROR = "Paramiko SSH Exception"
+REMOTE_CONNECTION_ERROR = "Failed to connect to remote host"
+IO_ERROR = "IO Error"
+FILE_NOT_FOUND_ERROR = "File not found error"
+DIRECTORY_NOT_FOUND_ERROR = "Directory not found error"
 
 
 class SshConnectionError(Exception):
@@ -264,7 +270,7 @@ class SshConnection:
             with self.ssh_client() as client:
                 # fmt: off
                 self.logger.info(f"Running SSH command [{command}]...")
-                stdin, stdout, stderr = client.exec_command(command, timeout=30)
+                _, stdout, stderr = client.exec_command(command, timeout=30)
                 output = stdout.read().decode("utf-8").strip()
                 error = stderr.read().decode("utf-8").strip()
                 self.logger.info(f"SSH command stdout:\n{textwrap.indent(output, 'SSH OUTPUT> ')}")
@@ -301,13 +307,13 @@ class SshConnection:
                 sftp_client.put(src, dst)
                 sftp_client.close()
         except paramiko.SSHException:
-            self.logger.debug("Paramiko SSH Exception", exc_info=True)
+            self.logger.debug(PARAMIKO_SSH_ERROR, exc_info=True)
             result_flag = False
         except IOError:
-            self.logger.debug("IO Error", exc_info=True)
+            self.logger.debug(IO_ERROR, exc_info=True)
             result_flag = False
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             result_flag = False
         return result_flag
 
@@ -330,10 +336,10 @@ class SshConnection:
                 sftp_client.close()
                 result_flag = True
         except paramiko.SSHException:
-            self.logger.error("Paramiko SSH Exception", exc_info=True)
+            self.logger.error(PARAMIKO_SSH_ERROR, exc_info=True)
             result_flag = False
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             result_flag = False
         return result_flag
 
@@ -370,10 +376,10 @@ class SshConnection:
             self.logger.error(f"Timeout: {exc}", exc_info=True)
             return []
         except paramiko.SSHException:
-            self.logger.error("Paramiko SSH Exception", exc_info=True)
+            self.logger.error(PARAMIKO_SSH_ERROR, exc_info=True)
             return []
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             return []
 
     def _download_files(
@@ -449,10 +455,10 @@ class SshConnection:
                 else:
                     raise IOError
         except FileNotFoundError:
-            self.logger.debug("FileNotFoundError", exc_info=True)
+            self.logger.debug(FILE_NOT_FOUND_ERROR, exc_info=True)
             result_flag = False
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             result_flag = False
         return result_flag
 
@@ -480,10 +486,10 @@ class SshConnection:
                 else:
                     raise IOError(f"Not a regular file: '{file_path}'")
         except FileNotFoundError:
-            self.logger.debug("FileNotFoundError", exc_info=True)
+            self.logger.debug(FILE_NOT_FOUND_ERROR, exc_info=True)
             result_flag = False
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             result_flag = False
         return result_flag
 
@@ -516,7 +522,7 @@ class SshConnection:
             self.logger.debug("Paramiko SSHException", exc_info=True)
             result_flag = False
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             result_flag = False
         return result_flag
 
@@ -549,7 +555,7 @@ class SshConnection:
                 finally:
                     sftp_client.close()
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             result_flag = False
         return result_flag
 
@@ -577,12 +583,12 @@ class SshConnection:
                         sftp_client.rmdir(dir_path)
                     result_flag = True
                 except FileNotFoundError:
-                    self.logger.debug("DirNotFound nothing to remove", exc_info=True)
+                    self.logger.debug(DIRECTORY_NOT_FOUND_ERROR, exc_info=True)
                     result_flag = True
                 finally:
                     sftp_client.close()
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             result_flag = False
         return result_flag
 
@@ -591,5 +597,5 @@ class SshConnection:
             with self.ssh_client():
                 return True
         except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
             return False
