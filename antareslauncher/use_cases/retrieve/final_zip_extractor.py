@@ -20,33 +20,37 @@ class FinalZipExtractor:
         Args:
             study: The current study
         """
-        if (
-            not study.finished
-            or study.with_error
-            or not study.local_final_zipfile_path
-            or study.final_zip_extracted
-        ):
+        if not study.finished or study.with_error or not study.local_final_zipfile_path or study.final_zip_extracted:
             return
         zip_path = Path(study.local_final_zipfile_path)
         try:
+            # First, we detect the ZIP layout by looking at the names of the files it contains.
             with zipfile.ZipFile(zip_path) as zf:
                 names = zf.namelist()
-                if len(names) > 1 and os.path.commonpath(names):
-                    # If all files are in the same directory, we can extract the ZIP
-                    # file directly in the target directory.
+                file_count = len(names)
+                has_unique_folder = file_count > 1 and os.path.commonpath(names)
+
+            if has_unique_folder:
+                # If the ZIP file contains a unique folder, it contains the whole study.
+                # We can extract it directly in the target directory.
+                with zipfile.ZipFile(zip_path) as zf:
                     target_dir = zip_path.parent
                     progress_bar = self._display.generate_progress_bar(
-                        names, desc="Extracting archive:", total=len(names)
+                        names, desc="Extracting archive:", total=file_count
                     )
                     for file in progress_bar:
                         zf.extract(member=file, path=target_dir)
-                else:
-                    # The directory is already an output and does not need to be unzipped.
-                    # All we have to do is rename it by removing the prefix "_finished"
-                    # and the suffix "job_id" that lies before the ".zip".
-                    # If these prefix/suffix prefix change, this code needs to be adapted.
-                    zf.close()
-                    zip_path.rename(zip_path.parent / (zip_path.name[9:zip_path.name.rfind("_")] + ".zip"))
+
+            else:
+                # The directory is already an output and does not need to be unzipped.
+                # All we have to do is rename it by removing the prefix "finished_"
+                # and the suffix "_{job_id}" that lies before the ".zip".
+                # e.g.: "finished_Foo-Study_123456.zip" -> "Foo-Study.zip".
+                # or:   "finished_XPANSION_Foo-Study_123456.zip" -> "Foo-Study_123456.zip".
+                new_name = zip_path.name.lstrip("finished_")
+                new_name = new_name.lstrip("XPANSION_")
+                new_name = new_name.split("_", 1)[0] + ".zip"
+                zip_path.rename(zip_path.parent / new_name)
 
         except (OSError, zipfile.BadZipFile) as exc:
             # If we cannot extract the final ZIP file, either because the file
