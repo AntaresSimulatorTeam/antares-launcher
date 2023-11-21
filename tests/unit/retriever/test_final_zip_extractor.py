@@ -14,8 +14,12 @@ def create_final_zip(study: StudyDTO, *, scenario: str = "nominal_study") -> str
     """Prepare a final ZIP."""
     dst_dir = Path(study.output_dir)  # must exist
     dst_dir.mkdir(parents=True, exist_ok=True)
-    out_path = dst_dir.joinpath(f"finished_{study.name}_{study.job_id}.zip")
-    if scenario == "nominal_study":
+    if "xpansion" in scenario:
+        out_path = dst_dir.joinpath(f"finished_XPANSION_{study.name}_{study.job_id}.zip")
+    else:
+        out_path = dst_dir.joinpath(f"finished_{study.name}_{study.job_id}.zip")
+    if scenario in {"nominal_study", "xpansion_study"}:
+        # Case where the ZIP contains all the study files.
         with zipfile.ZipFile(
             out_path,
             mode="w",
@@ -29,7 +33,8 @@ def create_final_zip(study: StudyDTO, *, scenario: str = "nominal_study") -> str
                 f"{study.name}/output/20230922-1601eco/simulation.log",
                 data=b"Simulation OK",
             )
-    elif scenario == "nominal_results":
+    elif scenario in {"nominal_results", "xpansion_results"}:
+        # Case where the ZIP contains only the results.
         with zipfile.ZipFile(
             out_path,
             mode="w",
@@ -37,8 +42,10 @@ def create_final_zip(study: StudyDTO, *, scenario: str = "nominal_study") -> str
         ) as zf:
             zf.writestr("simulation.log", data=b"Simulation OK")
     elif scenario == "corrupted":
+        # Case where the ZIP is corrupted.
         out_path.write_bytes(b"PK corrupted content")
     elif scenario == "missing":
+        # Case where the ZIP is missing.
         pass
     else:
         raise NotImplementedError(scenario)
@@ -86,12 +93,13 @@ class TestFinalZipExtractor:
         assert not finished_study.final_zip_extracted
 
     @pytest.mark.unit_test
-    def test_extract_final_zip__finished_study__nominal_study(self, finished_study: StudyDTO) -> None:
+    @pytest.mark.parametrize("scenario", ["nominal_study", "xpansion_study"])
+    def test_extract_final_zip__finished_study__nominal_study(self, finished_study: StudyDTO, scenario: str) -> None:
         display = mock.Mock(spec=DisplayTerminal)
         display.generate_progress_bar = lambda names, *args, **kwargs: names
 
         # Prepare a valid final ZIP
-        finished_study.local_final_zipfile_path = create_final_zip(finished_study, scenario="nominal_study")
+        finished_study.local_final_zipfile_path = create_final_zip(finished_study, scenario=scenario)
 
         # Initialize and execute the ZIP extraction
         extractor = FinalZipExtractor(display=display)
@@ -113,12 +121,13 @@ class TestFinalZipExtractor:
             assert result_dir.joinpath(file).is_file()
 
     @pytest.mark.unit_test
-    def test_extract_final_zip__finished_study__nominal_results(self, finished_study: StudyDTO) -> None:
+    @pytest.mark.parametrize("scenario", ["nominal_results", "xpansion_results"])
+    def test_extract_final_zip__finished_study__nominal_results(self, finished_study: StudyDTO, scenario: str) -> None:
         display = mock.Mock(spec=DisplayTerminal)
         display.generate_progress_bar = lambda names, *args, **kwargs: names
 
         # Prepare a valid final ZIP
-        finished_study.local_final_zipfile_path = create_final_zip(finished_study, scenario="nominal_results")
+        finished_study.local_final_zipfile_path = create_final_zip(finished_study, scenario=scenario)
 
         # Initialize and execute the ZIP extraction
         extractor = FinalZipExtractor(display=display)
@@ -131,16 +140,19 @@ class TestFinalZipExtractor:
         assert finished_study.final_zip_extracted
         assert not finished_study.with_error
 
-        result_dir = Path(finished_study.local_final_zipfile_path).with_suffix("")
-        assert result_dir.joinpath("simulation.log").is_file()
+        result_dir = (Path(finished_study.local_final_zipfile_path).parent / finished_study.name).with_suffix(".zip")
+        assert result_dir.exists()
+        with zipfile.ZipFile(result_dir, "r") as zf:
+            assert zf.namelist() == ["simulation.log"]
 
     @pytest.mark.unit_test
-    def test_extract_final_zip__finished_study__reentrancy(self, finished_study: StudyDTO) -> None:
+    @pytest.mark.parametrize("scenario", ["nominal_study", "xpansion_study"])
+    def test_extract_final_zip__finished_study__reentrancy(self, finished_study: StudyDTO, scenario: str) -> None:
         display = mock.Mock(spec=DisplayTerminal)
         display.generate_progress_bar = lambda names, *args, **kwargs: names
 
         # Prepare a valid final ZIP
-        finished_study.local_final_zipfile_path = create_final_zip(finished_study)
+        finished_study.local_final_zipfile_path = create_final_zip(finished_study, scenario=scenario)
 
         # Initialize and execute the ZIP extraction twice
         extractor = FinalZipExtractor(display=display)

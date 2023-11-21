@@ -20,43 +20,54 @@ class FinalZipExtractor:
         Args:
             study: The current study
         """
-        if study.finished and not study.with_error and study.local_final_zipfile_path and not study.final_zip_extracted:
-            zip_path = Path(study.local_final_zipfile_path)
-            try:
-                with zipfile.ZipFile(zip_path) as zf:
-                    names = zf.namelist()
-                    if len(names) > 1 and os.path.commonpath(names):
-                        # If all files are in the same directory, we can extract the ZIP
-                        # file directly in the target directory.
-                        target_dir = zip_path.parent
-                    else:
-                        # Otherwise, we need to create a directory to store the results.
-                        # This situation occurs when the ZIP file contains
-                        # only the simulation results and not the entire study.
-                        target_dir = zip_path.with_suffix("")
+        if not study.finished or study.with_error or not study.local_final_zipfile_path or study.final_zip_extracted:
+            return
+        zip_path = Path(study.local_final_zipfile_path)
+        try:
+            # First, we detect the ZIP layout by looking at the names of the files it contains.
+            with zipfile.ZipFile(zip_path) as zf:
+                names = zf.namelist()
+                file_count = len(names)
+                has_unique_folder = file_count > 1 and os.path.commonpath(names)
 
+            if has_unique_folder:
+                # If the ZIP file contains a unique folder, it contains the whole study.
+                # We can extract it directly in the target directory.
+                with zipfile.ZipFile(zip_path) as zf:
+                    target_dir = zip_path.parent
                     progress_bar = self._display.generate_progress_bar(
-                        names, desc="Extracting archive:", total=len(names)
+                        names, desc="Extracting archive:", total=file_count
                     )
                     for file in progress_bar:
                         zf.extract(member=file, path=target_dir)
 
-            except (OSError, zipfile.BadZipFile) as exc:
-                # If we cannot extract the final ZIP file, either because the file
-                # doesn't exist or the ZIP file is corrupted, we find ourselves
-                # in a situation where the results are unusable.
-                # In such cases, it's best to consider the simulation as failed,
-                # enabling the user to restart its simulation.
-                study.final_zip_extracted = False
-                study.with_error = True
-                self._display.show_error(
-                    f'"{study.name}": Final zip not extracted: {exc}',
-                    LOG_NAME,
-                )
-
             else:
-                study.final_zip_extracted = True
-                self._display.show_message(
-                    f'"{study.name}": Final zip extracted',
-                    LOG_NAME,
-                )
+                # The directory is already an output and does not need to be unzipped.
+                # All we have to do is rename it by removing the prefix "finished_"
+                # and the suffix "_{job_id}" that lies before the ".zip".
+                # e.g.: "finished_Foo-Study_123456.zip" -> "Foo-Study.zip".
+                # or:   "finished_XPANSION_Foo-Study_123456.zip" -> "Foo-Study_123456.zip".
+                new_name = zip_path.name.lstrip("finished_")
+                new_name = new_name.lstrip("XPANSION_")
+                new_name = new_name.split("_", 1)[0] + ".zip"
+                zip_path.rename(zip_path.parent / new_name)
+
+        except (OSError, zipfile.BadZipFile) as exc:
+            # If we cannot extract the final ZIP file, either because the file
+            # doesn't exist or the ZIP file is corrupted, we find ourselves
+            # in a situation where the results are unusable.
+            # In such cases, it's best to consider the simulation as failed,
+            # enabling the user to restart its simulation.
+            study.final_zip_extracted = False
+            study.with_error = True
+            self._display.show_error(
+                f'"{study.name}": Final zip not extracted: {exc}',
+                LOG_NAME,
+            )
+
+        else:
+            study.final_zip_extracted = True
+            self._display.show_message(
+                f'"{study.name}": Final zip extracted',
+                LOG_NAME,
+            )
