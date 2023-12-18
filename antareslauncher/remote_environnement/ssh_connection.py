@@ -253,9 +253,14 @@ class SshConnection:
         finally:
             client.close()
 
-    def execute_command(self, command: str):
-        """Executes a command on the remote host. Puts stderr and stdout in
-        self.ssh_error and self.ssh_output respectively
+    def execute_command(self, command: str) -> t.Tuple[str, str]:
+        """
+        Runs an SSH command with a retry logic.
+
+        If it encounters an SSH Exception, it's going to sleep for 5 seconds.
+        The command will then be re-executed a maximum of 5 times.
+        It allows us to wait for the connection to be re-established.
+        This way, we avoid having a simulation failure due to an SSH error.
 
         Args:
             command: String containing the command that will be executed through the ssh connection
@@ -266,27 +271,63 @@ class SshConnection:
             error: The standard error of the command
         """
         output = None
-        try:
-            with self.ssh_client() as client:
-                # fmt: off
-                self.logger.info(f"Running SSH command [{command}]...")
-                _, stdout, stderr = client.exec_command(command, timeout=30)
-                output = stdout.read().decode("utf-8").strip()
-                error = stderr.read().decode("utf-8").strip()
-                self.logger.info(f"SSH command stdout:\n{textwrap.indent(output, 'SSH OUTPUT> ')}")
-                self.logger.info(f"SSH command stderr:\n{textwrap.indent(error, 'SSH ERROR> ')}")
-                # fmt: on
-        except socket.timeout:
-            error = f"SSH command timed out: [{command}]"
-            self.logger.error(error)
-        except paramiko.SSHException as e:
-            error = f"SSH command failed to execute [{command}]: {e}"
-            self.logger.error(error)
-        except ConnectionFailedException as e:
-            error = f"SSH connection failed: {e}"
-            self.logger.error(error)
+        error = ""
+        amount_of_retries = 5
+        time_to_sleep = 5
 
+        for attempt in range(amount_of_retries):
+            if attempt != 0:
+                self.logger.info(f"An SSH Error occurred, so the command {command} did not succeed. The command will "
+                                 f"be re-executed {amount_of_retries - attempt} times until it succeeds.")
+                time.sleep(time_to_sleep)
+            try:
+                output, error = self._exec_command(command)
+                break
+            except (socket.timeout, paramiko.SSHException, ConnectionFailedException) as e:
+                error = self._handle_exception(command, e)
         return output, error
+
+    def _exec_command(self, command: str) -> t.Tuple[str, str]:
+        """
+        Executes a command on the remote host.
+        Puts stderr and stdout in self.ssh_error and self.ssh_output respectively
+
+        Args:
+            command: String containing the command that will be executed through the ssh connection
+
+        Returns:
+            output: The standard output of the command
+
+            error: The standard error of the command
+        """
+        with self.ssh_client() as client:
+            self.logger.info(f"Running SSH command [{command}]...")
+            stdin, stdout, stderr = client.exec_command(command, timeout=30)
+            output = stdout.read().decode("utf-8").strip()
+            error = stderr.read().decode("utf-8").strip()
+            self.logger.info(f"SSH command stdout:\n{textwrap.indent(output, 'SSH OUTPUT> ')}")
+            self.logger.info(f"SSH command stderr:\n{textwrap.indent(error, 'SSH ERROR> ')}")
+            return output, error
+
+    def _handle_exception(self, command: str, exception) -> str:
+        """
+        Handles SSH Exceptions that can occur.
+        Logs an appropriate error message according to the raised Exception
+
+        Args:
+            command: String containing the command that will be executed through the ssh connection
+
+        Returns:
+            The error message
+        """
+        if isinstance(exception, socket.timeout):
+            error_msg = f"SSH command timed out: [{command}]"
+        elif isinstance(exception, paramiko.SSHException):
+            error_msg = f"SSH command failed to execute [{command}]: {exception}"
+        else:
+            error_msg = f"SSH connection failed: {exception}"
+        self.logger.error(error_msg)
+        return error_msg
 
     def upload_file(self, src: str, dst: str):
         """Uploads a file to a remote server via sftp protocol
