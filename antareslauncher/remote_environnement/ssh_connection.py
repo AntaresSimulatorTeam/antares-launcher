@@ -302,7 +302,7 @@ class SshConnection:
         """
         with self.ssh_client() as client:
             self.logger.info(f"Running SSH command [{command}]...")
-            stdin, stdout, stderr = client.exec_command(command, timeout=30)
+            _, stdout, stderr = client.exec_command(command, timeout=30)
             output = stdout.read().decode("utf-8").strip()
             error = stderr.read().decode("utf-8").strip()
             self.logger.info(f"SSH command stdout:\n{textwrap.indent(output, 'SSH OUTPUT> ')}")
