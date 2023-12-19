@@ -18,6 +18,10 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 
 ## [1.3.2] - 2024-04-11
 
+### Build
+
+- build: add a script to bump the version
+
 
 ## [1.3.1] - 2023-09-26
 
