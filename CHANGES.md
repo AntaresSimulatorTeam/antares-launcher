@@ -22,6 +22,10 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 
 - build: add a script to bump the version
 
+### Changed
+
+- feat(ssh): add retry loop around SSH Exceptions [`#68`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/68)
+
 
 ## [1.3.1] - 2023-09-26
 

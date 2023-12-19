@@ -63,6 +63,48 @@ def retry(
     return decorator
 
 
+def retry(
+    exception: t.Type[Exception],
+    *exceptions: t.Type[Exception],
+    delay_sec: float = 5,
+    max_retry: int = 5,
+    msg_fmt: str = "Retrying in {delay_sec} seconds...",
+):
+    """
+    Decorator to retry a function call if it raises an exception.
+
+    Args:
+        exception: The exception to catch.
+        exceptions: Additional exceptions to catch.
+        delay_sec: The delay (in seconds) between each retry.
+        max_retry: The maximum number of retries.
+        msg_fmt: The message to display when retrying, with the following format keys:
+            - delay_sec: The delay (in seconds) between each retry.
+            - remaining: The number of remaining retries.
+
+    Returns:
+        The decorated function.
+    """
+
+    def decorator(func):  # type: ignore
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):  # type: ignore
+            for attempt in range(max_retry):
+                try:
+                    return func(*args, **kwargs)
+                except (exception, *exceptions):
+                    logger = logging.getLogger(__name__)
+                    remaining = max_retry - attempt - 1
+                    logger.warning(msg_fmt.format(delay_sec=delay_sec, remaining=remaining))
+                    time.sleep(delay_sec)
+            # Last attempt
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 class SshConnectionError(Exception):
     """
     SSH Connection Error
