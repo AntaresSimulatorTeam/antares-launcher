@@ -8,6 +8,13 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+#### [v1.4.0](https://github.com/AntaresSimulatorTeam/antares-launcher/compare/v1.3.1...v1.4.0)
+
+### Changed
+
+- feat(ssh): add retry loop around SSH Exceptions [`#68`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/68)
+- feat(zip-extractor): add support for -z option [`#67`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/67)
+
 ## [1.3.1] - 2023-09-26
 
 ### Changed
