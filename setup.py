@@ -58,7 +58,7 @@ pyinstaller_requires = [
 
 setup(
     name=__project_name__,
-    version=__version__,
+    version="1.4.0",
     description="Antares_Launcher to run Antares on a remote linux machine",
     long_description=pathlib.Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
