@@ -39,7 +39,7 @@ class StateUpdater:
         Args:
             study: The study data transfer object
         """
-        if not study.done:
+        if not study.done and not study.with_error:
             # set current study job state flags
             if study.job_id:
                 s, f, e = self._env.get_job_state_flags(study)
