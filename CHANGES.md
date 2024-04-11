@@ -8,6 +8,13 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+## [1.4.1] - 2024-04-11
+
+### Fixes
+
+- fix(retriever): avoid infinite loop if sbatch command fails [`#69`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/69)
+
+
 ## [1.4.0] - 2023-12-19
 
 ### Changed
