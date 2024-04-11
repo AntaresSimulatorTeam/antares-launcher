@@ -234,7 +234,7 @@ class SshConnection:
                 self.logger.exception(f"paramiko.AuthenticationException: {paramiko.AuthenticationException}")
                 raise ConnectionFailedException(self.host, self.port, self.username) from e
             except paramiko.SSHException as e:
-                self.logger.exception(f"paramiko.SSHException: {paramiko.SSHException}")
+                self.logger.exception(f"Paramiko SSH Exception: {e!r}")
                 raise ConnectionFailedException(self.host, self.port, self.username) from e
             except socket.timeout as e:
                 self.logger.exception(f"socket.timeout: {socket.timeout}")
@@ -264,7 +264,7 @@ class SshConnection:
             with self.ssh_client() as client:
                 # fmt: off
                 self.logger.info(f"Running SSH command [{command}]...")
-                stdin, stdout, stderr = client.exec_command(command, timeout=30)
+                _, stdout, stderr = client.exec_command(command, timeout=30)
                 output = stdout.read().decode("utf-8").strip()
                 error = stderr.read().decode("utf-8").strip()
                 self.logger.info(f"SSH command stdout:\n{textwrap.indent(output, 'SSH OUTPUT> ')}")
@@ -300,14 +300,14 @@ class SshConnection:
                 sftp_client = client.open_sftp()
                 sftp_client.put(src, dst)
                 sftp_client.close()
-        except paramiko.SSHException:
-            self.logger.debug("Paramiko SSH Exception", exc_info=True)
+        except paramiko.SSHException as e:
+            self.logger.debug(f"Paramiko SSH Exception: {e!r}", exc_info=True)
             result_flag = False
-        except IOError:
-            self.logger.debug("IO Error", exc_info=True)
+        except IOError as e:
+            self.logger.debug(f"IO Error: {e!r}", exc_info=True)
             result_flag = False
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -329,21 +329,21 @@ class SshConnection:
                 sftp_client.get(src, dst)
                 sftp_client.close()
                 result_flag = True
-        except paramiko.SSHException:
-            self.logger.error("Paramiko SSH Exception", exc_info=True)
+        except paramiko.SSHException as e:
+            self.logger.error(f"Paramiko SSH Exception: {e!r}", exc_info=True)
             result_flag = False
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             result_flag = False
         return result_flag
 
     def download_files(
-        self,
-        src_dir: RemotePath,
-        dst_dir: LocalPath,
-        pattern: str,
-        *patterns: str,
-        remove: bool = True,
+            self,
+            src_dir: RemotePath,
+            dst_dir: LocalPath,
+            pattern: str,
+            *patterns: str,
+            remove: bool = True,
     ) -> t.Sequence[LocalPath]:
         """
         Download files matching the specified patterns from the remote
@@ -369,20 +369,20 @@ class SshConnection:
         except TimeoutError as exc:
             self.logger.error(f"Timeout: {exc}", exc_info=True)
             return []
-        except paramiko.SSHException:
-            self.logger.error("Paramiko SSH Exception", exc_info=True)
+        except paramiko.SSHException as e:
+            self.logger.error(f"Paramiko SSH Exception: {e!r}", exc_info=True)
             return []
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             return []
 
     def _download_files(
-        self,
-        src_dir: RemotePath,
-        dst_dir: LocalPath,
-        patterns: t.Tuple[str, ...],
-        *,
-        remove: bool = True,
+            self,
+            src_dir: RemotePath,
+            dst_dir: LocalPath,
+            patterns: t.Tuple[str, ...],
+            *,
+            remove: bool = True,
     ) -> t.Sequence[LocalPath]:
         """
         Download files matching the specified patterns from the remote
@@ -447,12 +447,12 @@ class SshConnection:
                 if stat.S_ISDIR(sftp_stat.st_mode):
                     result_flag = True
                 else:
-                    raise IOError
+                    raise IOError(f"Not a directory: '{dir_path}'")
         except FileNotFoundError:
             self.logger.debug("FileNotFoundError", exc_info=True)
             result_flag = False
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -482,8 +482,8 @@ class SshConnection:
         except FileNotFoundError:
             self.logger.debug("FileNotFoundError", exc_info=True)
             result_flag = False
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -512,11 +512,11 @@ class SshConnection:
                     result_flag = True
                 finally:
                     sftp_client.close()
-        except paramiko.SSHException:
-            self.logger.debug("Paramiko SSHException", exc_info=True)
+        except paramiko.SSHException as e:
+            self.logger.debug(f"Paramiko SSH Exception: {e!r}", exc_info=True)
             result_flag = False
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -548,8 +548,8 @@ class SshConnection:
                     result_flag = True
                 finally:
                     sftp_client.close()
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -581,8 +581,8 @@ class SshConnection:
                     result_flag = True
                 finally:
                     sftp_client.close()
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             result_flag = False
         return result_flag
 
@@ -590,6 +590,6 @@ class SshConnection:
         try:
             with self.ssh_client():
                 return True
-        except ConnectionFailedException:
-            self.logger.error("Failed to connect to remote host", exc_info=True)
+        except ConnectionFailedException as e:
+            self.logger.error(f"Failed to connect to remote host: {e!r}", exc_info=True)
             return False
