@@ -55,6 +55,15 @@ class TestStudyRetriever:
         self.zip_extractor.extract_final_zip.assert_not_called()
 
     @pytest.mark.unit_test
+    def test_given_study_with_error_study_is_still_in_error(self):
+        env = mock.Mock()
+        display = mock.Mock()
+        self.state_updater = StateUpdater(env=env, display=display)
+        study_with_error = StudyDTO(path="hello", with_error=True)
+        self.study_retriever.retrieve(study_with_error)
+        assert study_with_error.with_error
+
+    @pytest.mark.unit_test
     def test_retrieve_study(self):
         """
         This test function simulates the retrieval process of a study and verifies
