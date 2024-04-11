@@ -18,6 +18,10 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 
 - feat(ssh): add retry loop around SSH Exceptions [`#68`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/68)
 
+### Fixes
+
+- fix(retriever): avoid infinite loop if sbatch command fails [`#69`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/69)
+
 
 ## [1.3.1] - 2023-09-26
 
