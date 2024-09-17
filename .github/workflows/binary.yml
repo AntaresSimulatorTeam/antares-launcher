@@ -6,6 +6,8 @@ on:
       - 'dev'
       - 'release/**'
       - 'support/**'
+  release:
+    types: [ published ]
 
 jobs:
   binary:
