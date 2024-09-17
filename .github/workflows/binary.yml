@@ -6,6 +6,7 @@ on:
       - 'dev'
       - 'release/**'
       - 'support/**'
+      - '**'
 
 jobs:
   binary:
@@ -38,4 +39,5 @@ jobs:
       - name: Archive Antares Launcher executable
         uses: actions/upload-artifact@v4
         with:
+          name: Antares_Launcher-${{ matrix.os }}-pkg
           path: dist/*
