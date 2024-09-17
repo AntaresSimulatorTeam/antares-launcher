@@ -8,6 +8,14 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+## [1.4.2] - 2024-09-17
+
+### Changed
+
+- build(deps): bump paramiko version [`#73`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/73)
+- fix(workflows): bump gh actions + use os names to build binaries to avoid conflicts, [`#74`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/74) and [`#75`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/75)
+
+
 ## [1.4.1] - 2024-04-11
 
 ### Fixes
