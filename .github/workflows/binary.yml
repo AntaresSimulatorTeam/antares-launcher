@@ -20,9 +20,9 @@ jobs:
 
     steps:
       - name: Checkout github repo (+ download lfs dependencies)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
       - name: Install pip dependencies
@@ -36,6 +36,6 @@ jobs:
         run: |
           pyinstaller -F antareslauncher/advanced_launch.py -n Antares_Launcher-$(python3 setup.py --version)-${{ matrix.os }}
       - name: Archive Antares Launcher executable
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: dist/*
