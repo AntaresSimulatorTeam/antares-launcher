@@ -13,7 +13,7 @@ from antareslauncher import __author__, __project_name__, __version__
 # detect incompatibility problems.
 # Warning: this package is used as a library, so you should not constrain the versions too much.
 install_requires = [
-    "paramiko < 3.0",  # version 3.0.0 is not mature yet (2023-01-22)
+    "paramiko~= 3.4.1",
     "PyYAML < 6.0",  # required version for AntaREST
     "tinydb < 4.8",
     "tqdm < 4.65",
