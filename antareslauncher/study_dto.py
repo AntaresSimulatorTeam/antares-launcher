@@ -59,4 +59,5 @@ class StudyDTO:
         """
         attrs = dict(**doc)
         attrs.pop("name", None)  # calculated
+        attrs["antares_version"] = StudyVersion.parse(attrs["antares_version"])
         return cls(**attrs)
