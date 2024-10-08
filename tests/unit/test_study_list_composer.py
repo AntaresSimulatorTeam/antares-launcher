@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, get_solver_version
+from antares.study.version import SolverMinorVersion
 
 CONFIG_NOMINAL_VERSION = """\
 [antares]
@@ -93,7 +94,8 @@ class TestStudyListComposer:
         study_list_composer: StudyListComposer,
         antares_version: int,
     ):
-        study_list_composer.antares_version = antares_version
+        parsed_version = SolverMinorVersion.parse(antares_version)
+        study_list_composer.antares_version = parsed_version
         study_list_composer.update_study_database()
         studies = study_list_composer.get_list_of_studies()
 
@@ -101,9 +103,9 @@ class TestStudyListComposer:
         actual_versions = {s.name: s.antares_version for s in studies}
         if antares_version == 0:
             expected_versions = {
-                "013 TS Generation - Solar power": 850,  # solver_version
-                "024 Hurdle costs - 1": 840,  # versions
-                "SMTA-case": 810,  # version
+                "013 TS Generation - Solar power": "8.5",  # solver_version
+                "024 Hurdle costs - 1": "8.4",  # versions
+                "SMTA-case": "8.1",  # version
             }
         elif antares_version in study_list_composer.ANTARES_VERSIONS_ON_REMOTE_SERVER:
             study_names = {
@@ -114,7 +116,7 @@ class TestStudyListComposer:
                 "MISSING Study version",
                 "SMTA-case",
             }
-            expected_versions = dict.fromkeys(study_names, antares_version)
+            expected_versions = dict.fromkeys(study_names, parsed_version)
         else:
             expected_versions = {}
         assert actual_versions == {n: expected_versions[n] for n in actual_versions}

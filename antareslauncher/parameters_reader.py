@@ -8,6 +8,7 @@ import yaml
 
 from antareslauncher.main import MainParameters
 from antareslauncher.main_option_parser import ParserParameters
+from antares.study.version import SolverMinorVersion
 
 ALT2_PARENT = Path.home() / "antares_launcher_settings"
 ALT1_PARENT = Path.cwd()
@@ -51,7 +52,7 @@ class ParametersReader:
             self.remote_slurm_script_path = obj["SLURM_SCRIPT_PATH"]
             self.partition = obj.get("PARTITION", "")
             self.quality_of_service = obj.get("QUALITY_OF_SERVICE", "")
-            self.antares_versions = obj["ANTARES_VERSIONS_ON_REMOTE_SERVER"]
+            self.antares_versions = [SolverMinorVersion.parse(v) for v in obj["ANTARES_VERSIONS_ON_REMOTE_SERVER"]]
             self.db_primary_key = obj["DB_PRIMARY_KEY"]
             self.json_dir = Path(obj["JSON_DIR"]).expanduser()
             self.json_db_name = obj.get("DEFAULT_JSON_DB_NAME", DEFAULT_JSON_DB_NAME)

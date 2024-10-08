@@ -2,7 +2,7 @@ import typing as t
 from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
-
+from antares.study.version import StudyVersion
 
 class Modes(IntEnum):
     antares = 1
@@ -43,7 +43,7 @@ class StudyDTO:
     # Simulation stage data
     time_limit: t.Optional[int] = None
     n_cpu: int = 1
-    antares_version: int = 0
+    antares_version: StudyVersion = StudyVersion.parse(0)
     xpansion_mode: str = ""  # "", "r", "cpp"
     run_mode: Modes = Modes.antares
     post_processing: bool = False

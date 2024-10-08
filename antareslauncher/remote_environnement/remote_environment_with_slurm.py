@@ -12,6 +12,7 @@ from pathlib import Path, PurePosixPath
 from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
+from antares.study.version import SolverMinorVersion
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +207,7 @@ class RemoteEnvironmentWithSlurm:
             input_zipfile_name=Path(my_study.zipfile_path).name,
             time_limit=time_limit,
             n_cpu=my_study.n_cpu,
-            antares_version=my_study.antares_version,
+            antares_version=SolverMinorVersion.parse(my_study.antares_version),
             run_mode=my_study.run_mode,
             post_processing=my_study.post_processing,
             other_options=my_study.other_options or "",

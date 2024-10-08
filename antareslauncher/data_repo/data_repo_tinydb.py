@@ -90,6 +90,7 @@ class DataRepoTinydb:
             self.db.update(new, tinydb.where(pk_name) == pk_value)
         else:
             logger.info(f"Inserting study '{pk_value}' in database: {new!r}")
+            new["antares_version"] = f"{new['antares_version']:2d}"
             self.db.insert(new)
 
     def remove_study(self, study_name: str) -> None:

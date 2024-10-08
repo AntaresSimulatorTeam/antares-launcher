@@ -6,9 +6,11 @@ from pathlib import Path
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.study_dto import Modes, StudyDTO
+from antares.study.version import SolverMinorVersion, StudyVersion
 
+DEFAULT_VERSION = SolverMinorVersion.parse(0)
 
-def get_solver_version(study_dir: Path, *, default: int = 0) -> int:
+def get_solver_version(study_dir: Path, *, default: SolverMinorVersion = DEFAULT_VERSION) -> SolverMinorVersion:
     """
     Retrieve the solver version number or else the study version number
     from the "study.antares" file.
@@ -28,7 +30,7 @@ def get_solver_version(study_dir: Path, *, default: int = 0) -> int:
     section = config["antares"]
     for key in "solver_version", "version":
         if key in section:
-            return int(section[key])
+            return SolverMinorVersion.parse(section[key])
     return default
 
 
@@ -41,9 +43,9 @@ class StudyListComposerParameters:
     xpansion_mode: str  # "", "r", "cpp"
     output_dir: str
     post_processing: bool
-    antares_versions_on_remote_server: t.Sequence[str]
+    antares_versions_on_remote_server: t.Sequence[SolverMinorVersion]
     other_options: str
-    antares_version: int = 0
+    antares_version: SolverMinorVersion = DEFAULT_VERSION
 
 
 class StudyListComposer:
@@ -66,7 +68,7 @@ class StudyListComposer:
         self.antares_version = parameters.antares_version
         self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
-        self.ANTARES_VERSIONS_ON_REMOTE_SERVER = [int(v) for v in parameters.antares_versions_on_remote_server]
+        self.ANTARES_VERSIONS_ON_REMOTE_SERVER = parameters.antares_versions_on_remote_server
 
     def get_list_of_studies(self):
         """Retrieve the list of studies from the repo
@@ -76,7 +78,7 @@ class StudyListComposer:
         """
         return self._repo.get_list_of_studies()
 
-    def _create_study(self, path: Path, antares_version: int, xpansion_mode: str) -> StudyDTO:
+    def _create_study(self, path: Path, antares_version: SolverMinorVersion, xpansion_mode: str) -> StudyDTO:
         run_mode = {
             "": Modes.antares,
             "r": Modes.xpansion_r,
@@ -86,7 +88,7 @@ class StudyListComposer:
             path=str(path),
             n_cpu=self.n_cpu,
             time_limit=self.time_limit,
-            antares_version=antares_version,
+            antares_version=StudyVersion.parse(antares_version),
             job_log_dir=self.DEFAULT_JOB_LOG_DIR_PATH,
             output_dir=str(self.output_dir),
             xpansion_mode=xpansion_mode,
@@ -120,7 +122,7 @@ class StudyListComposer:
 
     def _update_database_with_directory(self, directory_path: Path):
         solver_version = get_solver_version(directory_path)
-        antares_version = self.antares_version or solver_version
+        antares_version = self.antares_version if self.antares_version != DEFAULT_VERSION else solver_version
         if not antares_version:
             self._display.show_message(
                 "... not a valid Antares study",

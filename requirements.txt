@@ -1,3 +1,4 @@
+antares-study-version~=1.0.7
 bcrypt~=3.2.2
 cffi~=1.15.1
 cryptography~=39.0.1

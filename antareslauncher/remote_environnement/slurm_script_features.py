@@ -2,6 +2,7 @@ import dataclasses
 import shlex
 
 from antareslauncher.study_dto import Modes
+from antares.study.version import SolverMinorVersion
 
 
 @dataclasses.dataclass
@@ -10,7 +11,7 @@ class ScriptParametersDTO:
     input_zipfile_name: str
     time_limit: int
     n_cpu: int
-    antares_version: int
+    antares_version: SolverMinorVersion
     run_mode: Modes
     post_processing: bool
     other_options: str
@@ -81,7 +82,7 @@ class SlurmScriptFeatures:
             for arg in [
                 self.solver_script_path,
                 script_params.input_zipfile_name,
-                str(script_params.antares_version),
+                f"{script_params.antares_version:2d}",
                 _job_type,
                 str(script_params.post_processing),
                 script_params.other_options,
