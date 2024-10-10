@@ -19,6 +19,7 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
 )
 from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
 from antareslauncher.study_dto import Modes, StudyDTO
+from antares.study.version import StudyVersion
 
 
 class TestRemoteEnvironmentWithSlurm:
@@ -50,7 +51,7 @@ class TestRemoteEnvironmentWithSlurm:
             path="path/to/study/91f1f911-4f4a-426f-b127-d0c2a2465b5f",
             n_cpu=42,
             zipfile_path="path/to/study/91f1f911-4f4a-426f-b127-d0c2a2465b5f-foo.zip",
-            antares_version=700,
+            antares_version=StudyVersion.parse(700),
             local_final_zipfile_path="local_final_zipfile_path",
             run_mode=Modes.antares,
         )
@@ -689,7 +690,7 @@ class TestRemoteEnvironmentWithSlurm:
             f" --cpus-per-task={study.n_cpu}"
             f" {filename_launch_script}"
             f" {Path(study.zipfile_path).name}"
-            f" {study.antares_version}"
+            f" {study.antares_version:2d}"
             f" {job_type}"
             f" {post_processing}"
             f" ''"

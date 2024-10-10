@@ -20,6 +20,7 @@ from antareslauncher.use_cases.launch.launch_controller import LaunchController
 from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
+from antares.study.version import SolverMinorVersion
 
 
 class NoJsonConfigFileError(Exception):
@@ -67,7 +68,7 @@ class MainParameters:
     json_dir: Path
     default_json_db_name: str
     slurm_script_path: str
-    antares_versions_on_remote_server: t.Sequence[str]
+    antares_versions_on_remote_server: t.Sequence[SolverMinorVersion]
     default_ssh_dict: t.Mapping[str, t.Any]
     db_primary_key: str
     partition: str = ""
@@ -120,7 +121,7 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
             post_processing=arguments.post_processing,
             antares_versions_on_remote_server=parameters.antares_versions_on_remote_server,
             other_options=arguments.other_options or "",
-            antares_version=arguments.antares_version,
+            antares_version=SolverMinorVersion.parse(arguments.antares_version),
         ),
     )
     launch_controller = LaunchController(repo=data_repo, env=environment, display=display)

@@ -8,6 +8,7 @@ from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, StudyListComposerParameters
 from tests.unit.assets import ASSETS_DIR
+from antares.study.version import SolverMinorVersion
 
 
 @pytest.fixture(name="studies_in_dir")
@@ -44,15 +45,16 @@ def study_list_composer_fixture(
             xpansion_mode="",
             output_dir=str(tmp_path.joinpath("FINISHED")),
             post_processing=False,
-            antares_versions_on_remote_server=[
+            antares_versions_on_remote_server=[SolverMinorVersion.parse(v) for v in [
                 "800",
                 "810",
                 "820",
                 "830",
                 "840",
                 "850",
-            ],
+            ]],
             other_options="",
+
         ),
     )
     return composer

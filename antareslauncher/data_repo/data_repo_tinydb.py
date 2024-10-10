@@ -1,3 +1,4 @@
+import copy
 import logging
 import typing as t
 
@@ -83,7 +84,9 @@ class DataRepoTinydb:
         pk_name = self.db_primary_key
         pk_value = getattr(study, pk_name)
         old = self.db.get(tinydb.where(pk_name) == pk_value)
-        new = vars(study)
+        study_dict = vars(study)
+        new = copy.deepcopy(study_dict)  # to avoid modifying the study object
+        new["antares_version"] = f"{new['antares_version']:2d}"
         if old:
             diff = _calc_diff(old, new)
             logger.info(f"Updating study '{pk_value}' in database: {diff!r}")

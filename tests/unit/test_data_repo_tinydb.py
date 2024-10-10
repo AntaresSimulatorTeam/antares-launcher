@@ -1,10 +1,7 @@
 import random
 from pathlib import Path
-from unittest import mock
-from uuid import uuid4
 
 import pytest
-import tinydb
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.study_dto import StudyDTO
