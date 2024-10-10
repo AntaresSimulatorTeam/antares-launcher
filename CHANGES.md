@@ -8,6 +8,17 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+## [1.4.3] - 2024-10-10
+
+### Changed
+
+- build(binaries): build binaries on release [`#78`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/78)
+
+### Breaking change
+
+- feat(version): use `antares-study-version` package to handle versions [`#79`](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/79)
+  :warning: the sbatch command is now "8.8" instead of "880" when giving the study version. So you'll have to change your .sh file.
+
 ## [1.4.2] - 2024-09-17
 
 ### Changed
