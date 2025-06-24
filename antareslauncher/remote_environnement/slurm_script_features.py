@@ -85,8 +85,7 @@ class SlurmScriptFeatures:
                 f"{script_params.antares_version:2d}",
                 _job_type,
                 str(script_params.post_processing),
-                script_params.other_options,
             ]
         )
-        launch_cmd = f"cd {remote_launch_dir} && {' '.join(args)}"
+        launch_cmd = f"cd {remote_launch_dir} && {' '.join(args)} '{script_params.other_options}'"
         return launch_cmd
