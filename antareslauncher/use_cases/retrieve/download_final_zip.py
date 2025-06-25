@@ -28,7 +28,7 @@ class FinalZipDownloader(object):
             The updated data transfer object, with its `local_final_zipfile_path`
             attribute set if the download was successful.
         """
-        if study.finished and not study.with_error and not study.local_final_zipfile_path:
+        if study.finished:
             self._display.show_message(
                 f'"{study.name}": downloading final ZIP...',
                 LOG_NAME,
