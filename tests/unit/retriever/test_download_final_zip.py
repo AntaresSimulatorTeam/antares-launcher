@@ -12,7 +12,6 @@ from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownlo
 
 def download_final_zip(study: StudyDTO) -> t.Optional[Path]:
     """Simulate the download of the final ZIP."""
-    print("custom download final zip")
     dst_dir = Path(study.output_dir)  # must exist
     out_path = dst_dir.joinpath(f"finished_{study.name}_{study.job_id}.zip")
     out_path.write_bytes(b"PK fake zip")
