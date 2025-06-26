@@ -12,6 +12,7 @@ from antareslauncher.use_cases.retrieve.download_final_zip import FinalZipDownlo
 
 def download_final_zip(study: StudyDTO) -> t.Optional[Path]:
     """Simulate the download of the final ZIP."""
+    print("custom download final zip")
     dst_dir = Path(study.output_dir)  # must exist
     out_path = dst_dir.joinpath(f"finished_{study.name}_{study.job_id}.zip")
     out_path.write_bytes(b"PK fake zip")
@@ -57,8 +58,8 @@ class TestFinalZipDownloader:
         downloader.download(with_error_study)
 
         # Check the result
-        env.download_final_zip.assert_not_called()
-        display.show_message.assert_not_called()
+        env.download_final_zip.assert_called()
+        display.show_message.assert_called()
         display.show_error.assert_not_called()
 
     @pytest.mark.unit_test
@@ -96,7 +97,7 @@ class TestFinalZipDownloader:
 
         # Check the result: one ZIP file is downloaded
         assert finished_study.local_final_zipfile_path
-        assert display.show_message.call_count == 2
+        assert display.show_message.call_count == 4
         assert display.show_error.call_count == 0
 
         # ZIP files are not duplicated

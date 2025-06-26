@@ -18,7 +18,7 @@ class FinalZipDownloader(object):
 
     def download(self, study: StudyDTO):
         """
-        Download the final ZIP file for the specified study, if it has finished
+        Download the final ZIP file for the specified study if it has finished
         (without error) and has not been downloaded yet.
 
         Args:
