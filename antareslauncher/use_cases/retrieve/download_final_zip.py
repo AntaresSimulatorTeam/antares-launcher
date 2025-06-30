@@ -18,7 +18,7 @@ class FinalZipDownloader(object):
 
     def download(self, study: StudyDTO):
         """
-        Download the final ZIP file for the specified study, if it has finished
+        Download the final ZIP file for the specified study if it has finished
         (without error) and has not been downloaded yet.
 
         Args:
@@ -28,7 +28,7 @@ class FinalZipDownloader(object):
             The updated data transfer object, with its `local_final_zipfile_path`
             attribute set if the download was successful.
         """
-        if study.finished and not study.with_error and not study.local_final_zipfile_path:
+        if study.finished and not study.local_final_zipfile_path:
             self._display.show_message(
                 f'"{study.name}": downloading final ZIP...',
                 LOG_NAME,
