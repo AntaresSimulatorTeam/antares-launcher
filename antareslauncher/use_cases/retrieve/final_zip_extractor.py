@@ -20,7 +20,7 @@ class FinalZipExtractor:
         Args:
             study: The current study
         """
-        if not study.finished:
+        if not study.finished or not study.local_final_zipfile_path or study.final_zip_extracted:
             return
         zip_path = Path(study.local_final_zipfile_path)
         try:
