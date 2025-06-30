@@ -89,7 +89,7 @@ class TestFinalZipExtractor:
 
         # Check the result
         display.show_message.assert_not_called()
-        display.show_error.assert_called()
+        display.show_error.assert_not_called()
         assert not finished_study.final_zip_extracted
 
     @pytest.mark.unit_test

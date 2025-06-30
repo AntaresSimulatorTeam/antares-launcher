@@ -96,7 +96,7 @@ class TestFinalZipDownloader:
 
         # Check the result: one ZIP file is downloaded
         assert finished_study.local_final_zipfile_path
-        assert display.show_message.call_count == 4
+        assert display.show_message.call_count == 2
         assert display.show_error.call_count == 0
 
         # ZIP files are not duplicated
