@@ -644,14 +644,15 @@ class TestRemoteEnvironmentWithSlurm:
         assert output == 1
 
     @pytest.mark.parametrize(
-        "job_type,mode,post_processing",
+        "job_type,mode,post_processing,other_options",
         [
-            ("ANTARES_XPANSION_R", Modes.xpansion_r, True),
-            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, True),
-            ("ANTARES", Modes.antares, True),
-            ("ANTARES_XPANSION_R", Modes.xpansion_r, False),
-            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, False),
-            ("ANTARES", Modes.antares, False),
+            ("ANTARES_XPANSION_R", Modes.xpansion_r, True, ""),
+            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, True, ""),
+            ("ANTARES", Modes.antares, True, "adq_patch_rc"),
+            ("ANTARES_XPANSION_R", Modes.xpansion_r, False, ""),
+            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, False, ""),
+            ("ANTARES", Modes.antares, False, ""),
+            ("ANTARES", Modes.antares, False, 'xpress param-optim1="THREADS 4 PRESOLVE 1" solver-logs'),
         ],
     )
     @pytest.mark.unit_test
@@ -661,6 +662,7 @@ class TestRemoteEnvironmentWithSlurm:
         job_type,
         mode,
         post_processing,
+        other_options,
         study,
     ):
         # given
@@ -668,6 +670,7 @@ class TestRemoteEnvironmentWithSlurm:
         # when
         study.run_mode = mode
         study.post_processing = post_processing
+        study.other_options = other_options
         script_params = ScriptParametersDTO(
             study_dir_name=Path(study.path).name,
             input_zipfile_name=Path(study.zipfile_path).name,
@@ -676,7 +679,7 @@ class TestRemoteEnvironmentWithSlurm:
             antares_version=study.antares_version,
             run_mode=study.run_mode,
             post_processing=study.post_processing,
-            other_options="",
+            other_options=other_options,
         )
         command = remote_env.compose_launch_command(script_params)
         # then
@@ -693,7 +696,7 @@ class TestRemoteEnvironmentWithSlurm:
             f" {study.antares_version:2d}"
             f" {job_type}"
             f" {post_processing}"
-            f" ''"
+            f" '{other_options}'"
         )
         reference_command = f"{change_dir} && {reference_submit_command}"
         assert command.split() == reference_command.split()
