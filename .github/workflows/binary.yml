@@ -15,9 +15,9 @@ jobs:
     strategy:
       matrix:
         # We should build a binary executable for windows-2016,
-        # But currently, the oldest available version is windows-2019.
+        # But currently, the oldest available version is windows-2022.
         # We also build a binary executable for ubuntu-20.04 for integration tests.
-        os: [ windows-2019, ubuntu-22.04 ]
+        os: [ windows-2022, ubuntu-22.04 ]
 
     steps:
       - name: Checkout github repo (+ download lfs dependencies)
