@@ -8,6 +8,15 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+## [1.4.4] - 2025-07-01
+
+### Changed
+
+- ci: test with python v3.11 [#81](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/81)
+- fix(ci): use ubuntu 22 workers instead of 20 [#86](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/86)
+- fix(download): retrieve output directory on error [#85](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/85)
+- feat(command_line): give all `other_options` inside quotes to slurm [#84](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/84)
+
 ## [1.4.3] - 2024-10-10
 
 ### Changed
