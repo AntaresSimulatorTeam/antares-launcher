@@ -15,11 +15,54 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     NoLaunchScriptFoundError,
     NoRemoteBaseDirError,
     RemoteEnvironmentWithSlurm,
-    SubmitJobError,
+    SubmitJobError, _execute_with_retry,
 )
 from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
+from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import Modes, StudyDTO
 from antares.study.version import StudyVersion
+
+
+@pytest.mark.unit_test
+def test_retry_command_execution_no_error():
+    connection = mock.Mock(spec=SshConnection)
+    connection.execute_command.return_value = ("OK", "")
+    out, err = _execute_with_retry(connection, "my command")
+
+    assert out == "OK"
+    assert err == ""
+    connection.execute_command.assert_called_once_with("my command")
+
+
+@pytest.mark.unit_test
+def test_retry_command_execution_retry_twice():
+    connection = mock.Mock(spec=SshConnection)
+    connection.execute_command.side_effect = [
+        (None, "error 1"),
+        (None, "error 2"),
+        ("OK", ""),
+    ]
+    out, err = _execute_with_retry(connection, "my command", attempts=5, sleep_time=0.1)
+
+    assert out == "OK"
+    assert err == ""
+    connection.execute_command.assert_has_calls([call("my command")] * 3)
+    assert connection.execute_command.call_count == 3
+
+
+@pytest.mark.unit_test
+def test_retry_command_execution_fail_after_retry():
+    connection = mock.Mock(spec=SshConnection)
+    connection.execute_command.side_effect = [
+        (None, "error 1"),
+        (None, "error 2"),
+    ]
+    out, err = _execute_with_retry(connection, "my command", attempts=2, sleep_time=0.1)
+
+    assert out is None
+    assert err == "error 2"
+    connection.execute_command.assert_has_calls([call("my command")] * 2)
+    assert connection.execute_command.call_count == 2
 
 
 class TestRemoteEnvironmentWithSlurm:
@@ -67,7 +110,7 @@ class TestRemoteEnvironmentWithSlurm:
             partition="fake_partition",
             quality_of_service="user1_qos",
         )
-        return RemoteEnvironmentWithSlurm(connection, slurm_script_features)
+        return RemoteEnvironmentWithSlurm(connection, slurm_script_features, retry_attempts=2, retry_delay=0.1)
 
     @pytest.mark.unit_test
     def test_initialise_remote_path_calls_connection_make_dir_with_correct_arguments(
@@ -241,12 +284,28 @@ class TestRemoteEnvironmentWithSlurm:
     def test_get_job_state_flags__scontrol_failed(self, remote_env, study):
         study.job_id = 42
         output, error = "", "invalid entity:XXX for keyword:show"
-        remote_env.connection.execute_command = mock.Mock(return_value=(output, error))
+        remote_env.connection.execute_command.side_effect = mock.Mock(return_value=(output, error))
         with pytest.raises(GetJobStateError, match=re.escape(error)) as ctx:
             remote_env.get_job_state_flags(study)
         assert output in str(ctx.value)
         command = f"scontrol show job {study.job_id}"
-        remote_env.connection.execute_command.assert_called_once_with(command)
+        remote_env.connection.execute_command.assert_has_calls([call(command)] * 2)
+
+    @pytest.mark.unit_test
+    def test_get_job_state_flags__scontrol_succeeds_after_retry(self, remote_env, study):
+        study.job_id = 42
+        remote_env.connection.execute_command.side_effect = [
+            ("", "error"),
+            ("JobState=RUNNING", "")
+        ]
+
+        actual = remote_env.get_job_state_flags(study)
+        assert actual == (True, False, False)
+        remote_env.connection.execute_command.assert_has_calls([
+            call(f"scontrol show job {study.job_id}"),
+            call(f"scontrol show job {study.job_id}"),
+        ])
+        assert remote_env.connection.execute_command.call_count == 2
 
     # noinspection SpellCheckingInspection
     @pytest.mark.unit_test

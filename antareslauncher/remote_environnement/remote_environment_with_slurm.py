@@ -8,6 +8,7 @@ import textwrap
 import time
 import typing as t
 from pathlib import Path, PurePosixPath
+from typing import Tuple, Optional
 
 from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
@@ -116,15 +117,44 @@ class JobStateCodes(enum.Enum):
     TIMEOUT = "TIMEOUT"
 
 
+def _execute_with_retry(connection: SshConnection, command: str, attempts: int = 5, sleep_time: float = 5)\
+        -> Tuple[Optional[str], str]:
+    """Executes a command with retries in case the command outputs an error.
+
+    Note that the SSH connection implementation may already implement a retry mechanism for the
+    connection to the remote server.
+    This retry mechanism implements retry at the command level, not at the connection level.
+    """
+    output = None
+    error = ""
+    for _ in range(attempts):
+        output, error = connection.execute_command(command)
+        if error:
+            time.sleep(sleep_time)
+        else:
+            return output, error
+    return output, error
+
+
 class RemoteEnvironmentWithSlurm:
-    """Class that represents the remote environment"""
+    """
+    Class that represents the remote environment
+
+    Attributes:
+        retry_attempts: Number of attempts commands are retried when they output an error.
+        retry_delay:    Delay in seconds between command execution retries.
+    """
 
     def __init__(
         self,
         _connection: SshConnection,
         slurm_script_features: SlurmScriptFeatures,
+        retry_attempts: int = 5,
+        retry_delay: float = 5,
     ):
         self.connection = _connection
+        self.retry_attempts = retry_attempts
+        self.retry_delay = retry_delay
         self.slurm_script_features = slurm_script_features
         self.remote_base_path: str = ""
         self._initialise_remote_path()
@@ -141,6 +171,9 @@ class RemoteEnvironmentWithSlurm:
         remote_antares_script = self.slurm_script_features.solver_script_path
         if not self.connection.check_file_not_empty(remote_antares_script):
             raise NoLaunchScriptFoundError(remote_antares_script)
+
+    def _execute_with_retry(self, command: str) -> Tuple[Optional[str], str]:
+        return _execute_with_retry(self.connection, command, self.retry_attempts, self.retry_delay)
 
     def get_queue_info(self) -> str:
         """This function return the information from: squeue -u run-antares
@@ -214,7 +247,7 @@ class RemoteEnvironmentWithSlurm:
         )
         command = self.compose_launch_command(script_params)
 
-        output, error = self.connection.execute_command(command)
+        output, error = self._execute_with_retry(command)
         if error:
             reason = f"The command [{command}] failed: {error}"
             raise SubmitJobError(my_study.name, reason)
@@ -300,7 +333,7 @@ class RemoteEnvironmentWithSlurm:
         # noinspection SpellCheckingInspection
         args = ["scontrol", "show", "job", f"{job_id}"]
         command = " ".join(shlex.quote(arg) for arg in args)
-        output, error = self.connection.execute_command(command)
+        output, error = self._execute_with_retry(command)
         if error:
             # The command output may include an error message if the job is
             # no longer active or has been removed
