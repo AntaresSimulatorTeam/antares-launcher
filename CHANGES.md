@@ -8,6 +8,13 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+## [1.4.5] - 2025-07-11
+
+### Changed
+
+* fix(state): add retry mechanism for state retrieval [#89](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/89)
+
+
 ## [1.4.4] - 2025-07-01
 
 ### Changed

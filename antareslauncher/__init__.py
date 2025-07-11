@@ -9,9 +9,9 @@ This module contains the project metadata.
 
 # Standard project metadata
 
-__version__ = "1.4.4"
+__version__ = "1.4.5"
 __author__ = "RTE, Antares Web Team"
-__date__ = "2025-07-01"
+__date__ = "2025-07-11"
 # noinspection SpellCheckingInspection
 __credits__ = "(c) Réseau de Transport de l’Électricité (RTE)"
 
