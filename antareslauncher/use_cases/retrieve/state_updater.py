@@ -1,7 +1,8 @@
 import typing as t
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm, \
+    GetJobStateError
 from antareslauncher.study_dto import StudyDTO
 
 LOG_NAME = f"{__name__}.RetrieveController"
@@ -40,14 +41,21 @@ class StateUpdater:
             study: The study data transfer object
         """
         if not study.done and not study.with_error:
-            # set current study job state flags
-            if study.job_id:
-                s, f, e = self._env.get_job_state_flags(study)
-            else:
-                s, f, e = False, False, False
-            study.started = s
-            study.finished = f
-            study.with_error = e
+            try:
+                # set current study job state flags
+                if study.job_id:
+                    s, f, e = self._env.get_job_state_flags(study)
+                else:
+                    s, f, e = False, False, False
+                study.started = s
+                study.finished = f
+                study.with_error = e
+            except GetJobStateError as exc:
+                # We just could not get the job state this time, not an issue we can retry later
+                self._display.show_error(
+                    f'Failed to retrieve updated status for study {study.name}": {exc}',
+                    LOG_NAME,
+                )
 
         # set current study job state
         if study.with_error:
