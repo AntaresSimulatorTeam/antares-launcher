@@ -57,8 +57,8 @@ class TestFinalZipDownloader:
         downloader.download(with_error_study)
 
         # Check the result
-        env.download_final_zip.assert_not_called()
-        display.show_message.assert_not_called()
+        env.download_final_zip.assert_called()
+        display.show_message.assert_called()
         display.show_error.assert_not_called()
 
     @pytest.mark.unit_test

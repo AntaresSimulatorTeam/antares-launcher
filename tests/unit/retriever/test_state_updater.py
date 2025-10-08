@@ -4,7 +4,8 @@ from unittest.mock import call
 import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
+from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm, \
+    GetJobStateError
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
@@ -133,3 +134,40 @@ def test_run_on_list_calls_run_start__processing_studies_that_are_done():
         call(message1, mock.ANY),
     ]
     display.show_message.assert_has_calls(calls)
+
+
+@pytest.mark.unit_test
+def test_when_state_retrieval_fails__then_study_flags_are_not_updated():
+    env = mock.Mock(spec=RemoteEnvironmentWithSlurm)
+    env.get_job_state_flags = mock.Mock()
+    # Call for 2nd study will raise an error, the study states should not be updated
+    env.get_job_state_flags.side_effect = [
+        (True, False, False),
+        GetJobStateError(2, "my-job", "could not retrieve status."),
+        (True, True, False),
+    ]
+
+    display = mock.Mock(spec=DisplayTerminal)
+
+    my_study1 = StudyDTO(path="study_path1", job_id=1)
+    my_study2 = StudyDTO(path="study_path2", job_id=2)
+    my_study3 = StudyDTO(path="study_path3", job_id=3)
+    study_list = [my_study1, my_study2, my_study3]
+    state_updater = StateUpdater(env, display)
+    state_updater.run_on_list(study_list)
+
+    calls = [call(my_study1), call(my_study2), call(my_study3)]
+    env.get_job_state_flags.assert_has_calls(calls)
+    assert my_study1.started == True
+    assert my_study1.finished == False
+    assert my_study1.with_error == False
+
+    # My study 2 is just not updated
+    assert my_study2.started == False
+    assert my_study2.finished == False
+    assert my_study2.with_error == False
+
+    assert my_study3.started == True
+    assert my_study3.finished == True
+    assert my_study3.with_error == False
+
