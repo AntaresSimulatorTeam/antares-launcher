@@ -8,6 +8,12 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+## [1.4.5] - 2025-10-08
+
+### Changed
+
+* fix(deps): relax dependency requirement for python 3.11 [#82](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/82)
+
 ## [1.4.5] - 2025-07-11
 
 ### Changed
