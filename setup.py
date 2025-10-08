@@ -18,7 +18,7 @@ install_requires = [
     "tinydb < 4.8",
     "tqdm < 4.65",
     # frozen requirements for AntaREST:
-    "bcrypt~=5.0.0",
+    "bcrypt>=5.0.0",
 ]
 
 # Extra dependencies used for testing in "development" mode.
