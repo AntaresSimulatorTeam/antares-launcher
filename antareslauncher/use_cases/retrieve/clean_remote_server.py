@@ -14,7 +14,7 @@ class RemoteServerCleaner:
         self._display = display
         self._env = env
 
-    def clean(self, study: StudyDTO):
+    def clean(self, study: StudyDTO) -> None:
         if not study.remote_server_is_clean and study.local_final_zipfile_path:
             # If the cleanup procedure fails to remove remote files or
             # delete the final ZIP, there's no need to raise an exception.
