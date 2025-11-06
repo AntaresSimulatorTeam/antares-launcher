@@ -6,6 +6,8 @@ import pathlib
 
 from typing import Sequence
 
+from typing_extensions import override
+
 
 class AntaresLauncherException(Exception):
     """The base-class of all Antares Launcher exceptions."""
@@ -25,6 +27,7 @@ class ConfigFileNotFoundError(AntaresLauncherException):
     def config_name(self) -> str:
         return self.args[1]
 
+    @override
     def __str__(self):
         possible_dirs = ", ".join(f"'{p}'" for p in self.possible_dirs)
         config_name = self.config_name

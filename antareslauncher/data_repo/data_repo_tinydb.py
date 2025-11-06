@@ -2,6 +2,8 @@ import copy
 import logging
 import typing as t
 
+from pathlib import Path
+
 import tinydb
 
 from antareslauncher.study_dto import StudyDTO
@@ -25,7 +27,7 @@ def _calc_diff(
 
 
 class DataRepoTinydb:
-    def __init__(self, database_file_path, db_primary_key: str):
+    def __init__(self, database_file_path: Path, db_primary_key: str) -> None:
         super(DataRepoTinydb, self).__init__()
         self.database_file_path = database_file_path
         self.db_primary_key = db_primary_key
