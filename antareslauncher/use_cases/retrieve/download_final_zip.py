@@ -16,7 +16,7 @@ class FinalZipDownloader(object):
         self._env = env
         self._display = display
 
-    def download(self, study: StudyDTO):
+    def download(self, study: StudyDTO) -> None:
         """
         Download the final ZIP file for the specified study if it has finished
         (without error) and has not been downloaded yet.

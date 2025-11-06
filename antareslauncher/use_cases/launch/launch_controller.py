@@ -115,7 +115,7 @@ class LaunchController:
         study_submitter = StudySubmitter(env, display)
         self.study_launcher = StudyLauncher(study_uploader, study_submitter, DataReporter(repo), display)
 
-    def launch_all_studies(self):
+    def launch_all_studies(self) -> None:
         """Processes all the studies and send them to the server to process the job
 
         Steps of processing:

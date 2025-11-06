@@ -565,11 +565,11 @@ class SshConnection:
             result_flag = False
         return result_flag
 
-    def make_dir(self, dir_path):
+    def make_dir(self, dir_path: str) -> bool:
         """Creates a remote directory if it does not exist yet
 
         Args:
-            dir_path: Remote path of the directory that will be created
+            dir_path: Remote pathlike string of the directory that will be created
 
         Returns:
             True if path exists or the directory is successfully created, False otherwise
@@ -598,11 +598,11 @@ class SshConnection:
             result_flag = False
         return result_flag
 
-    def remove_file(self, file_path):
+    def remove_file(self, file_path: str):
         """Removes a remote file
 
         Args:
-            file_path: Path on the remote server
+            file_path: Pathlike string on the remote server
 
         Returns:
             True if file is successfully removed, False otherwise
