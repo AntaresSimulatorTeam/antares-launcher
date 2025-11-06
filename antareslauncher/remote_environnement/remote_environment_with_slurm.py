@@ -258,6 +258,7 @@ class RemoteEnvironmentWithSlurm:
             raise SubmitJobError(my_study.name, reason)
 
         # should match "Submitted batch job 123456"
+        assert output is not None
         if match := re.match(r"Submitted.*?(?P<job_id>\d+)", output, flags=re.IGNORECASE):
             return int(match["job_id"])
 
@@ -268,8 +269,8 @@ class RemoteEnvironmentWithSlurm:
         self,
         study: StudyDTO,
         *,
-        attempts=5,
-        sleep_time=0.5,
+        attempts: int = 5,
+        sleep_time: float = 0.5,
     ) -> t.Tuple[bool, bool, bool]:
         """
         Retrieves the current state of a SLURM job with the given job ID and name.
@@ -349,6 +350,7 @@ class RemoteEnvironmentWithSlurm:
 
         # We can retrieve the job state from the output of the command
         # by extracting the value of the `JobState` field.
+        assert output is not None
         if match := re.search(r"JobState=(\w+)", output):
             return JobStateCodes(match[1])
 
