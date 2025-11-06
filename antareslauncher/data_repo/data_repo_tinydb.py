@@ -53,7 +53,7 @@ class DataRepoTinydb:
         found_studies = self.db.search(tinydb.where(key=pk_name) == pk_value)
         return len(found_studies) == 1
 
-    def is_job_id_inside_database(self, job_id: int):
+    def is_job_id_inside_database(self, job_id: int) -> bool:
         """Checks if a study inside the database has the requested job_id
 
         Args:
@@ -72,7 +72,7 @@ class DataRepoTinydb:
         """
         return [StudyDTO.from_dict(doc) for doc in self.db.all()]
 
-    def save_study(self, study: StudyDTO):
+    def save_study(self, study: StudyDTO) -> None:
         """Saves the selected study inside the database. If the study already exists inside the
         database then the content of the database is updated, otherwise the new study is added to the database
 
