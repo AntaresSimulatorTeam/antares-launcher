@@ -1,11 +1,13 @@
+import pytest
+
 from unittest import mock
 from unittest.mock import call
 
-import pytest
-
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm, \
-    GetJobStateError
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    GetJobStateError,
+    RemoteEnvironmentWithSlurm,
+)
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 

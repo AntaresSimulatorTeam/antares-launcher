@@ -2,7 +2,10 @@ import argparse
 import dataclasses
 import json
 import typing as t
+
 from pathlib import Path
+
+from antares.study.version import SolverMinorVersion
 
 from antareslauncher import __version__
 from antareslauncher.antares_launcher import AntaresLauncher
@@ -20,8 +23,6 @@ from antareslauncher.use_cases.launch.launch_controller import LaunchController
 from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
-from antares.study.version import SolverMinorVersion
-
 
 # fmt: off
 ANTARES_LAUNCHER_BANNER = (

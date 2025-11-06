@@ -1,13 +1,16 @@
+import pytest
+
 import getpass
 import re
 import shlex
 import socket
+
 from pathlib import Path, PurePosixPath
 from typing import List
 from unittest import mock
 from unittest.mock import call
 
-import pytest
+from antares.study.version import StudyVersion
 
 from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     GetJobStateError,
@@ -15,12 +18,12 @@ from antareslauncher.remote_environnement.remote_environment_with_slurm import (
     NoLaunchScriptFoundError,
     NoRemoteBaseDirError,
     RemoteEnvironmentWithSlurm,
-    SubmitJobError, _execute_with_retry,
+    SubmitJobError,
+    _execute_with_retry,
 )
 from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import Modes, StudyDTO
-from antares.study.version import StudyVersion
 
 
 @pytest.mark.unit_test

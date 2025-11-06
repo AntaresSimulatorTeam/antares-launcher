@@ -5,6 +5,7 @@ import datetime
 import getpass
 import pathlib
 import typing as t
+
 from argparse import RawTextHelpFormatter
 from dataclasses import dataclass
 from pathlib import Path
@@ -163,9 +164,9 @@ class MainOptionParser:
             dest="job_id_to_kill",
             type=int,
             help=(
-                f"JobID of the run to be cancelled on the remote server.\n"
-                f"the JobID can be retrieved with option -q to show the queue."
-                f"If option is given it overrides the -q and the standard execution."
+                "JobID of the run to be cancelled on the remote server.\n"
+                "the JobID can be retrieved with option -q to show the queue."
+                "If option is given it overrides the -q and the standard execution."
             ),
         )
 

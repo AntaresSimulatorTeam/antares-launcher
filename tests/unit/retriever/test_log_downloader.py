@@ -1,8 +1,9 @@
+import pytest
+
 import typing as t
+
 from pathlib import Path
 from unittest import mock
-
-import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm

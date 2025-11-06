@@ -1,10 +1,12 @@
+import pytest
+
 import contextlib
 import getpass
 import json
+
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 import yaml
 
 from antareslauncher.config import (

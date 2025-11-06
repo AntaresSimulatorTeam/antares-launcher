@@ -2,13 +2,15 @@ import getpass
 import json
 import os.path
 import typing as t
+
 from pathlib import Path
 
 import yaml
 
+from antares.study.version import SolverMinorVersion
+
 from antareslauncher.main import MainParameters
 from antareslauncher.main_option_parser import ParserParameters
-from antares.study.version import SolverMinorVersion
 
 ALT2_PARENT = Path.home() / "antares_launcher_settings"
 ALT1_PARENT = Path.cwd()

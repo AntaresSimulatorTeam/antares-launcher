@@ -1,8 +1,9 @@
 import dataclasses
 import shlex
 
-from antareslauncher.study_dto import Modes
 from antares.study.version import SolverMinorVersion
+
+from antareslauncher.study_dto import Modes
 
 
 @dataclasses.dataclass

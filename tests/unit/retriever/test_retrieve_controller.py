@@ -1,8 +1,8 @@
+import pytest
+
 from copy import deepcopy
 from unittest import mock
 from unittest.mock import call
-
-import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm

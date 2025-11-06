@@ -1,6 +1,6 @@
-from unittest import mock
-
 import pytest
+
+from unittest import mock
 
 from antareslauncher.use_cases.check_remote_queue.slurm_queue_show import SlurmQueueShow
 

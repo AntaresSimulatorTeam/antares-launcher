@@ -1,5 +1,6 @@
 import getpass
 import zipfile
+
 from pathlib import Path
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb

@@ -1,5 +1,6 @@
 import os.path
 import zipfile
+
 from pathlib import Path
 
 from antareslauncher.display.display_terminal import DisplayTerminal

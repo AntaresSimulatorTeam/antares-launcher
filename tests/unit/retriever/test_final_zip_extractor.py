@@ -1,9 +1,10 @@
+import pytest
+
 import dataclasses
 import zipfile
+
 from pathlib import Path
 from unittest import mock
-
-import pytest
 
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.study_dto import StudyDTO

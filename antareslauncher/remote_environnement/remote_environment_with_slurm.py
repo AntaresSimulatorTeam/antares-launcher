@@ -7,13 +7,15 @@ import socket
 import textwrap
 import time
 import typing as t
+
 from pathlib import Path, PurePosixPath
-from typing import Tuple, Optional
+from typing import Optional, Tuple
+
+from antares.study.version import SolverMinorVersion
 
 from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
-from antares.study.version import SolverMinorVersion
 
 logger = logging.getLogger(__name__)
 

@@ -1,12 +1,14 @@
 import configparser
 import typing as t
+
 from dataclasses import dataclass
 from pathlib import Path
+
+from antares.study.version import SolverMinorVersion, StudyVersion
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.study_dto import Modes, StudyDTO
-from antares.study.version import SolverMinorVersion, StudyVersion
 
 DEFAULT_VERSION = SolverMinorVersion.parse(0)
 

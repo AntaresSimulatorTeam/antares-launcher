@@ -1,14 +1,16 @@
+import pytest
+
 import shutil
+
 from pathlib import Path
 from unittest import mock
 
-import pytest
+from antares.study.version import SolverMinorVersion
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, StudyListComposerParameters
 from tests.unit.assets import ASSETS_DIR
-from antares.study.version import SolverMinorVersion
 
 
 @pytest.fixture(name="studies_in_dir")

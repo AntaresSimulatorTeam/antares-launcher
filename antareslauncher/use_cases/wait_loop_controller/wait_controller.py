@@ -1,4 +1,5 @@
 import time
+
 from dataclasses import dataclass
 
 from antareslauncher.display.display_terminal import DisplayTerminal

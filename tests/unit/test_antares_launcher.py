@@ -1,7 +1,7 @@
+import pytest
+
 from unittest import mock
 from unittest.mock import Mock, PropertyMock
-
-import pytest
 
 from antareslauncher.antares_launcher import AntaresLauncher
 from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
