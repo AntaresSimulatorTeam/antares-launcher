@@ -41,7 +41,7 @@ class UnknownFileSuffixError(ConfigError):
         super().__init__(config_path, suffix)
 
     @override
-    def __str__(self):
+    def __str__(self) -> str:
         parent_msg = super().__str__()
         return f"{parent_msg}: unknown file suffix '{self.args[1]}'"
 
@@ -51,6 +51,6 @@ class InvalidConfigValueError(ConfigError):
         super().__init__(config_path, error_msg)
 
     @override
-    def __str__(self):
+    def __str__(self) -> str:
         parent_msg = super().__str__()
         return f"{parent_msg}: Invalid config value: {self.args[1]}"
