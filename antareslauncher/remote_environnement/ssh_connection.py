@@ -231,7 +231,7 @@ class SshConnection:
         self.password = config.get("password")
         key_password = config.get("key_password")
         if key_file := config.get("private_key_file"):
-            self._init_public_key(key_file_name=key_file, key_password=key_password)
+            self._init_public_key(key_file_name=key_file, key_password=key_password)  # type: ignore
         elif self.password is None:
             error = InvalidConfigError(config, "missing 'password'")
             self.logger.debug(str(error))
