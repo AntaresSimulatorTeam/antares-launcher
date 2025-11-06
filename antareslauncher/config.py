@@ -292,7 +292,11 @@ def get_config_path(config_name: str = CONFIGURATION_YAML) -> pathlib.Path:
         if config_path.exists():
             return config_path
         raise ConfigFileNotFoundError([config_path.parent], config_path.name)
-    possible_dirs = [get_user_config_dir(), pathlib.Path("."), pathlib.Path("./data")]
+    possible_dirs = [
+        pathlib.Path("/home/belthlemar/Projects_Data/Antares/antares_launcher/Antares_Launcher-ubuntu-22.04"),
+        pathlib.Path("."),
+        pathlib.Path("./data"),
+    ]
     for config_dir in possible_dirs:
         config_path = config_dir.joinpath(config_name)
         if config_path.exists():

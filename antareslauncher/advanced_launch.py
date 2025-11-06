@@ -29,6 +29,7 @@ def main() -> None:
     )
     arguments = parser.parser.parse_args(sys.argv[1:])
     main_parameters: MainParameters = param_reader.get_main_parameters()
+    (config.json_dir / main_parameters.default_json_db_name).unlink(missing_ok=True)
     run_with(arguments=arguments, parameters=main_parameters, show_banner=True)
 
 
