@@ -10,6 +10,8 @@ from argparse import RawTextHelpFormatter
 from dataclasses import dataclass
 from pathlib import Path
 
+from antares.study.version import SolverMinorVersion
+
 
 @dataclass
 class ParserParameters:
@@ -50,7 +52,7 @@ class MainOptionParser:
     def parse_args(self, args: t.Union[t.Sequence[str], None]) -> argparse.Namespace:
         return self.parser.parse_args(args)
 
-    def add_basic_arguments(self, *, antares_versions: t.Sequence[str] = ()) -> MainOptionParser:
+    def add_basic_arguments(self, *, antares_versions: t.Sequence[SolverMinorVersion] = ()) -> MainOptionParser:
         """Adds to the parser all the arguments for the light mode"""
         self.parser.add_argument(
             "-w",
