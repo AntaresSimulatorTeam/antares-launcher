@@ -94,8 +94,3 @@ class DataRepoTinydb:
         else:
             logger.info(f"Inserting study '{pk_value}' in database: {new!r}")
             self.db.insert(new)
-
-    def remove_study(self, study_name: str) -> None:
-        pk_name = self.db_primary_key
-        logger.info(f"Removing study '{study_name}' from database")
-        self.db.remove(tinydb.where(pk_name) == study_name)

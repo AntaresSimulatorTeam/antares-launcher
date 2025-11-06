@@ -21,7 +21,6 @@ PARAMIKO_SSH_ERROR = "Paramiko SSH Exception"
 REMOTE_CONNECTION_ERROR = "Failed to connect to remote host"
 IO_ERROR = "IO Error"
 FILE_NOT_FOUND_ERROR = "File not found error"
-DIRECTORY_NOT_FOUND_ERROR = "Directory not found error"
 
 
 def retry(

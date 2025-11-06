@@ -38,20 +38,6 @@ class TestDataRepoTinydb:
         assert actual_study.started is True
 
     @pytest.mark.unit_test
-    def test_remove_study__nominal_case(self, repo: DataRepoTinydb):
-        study = StudyDTO(path="path/to/my_study")
-        repo.save_study(study)
-        repo.remove_study("my_study")
-        studies = repo.get_list_of_studies()
-        assert not studies
-
-    @pytest.mark.unit_test
-    def test_remove_study__missing(self, repo: DataRepoTinydb):
-        repo.remove_study("missing_study")
-        studies = repo.get_list_of_studies()
-        assert not studies
-
-    @pytest.mark.unit_test
     def test_is_job_id_inside_database(self, repo: DataRepoTinydb):
         job_id = random.randint(1, 1000)
         study = StudyDTO(path="path/to/my_study", job_id=job_id)
