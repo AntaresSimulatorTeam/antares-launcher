@@ -598,7 +598,7 @@ class SshConnection:
             result_flag = False
         return result_flag
 
-    def remove_file(self, file_path: str):
+    def remove_file(self, file_path: str) -> bool:
         """Removes a remote file
 
         Args:
