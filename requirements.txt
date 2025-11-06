@@ -10,3 +10,5 @@ PyYAML~=6.0.3; python_version > '3.9'
 six~=1.16.0
 tinydb~=4.7.1
 tqdm~=4.64.1
+mypy~=1.15.0
+ruff~=0.14.3

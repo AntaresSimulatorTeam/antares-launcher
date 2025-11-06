@@ -23,14 +23,6 @@ from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitC
 from antares.study.version import SolverMinorVersion
 
 
-class NoJsonConfigFileError(Exception):
-    pass
-
-
-class SshConnectionNotEstablishedException(Exception):
-    pass
-
-
 # fmt: off
 ANTARES_LAUNCHER_BANNER = (
     "\n"
