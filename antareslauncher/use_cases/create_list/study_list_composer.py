@@ -101,7 +101,7 @@ class StudyListComposer:
         )
         return new_study
 
-    def update_study_database(self):
+    def update_study_database(self) -> None:
         """List all directories inside the STUDIES_IN_DIR folder, if a directory is a valid antares study
         and is new, then creates a StudyDTO object then saves it in the repo
         """
@@ -123,7 +123,7 @@ class StudyListComposer:
                 f"{__name__}.{__class__.__name__}",
             )
 
-    def _update_database_with_directory(self, directory_path: Path):
+    def _update_database_with_directory(self, directory_path: Path) -> None:
         solver_version = get_solver_version(directory_path)
         antares_version = self.antares_version if self.antares_version != DEFAULT_VERSION else solver_version
         if not antares_version:

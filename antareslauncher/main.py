@@ -68,7 +68,7 @@ class MainParameters:
     quality_of_service: str = ""
 
 
-def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_banner=False):
+def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_banner: bool = False) -> None:
     """Instantiates all the objects necessary to antares-launcher, and runs the program"""
     if arguments.version:
         print(f"Antares_Launcher v{__version__}")
