@@ -73,7 +73,7 @@ class StudyListComposer:
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
         self.ANTARES_VERSIONS_ON_REMOTE_SERVER = parameters.antares_versions_on_remote_server
 
-    def get_list_of_studies(self):
+    def get_list_of_studies(self) -> t.Sequence[StudyDTO]:
         """Retrieve the list of studies from the repo
 
         Returns:
