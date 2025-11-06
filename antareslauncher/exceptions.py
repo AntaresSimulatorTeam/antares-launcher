@@ -44,6 +44,7 @@ class ConfigError(AntaresLauncherException):
     def config_path(self) -> pathlib.Path:
         return self.args[0]
 
+    @override
     def __str__(self):
         config_path = self.config_path
         return f"Invalid configuration file '{config_path}'"
@@ -57,6 +58,7 @@ class UnknownFileSuffixError(ConfigError):
     def suffix(self) -> str:
         return self.args[1]
 
+    @override
     def __str__(self):
         parent_msg = super().__str__()
         suffix = self.suffix
@@ -71,6 +73,7 @@ class InvalidConfigValueError(ConfigError):
     def error_msg(self) -> str:
         return self.args[1]
 
+    @override
     def __str__(self):
         parent_msg = super().__str__()
         error_msg = self.error_msg
