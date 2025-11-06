@@ -525,7 +525,7 @@ class SshConnection:
                 self.logger.info(f'Checking remote file "{file_path}" not empty')
                 sftp_stat = sftp_client.stat(file_path)
                 sftp_client.close()
-                if stat.S_ISREG(sftp_stat.st_mode):
+                if stat.S_ISREG(sftp_stat.st_mode):  # type: ignore
                     result_flag = sftp_stat.st_size > 0
                 else:
                     raise IOError(f"Not a regular file: '{file_path}'")
@@ -595,39 +595,6 @@ class SshConnection:
                     result_flag = True
                 except FileNotFoundError:
                     self.logger.debug("FileNotFound nothing to remove", exc_info=True)
-                    result_flag = True
-                finally:
-                    sftp_client.close()
-        except ConnectionFailedException:
-            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
-            result_flag = False
-        return result_flag
-
-    def remove_dir(self, dir_path):
-        """Removes a remote directory
-
-        Args:
-            dir_path: Path on the remote server
-
-        Returns:
-            True if the directory is successfully removed, False otherwise
-
-        Raises:
-            IOError if path exists, and it is a file
-        """
-        try:
-            with self.ssh_client() as client:
-                sftp_client = client.open_sftp()
-                try:
-                    self.logger.info(f"Removing remote directory {dir_path}")
-                    sftp_stat = sftp_client.stat(dir_path)
-                    if not stat.S_ISDIR(sftp_stat.st_mode):
-                        raise IOError(f"Not a directory: '{dir_path}'")
-                    with contextlib.suppress(IOError):
-                        sftp_client.rmdir(dir_path)
-                    result_flag = True
-                except FileNotFoundError:
-                    self.logger.debug(DIRECTORY_NOT_FOUND_ERROR, exc_info=True)
                     result_flag = True
                 finally:
                     sftp_client.close()
