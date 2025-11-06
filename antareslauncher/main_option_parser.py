@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import getpass
 import pathlib
 import typing as t
 
@@ -241,13 +240,3 @@ def look_for_default_ssh_conf_file(
         return parameters.ssh_configfile_path_alternate2
     else:
         return None
-
-
-def get_default_db_name() -> str:
-    """Uses the username to generate the db name
-
-    Returns:
-        str: The default database name
-    """
-    user: str = getpass.getuser()
-    return f"{user}_antares_launcher_db.json"

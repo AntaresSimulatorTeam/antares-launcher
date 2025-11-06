@@ -30,12 +30,6 @@ class GetJobStateError(RemoteEnvBaseError):
         super().__init__(msg)
 
 
-class JobNotFoundError(RemoteEnvBaseError):
-    def __init__(self, job_id: int, job_name: str):
-        msg = f"Unable to retrieve the status of the SLURM job {job_id} (study job '{job_name}): Job not found."
-        super().__init__(msg)
-
-
 class NoRemoteBaseDirError(RemoteEnvBaseError):
     def __init__(self, remote_base_path: PurePosixPath):
         msg = f"Unable to create the remote base directory: '{remote_base_path}"
