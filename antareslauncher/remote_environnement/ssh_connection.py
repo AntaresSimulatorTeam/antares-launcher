@@ -11,6 +11,7 @@ import typing as t
 from pathlib import Path, PurePosixPath
 
 import paramiko
+from typing_extensions import override
 
 RemotePath = PurePosixPath
 LocalPath = Path
@@ -107,7 +108,7 @@ class DownloadMonitor:
         logger: A logger object for logging progress messages.
     """
 
-    def __init__(self, total_size: int, msg: str = "", logger=None) -> None:
+    def __init__(self, total_size: int, msg: str = "", logger: logging.Logger | None =None) -> None:
         self.total_size = total_size
         self.msg = msg or "Downloading..."
         self.logger = logger or logging.getLogger(__name__)
@@ -139,6 +140,7 @@ class DownloadMonitor:
             self._progress = int(rate * 10)
             self.logger.info(str(self))
 
+    @override
     def __str__(self) -> str:
         """
         Returns a string representation of the current progress.
