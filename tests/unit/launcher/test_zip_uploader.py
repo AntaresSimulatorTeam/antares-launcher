@@ -1,6 +1,6 @@
-from unittest import mock
-
 import pytest
+
+from unittest import mock
 
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm

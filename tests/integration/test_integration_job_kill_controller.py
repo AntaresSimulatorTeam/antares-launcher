@@ -1,6 +1,6 @@
-from unittest import mock
-
 import pytest
+
+from unittest import mock
 
 from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
 from antareslauncher.remote_environnement.slurm_script_features import SlurmScriptFeatures

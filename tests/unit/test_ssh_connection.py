@@ -1,12 +1,15 @@
+import pytest
+
 import io
 import logging
 import time
+
 from pathlib import Path, PurePosixPath
 from typing import List
 from unittest.mock import ANY, Mock, call, patch
 
 import paramiko
-import pytest
+
 from paramiko.sftp_attr import SFTPAttributes
 
 from antareslauncher.remote_environnement.ssh_connection import (

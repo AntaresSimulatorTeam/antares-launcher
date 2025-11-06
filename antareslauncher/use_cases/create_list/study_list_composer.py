@@ -1,14 +1,17 @@
 import configparser
 import typing as t
+
 from dataclasses import dataclass
 from pathlib import Path
+
+from antares.study.version import SolverMinorVersion, StudyVersion
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.study_dto import Modes, StudyDTO
-from antares.study.version import SolverMinorVersion, StudyVersion
 
 DEFAULT_VERSION = SolverMinorVersion.parse(0)
+
 
 def get_solver_version(study_dir: Path, *, default: SolverMinorVersion = DEFAULT_VERSION) -> SolverMinorVersion:
     """
@@ -70,7 +73,7 @@ class StudyListComposer:
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
         self.ANTARES_VERSIONS_ON_REMOTE_SERVER = parameters.antares_versions_on_remote_server
 
-    def get_list_of_studies(self):
+    def get_list_of_studies(self) -> t.Sequence[StudyDTO]:
         """Retrieve the list of studies from the repo
 
         Returns:
@@ -98,14 +101,14 @@ class StudyListComposer:
         )
         return new_study
 
-    def update_study_database(self):
+    def update_study_database(self) -> None:
         """List all directories inside the STUDIES_IN_DIR folder, if a directory is a valid antares study
         and is new, then creates a StudyDTO object then saves it in the repo
         """
         message = f"Updating current database from '{self._studies_in_dir}'..."
         if self.xpansion_mode:
             message += f"New studies will be run in xpansion mode {self.xpansion_mode}"
-        self._display.show_message(message, f"{__name__}.{__class__.__name__}")
+        self._display.show_message(message, f"{__name__}.{self.__class__.__name__}")
 
         self._new_study_added = False
 
@@ -115,12 +118,9 @@ class StudyListComposer:
                 self._update_database_with_directory(directory_path)
 
         if not self._new_study_added:
-            self._display.show_message(
-                "Didn't find any new simulations...",
-                f"{__name__}.{__class__.__name__}",
-            )
+            self._display.show_message("Didn't find any new simulations...", f"{__name__}.{self.__class__.__name__}")
 
-    def _update_database_with_directory(self, directory_path: Path):
+    def _update_database_with_directory(self, directory_path: Path) -> None:
         solver_version = get_solver_version(directory_path)
         antares_version = self.antares_version if self.antares_version != DEFAULT_VERSION else solver_version
         if not antares_version:
@@ -150,7 +150,7 @@ class StudyListComposer:
                 if not self._repo.is_study_inside_database(buffer_study):
                     self._add_study_to_database(buffer_study)
 
-    def _add_study_to_database(self, buffer_study):
+    def _add_study_to_database(self, buffer_study: StudyDTO) -> None:
         self._repo.save_study(buffer_study)
         self._display.show_message(
             f"New study added "

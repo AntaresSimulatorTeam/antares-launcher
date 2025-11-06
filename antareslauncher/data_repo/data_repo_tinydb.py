@@ -2,6 +2,8 @@ import copy
 import logging
 import typing as t
 
+from pathlib import Path
+
 import tinydb
 
 from antareslauncher.study_dto import StudyDTO
@@ -18,18 +20,14 @@ def _calc_diff(
     diff_map = {
         "DEL": {k: old[k] for k in old_keys - new_keys},
         "ADD": {k: new[k] for k in new_keys - old_keys},
-        "UPD": {
-            k: f"{old[k]!r} => {new[k]!r}"
-            for k in old_keys & new_keys
-            if old[k] != new[k]
-        },
+        "UPD": {k: f"{old[k]!r} => {new[k]!r}" for k in old_keys & new_keys if old[k] != new[k]},
     }
     diff_map = {k: v for k, v in diff_map.items() if v}
     return diff_map
 
 
 class DataRepoTinydb:
-    def __init__(self, database_file_path, db_primary_key: str):
+    def __init__(self, database_file_path: Path, db_primary_key: str) -> None:
         super(DataRepoTinydb, self).__init__()
         self.database_file_path = database_file_path
         self.db_primary_key = db_primary_key
@@ -39,7 +37,9 @@ class DataRepoTinydb:
         if not hasattr(self, "_tiny_db"):
             db = tinydb.TinyDB(self.database_file_path, sort_keys=True, indent=4)
             setattr(self, "_tiny_db", db)
-        return getattr(self, "_tiny_db")
+        tiny_db = getattr(self, "_tiny_db")
+        assert isinstance(tiny_db, tinydb.database.TinyDB)
+        return tiny_db
 
     def is_study_inside_database(self, study: StudyDTO) -> bool:
         """Get the study with selected primary key from the database
@@ -55,7 +55,7 @@ class DataRepoTinydb:
         found_studies = self.db.search(tinydb.where(key=pk_name) == pk_value)
         return len(found_studies) == 1
 
-    def is_job_id_inside_database(self, job_id: int):
+    def is_job_id_inside_database(self, job_id: int) -> bool:
         """Checks if a study inside the database has the requested job_id
 
         Args:
@@ -74,7 +74,7 @@ class DataRepoTinydb:
         """
         return [StudyDTO.from_dict(doc) for doc in self.db.all()]
 
-    def save_study(self, study: StudyDTO):
+    def save_study(self, study: StudyDTO) -> None:
         """Saves the selected study inside the database. If the study already exists inside the
         database then the content of the database is updated, otherwise the new study is added to the database
 

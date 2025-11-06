@@ -24,7 +24,7 @@ class StudyRetriever:
         self.zip_extractor = zip_extractor
         self.reporter = reporter
 
-    def retrieve(self, study: StudyDTO):
+    def retrieve(self, study: StudyDTO) -> None:
         if not study.done:
             try:
                 self.state_updater.run(study)

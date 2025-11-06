@@ -38,7 +38,7 @@ class RetrieveController:
         )
 
     @property
-    def all_studies_done(self):
+    def all_studies_done(self) -> bool:
         """Checks if all the studies are done
 
         Returns:
@@ -47,7 +47,7 @@ class RetrieveController:
         studies = self.repo.get_list_of_studies()
         return all(study.done for study in studies)
 
-    def retrieve_all_studies(self):
+    def retrieve_all_studies(self) -> bool:
         """Retrieves all the studies and logs from the environment and process them
 
         Steps of processing:

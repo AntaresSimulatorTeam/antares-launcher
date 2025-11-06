@@ -1,13 +1,15 @@
 """
 Parse the configuration file `configuration.yaml`.
 """
+
 import dataclasses
 import getpass
 import json
 import os
 import pathlib
 import sys
-from typing import Any, Dict, List, Optional
+
+from typing import Any, Dict, List, Optional, cast
 
 import yaml
 
@@ -44,7 +46,7 @@ def parse_config(config_path: pathlib.Path) -> Dict[str, Any]:
         obj = json.loads(text)
     else:
         raise UnknownFileSuffixError(config_path, config_path.suffix)
-    return obj
+    return cast(dict[str, Any], obj)
 
 
 def dump_config(config_path: pathlib.Path, obj: Dict[str, Any]) -> None:
@@ -254,7 +256,7 @@ class Config:
         self.ssh_config.save_config(config_dir.joinpath(ssh_config_name))
 
 
-def get_user_config_dir(system: str = ""):
+def get_user_config_dir(system: str = "") -> pathlib.Path:
     """
     Retrieve the user configuration directory based on the system platform.
 

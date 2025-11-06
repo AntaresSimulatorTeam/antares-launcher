@@ -17,7 +17,7 @@ The main workflow diagram is as follows:
 
 See [`setup.py`](https://github.com/AntaresSimulatorTeam/antares-launcher/blob/main/setup.py)
 
-Minimum version : python 3.8
+Minimum version : python 3.10
 
 ### Main Python libraries
 

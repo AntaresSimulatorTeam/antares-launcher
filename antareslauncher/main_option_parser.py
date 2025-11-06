@@ -5,9 +5,12 @@ import datetime
 import getpass
 import pathlib
 import typing as t
+
 from argparse import RawTextHelpFormatter
 from dataclasses import dataclass
 from pathlib import Path
+
+from antares.study.version import SolverMinorVersion
 
 
 @dataclass
@@ -49,7 +52,7 @@ class MainOptionParser:
     def parse_args(self, args: t.Union[t.Sequence[str], None]) -> argparse.Namespace:
         return self.parser.parse_args(args)
 
-    def add_basic_arguments(self, *, antares_versions: t.Sequence[str] = ()) -> MainOptionParser:
+    def add_basic_arguments(self, *, antares_versions: t.Sequence[SolverMinorVersion] = ()) -> MainOptionParser:
         """Adds to the parser all the arguments for the light mode"""
         self.parser.add_argument(
             "-w",
@@ -163,9 +166,9 @@ class MainOptionParser:
             dest="job_id_to_kill",
             type=int,
             help=(
-                f"JobID of the run to be cancelled on the remote server.\n"
-                f"the JobID can be retrieved with option -q to show the queue."
-                f"If option is given it overrides the -q and the standard execution."
+                "JobID of the run to be cancelled on the remote server.\n"
+                "the JobID can be retrieved with option -q to show the queue."
+                "If option is given it overrides the -q and the standard execution."
             ),
         )
 

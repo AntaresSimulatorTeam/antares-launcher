@@ -1,11 +1,13 @@
+import pytest
+
 from unittest import mock
 from unittest.mock import call
 
-import pytest
-
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm, \
-    GetJobStateError
+from antareslauncher.remote_environnement.remote_environment_with_slurm import (
+    GetJobStateError,
+    RemoteEnvironmentWithSlurm,
+)
 from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 
@@ -158,16 +160,15 @@ def test_when_state_retrieval_fails__then_study_flags_are_not_updated():
 
     calls = [call(my_study1), call(my_study2), call(my_study3)]
     env.get_job_state_flags.assert_has_calls(calls)
-    assert my_study1.started == True
-    assert my_study1.finished == False
-    assert my_study1.with_error == False
+    assert my_study1.started is True
+    assert my_study1.finished is False
+    assert my_study1.with_error is False
 
     # My study 2 is just not updated
-    assert my_study2.started == False
-    assert my_study2.finished == False
-    assert my_study2.with_error == False
+    assert my_study2.started is False
+    assert my_study2.finished is False
+    assert my_study2.with_error is False
 
-    assert my_study3.started == True
-    assert my_study3.finished == True
-    assert my_study3.with_error == False
-
+    assert my_study3.started is True
+    assert my_study3.finished is True
+    assert my_study3.with_error is False

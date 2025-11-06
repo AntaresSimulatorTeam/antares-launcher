@@ -2,13 +2,15 @@ import getpass
 import json
 import os.path
 import typing as t
+
 from pathlib import Path
 
 import yaml
 
+from antares.study.version import SolverMinorVersion
+
 from antareslauncher.main import MainParameters
 from antareslauncher.main_option_parser import ParserParameters
-from antares.study.version import SolverMinorVersion
 
 ALT2_PARENT = Path.home() / "antares_launcher_settings"
 ALT1_PARENT = Path.cwd()
@@ -59,7 +61,7 @@ class ParametersReader:
         except KeyError as e:
             raise MissingValueException(yaml_filepath, str(e)) from None
 
-    def get_parser_parameters(self):
+    def get_parser_parameters(self) -> ParserParameters:
         return ParserParameters(
             default_wait_time=self.default_wait_time,
             default_time_limit=self.time_limit,
@@ -89,4 +91,4 @@ class ParametersReader:
             ssh_dict = json.load(ssh_connection_json)
         if "private_key_file" in ssh_dict:
             ssh_dict["private_key_file"] = os.path.expanduser(ssh_dict["private_key_file"])
-        return ssh_dict
+        return t.cast(dict[str, t.Any], ssh_dict)

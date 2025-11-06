@@ -1,8 +1,10 @@
+import pytest
+
 import getpass
 import json
+
 from pathlib import Path
 
-import pytest
 import yaml
 
 from antareslauncher.parameters_reader import MissingValueException, ParametersReader

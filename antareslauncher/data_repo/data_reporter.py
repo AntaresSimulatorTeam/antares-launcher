@@ -6,5 +6,5 @@ class DataReporter:
     def __init__(self, data_repo: DataRepoTinydb):
         self._data_repo = data_repo
 
-    def save_study(self, study: StudyDTO):
+    def save_study(self, study: StudyDTO) -> None:
         self._data_repo.save_study(study)

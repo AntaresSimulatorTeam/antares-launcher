@@ -9,7 +9,7 @@ class SlurmQueueShow:
     env: RemoteEnvironmentWithSlurm
     display: DisplayTerminal
 
-    def run(self):
+    def run(self) -> None:
         """Displays all the jobs un the slurm queue"""
         message = "Checking remote server queue\n" + self.env.get_queue_info()
-        self.display.show_message(message, f"{__name__}.{__class__.__name__}")
+        self.display.show_message(message, f"{__name__}.{self.__class__.__name__}")

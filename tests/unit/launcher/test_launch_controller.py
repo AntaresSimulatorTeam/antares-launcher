@@ -1,8 +1,9 @@
+import pytest
+
 import zipfile
+
 from pathlib import Path, PurePosixPath
 from unittest import mock
-
-import pytest
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal

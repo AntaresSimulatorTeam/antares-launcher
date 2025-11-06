@@ -2,7 +2,10 @@ import argparse
 import dataclasses
 import json
 import typing as t
+
 from pathlib import Path
+
+from antares.study.version import SolverMinorVersion
 
 from antareslauncher import __version__
 from antareslauncher.antares_launcher import AntaresLauncher
@@ -20,16 +23,6 @@ from antareslauncher.use_cases.launch.launch_controller import LaunchController
 from antareslauncher.use_cases.retrieve.retrieve_controller import RetrieveController
 from antareslauncher.use_cases.retrieve.state_updater import StateUpdater
 from antareslauncher.use_cases.wait_loop_controller.wait_controller import WaitController
-from antares.study.version import SolverMinorVersion
-
-
-class NoJsonConfigFileError(Exception):
-    pass
-
-
-class SshConnectionNotEstablishedException(Exception):
-    pass
-
 
 # fmt: off
 ANTARES_LAUNCHER_BANNER = (
@@ -75,7 +68,7 @@ class MainParameters:
     quality_of_service: str = ""
 
 
-def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_banner=False):
+def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_banner: bool = False) -> None:
     """Instantiates all the objects necessary to antares-launcher, and runs the program"""
     if arguments.version:
         print(f"Antares_Launcher v{__version__}")
@@ -161,13 +154,11 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
     launcher.run()
 
 
-def verify_connection(connection, display):
-    # fmt: off
+def verify_connection(connection: ssh_connection.SshConnection, display: DisplayTerminal) -> None:
     if connection.test_connection():
         display.show_message(f"SSH connection to {connection.host} established", __name__)
     else:
         raise Exception(f"Could not establish SSH connection to {connection.host}")
-    # fmt: on
 
 
 def get_ssh_config_dict(

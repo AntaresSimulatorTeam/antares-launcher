@@ -11,7 +11,7 @@ class CheckQueueController:
     state_updater: StateUpdater
     repo: DataRepoTinydb
 
-    def check_queue(self):
+    def check_queue(self) -> None:
         """Displays all the jobs un the slurm queue"""
         self.slurm_queue_show.run()
 

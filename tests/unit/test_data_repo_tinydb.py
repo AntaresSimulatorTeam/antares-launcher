@@ -1,7 +1,8 @@
-import random
-from pathlib import Path
-
 import pytest
+
+import random
+
+from pathlib import Path
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.study_dto import StudyDTO

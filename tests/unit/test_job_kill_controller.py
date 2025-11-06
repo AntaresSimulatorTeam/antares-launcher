@@ -1,6 +1,6 @@
-from unittest import mock
-
 import pytest
+
+from unittest import mock
 
 from antareslauncher.use_cases.kill_job.job_kill_controller import JobKillController
 

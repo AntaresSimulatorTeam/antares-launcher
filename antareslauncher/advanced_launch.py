@@ -1,4 +1,5 @@
 import sys
+
 from pathlib import Path
 
 from antareslauncher.config import Config, get_config_path

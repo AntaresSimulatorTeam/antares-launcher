@@ -7,13 +7,15 @@ import socket
 import textwrap
 import time
 import typing as t
+
 from pathlib import Path, PurePosixPath
-from typing import Tuple, Optional
+from typing import Optional, Tuple
+
+from antares.study.version import SolverMinorVersion
 
 from antareslauncher.remote_environnement.slurm_script_features import ScriptParametersDTO, SlurmScriptFeatures
 from antareslauncher.remote_environnement.ssh_connection import SshConnection
 from antareslauncher.study_dto import StudyDTO
-from antares.study.version import SolverMinorVersion
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +67,7 @@ class JobStateCodes(enum.Enum):
     The possible values for this column depend on the cluster management system
     you are using, but here are some of the most common values:
     """
+
     # Job terminated due to launch failure, typically due to a hardware failure
     # (e.g. unable to boot the node or block and the job can not be requeued).
     BOOT_FAIL = "BOOT_FAIL"
@@ -117,8 +120,9 @@ class JobStateCodes(enum.Enum):
     TIMEOUT = "TIMEOUT"
 
 
-def _execute_with_retry(connection: SshConnection, command: str, attempts: int = 5, sleep_time: float = 5)\
-        -> Tuple[Optional[str], str]:
+def _execute_with_retry(
+    connection: SshConnection, command: str, attempts: int = 5, sleep_time: float = 5
+) -> Tuple[Optional[str], str]:
     """Executes a command with retries in case the command outputs an error.
 
     Note that the SSH connection implementation may already implement a retry mechanism for the
@@ -160,14 +164,14 @@ class RemoteEnvironmentWithSlurm:
         self._initialise_remote_path()
         self._check_remote_script()
 
-    def _initialise_remote_path(self):
+    def _initialise_remote_path(self) -> None:
         remote_home_dir = PurePosixPath(self.connection.home_dir)
         remote_base_path = remote_home_dir.joinpath(f"REMOTE_{getpass.getuser()}_{socket.gethostname()}")
         self.remote_base_path = str(remote_base_path)
         if not self.connection.make_dir(self.remote_base_path):
             raise NoRemoteBaseDirError(remote_base_path)
 
-    def _check_remote_script(self):
+    def _check_remote_script(self) -> None:
         remote_antares_script = self.slurm_script_features.solver_script_path
         if not self.connection.check_file_not_empty(remote_antares_script):
             raise NoLaunchScriptFoundError(remote_antares_script)
@@ -203,7 +207,7 @@ class RemoteEnvironmentWithSlurm:
             raise KillJobError(job_id, reason)
 
     @staticmethod
-    def convert_time_limit_from_seconds_to_minutes(time_limit_seconds):
+    def convert_time_limit_from_seconds_to_minutes(time_limit_seconds: int) -> int:
         """Converts time in seconds to time in minutes
 
         Args:
@@ -216,13 +220,13 @@ class RemoteEnvironmentWithSlurm:
         time_limit_minutes = int(time_limit_seconds / 60)
         return max(time_limit_minutes, minimum_duration_in_minutes)
 
-    def compose_launch_command(self, script_params: ScriptParametersDTO):
+    def compose_launch_command(self, script_params: ScriptParametersDTO) -> str:
         return self.slurm_script_features.compose_launch_command(
             self.remote_base_path,
             script_params,
         )
 
-    def submit_job(self, my_study: StudyDTO):
+    def submit_job(self, my_study: StudyDTO) -> int:
         """Submits the Antares job to slurm
 
         Args:
@@ -234,6 +238,7 @@ class RemoteEnvironmentWithSlurm:
         Raises:
             SubmitJobErrorException if the job has not been successfully submitted
         """
+        assert my_study.time_limit is not None
         time_limit = self.convert_time_limit_from_seconds_to_minutes(my_study.time_limit)
         script_params = ScriptParametersDTO(
             study_dir_name=Path(my_study.path).name,
@@ -253,6 +258,7 @@ class RemoteEnvironmentWithSlurm:
             raise SubmitJobError(my_study.name, reason)
 
         # should match "Submitted batch job 123456"
+        assert output is not None
         if match := re.match(r"Submitted.*?(?P<job_id>\d+)", output, flags=re.IGNORECASE):
             return int(match["job_id"])
 
@@ -261,10 +267,10 @@ class RemoteEnvironmentWithSlurm:
 
     def get_job_state_flags(
         self,
-        study,
+        study: StudyDTO,
         *,
-        attempts=5,
-        sleep_time=0.5,
+        attempts: int = 5,
+        sleep_time: float = 0.5,
     ) -> t.Tuple[bool, bool, bool]:
         """
         Retrieves the current state of a SLURM job with the given job ID and name.
@@ -344,6 +350,7 @@ class RemoteEnvironmentWithSlurm:
 
         # We can retrieve the job state from the output of the command
         # by extracting the value of the `JobState` field.
+        assert output is not None
         if match := re.search(r"JobState=(\w+)", output):
             return JobStateCodes(match[1])
 
@@ -408,11 +415,11 @@ class RemoteEnvironmentWithSlurm:
         reason = f"The command [{command}] return an non-parsable output:\n{textwrap.indent(output, 'OUTPUT> ')}"
         raise GetJobStateError(job_id, job_name, reason)
 
-    def upload_file(self, src) -> bool:
+    def upload_file(self, src: str) -> bool:
         """Uploads a file to the remote server
 
         Args:
-            src: Path of the file to upload
+            src: Pathlike string of the file to upload
 
         Returns:
             True if the file has been successfully sent, False otherwise

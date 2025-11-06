@@ -1,4 +1,5 @@
 import time
+
 from dataclasses import dataclass
 
 from antareslauncher.display.display_terminal import DisplayTerminal
@@ -8,7 +9,7 @@ from antareslauncher.display.display_terminal import DisplayTerminal
 class WaitController:
     display: DisplayTerminal
 
-    def countdown(self, seconds_to_wait: int):
+    def countdown(self, seconds_to_wait: int) -> None:
         """
         Start a wait loop that last `seconds_to_wait`.
 

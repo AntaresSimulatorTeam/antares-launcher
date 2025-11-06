@@ -1,0 +1,28 @@
+name: ci
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  python-lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout github repo (+ download lfs dependencies)
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Check format (ruff)
+        run: |
+          ruff check antareslauncher/ tests/
+          ruff format --check  antareslauncher/ tests/
+      - name: Check Typing (mypy)
+        #continue-on-error: true
+        run: |
+          mypy --install-types --non-interactive

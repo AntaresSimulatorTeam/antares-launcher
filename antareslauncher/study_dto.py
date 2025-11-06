@@ -1,8 +1,11 @@
 import typing as t
+
 from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
+
 from antares.study.version import StudyVersion
+
 
 class Modes(IntEnum):
     antares = 1

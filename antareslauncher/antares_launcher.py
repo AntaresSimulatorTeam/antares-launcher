@@ -23,7 +23,7 @@ class AntaresLauncher:
     check_queue_bool: bool
     job_id_to_kill: Optional[int] = None
 
-    def run_once_mode(self):
+    def run_once_mode(self) -> None:
         """Runs antares_launcher only once:
         update the database with the new studies found in the input directory
         submit all new studies
@@ -34,7 +34,7 @@ class AntaresLauncher:
         self.launch_controller.launch_all_studies()
         self.retrieve_controller.retrieve_all_studies()
 
-    def run_wait_mode(self):
+    def run_wait_mode(self) -> None:
         """Run antares_launcher once then it keeps
         checking the status of the unfinished jobs until all jobs are finished,
         The code exits when all jobs are finished, the results are retrieved and extracted
@@ -44,7 +44,7 @@ class AntaresLauncher:
             self.wait_controller.countdown(seconds_to_wait=self.wait_time)
             self.retrieve_controller.retrieve_all_studies()
 
-    def run(self):
+    def run(self) -> None:
         """Use the options to decide which action to perform"""
         if self.job_id_to_kill:
             self.job_kill_controller.kill_job(self.job_id_to_kill)

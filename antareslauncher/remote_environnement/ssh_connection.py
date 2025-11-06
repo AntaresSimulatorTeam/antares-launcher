@@ -7,9 +7,12 @@ import stat
 import textwrap
 import time
 import typing as t
+
 from pathlib import Path, PurePosixPath
 
 import paramiko
+
+from typing_extensions import override
 
 RemotePath = PurePosixPath
 LocalPath = Path
@@ -27,7 +30,7 @@ def retry(
     delay_sec: float = 5,
     max_retry: int = 5,
     msg_fmt: str = "Retrying in {delay_sec} seconds...",
-):
+) -> t.Callable[[t.Any], t.Any]:
     """
     Decorator to retry a function call if it raises an exception.
 
@@ -106,7 +109,7 @@ class DownloadMonitor:
         logger: A logger object for logging progress messages.
     """
 
-    def __init__(self, total_size: int, msg: str = "", logger=None) -> None:
+    def __init__(self, total_size: int, msg: str = "", logger: logging.Logger | None = None) -> None:
         self.total_size = total_size
         self.msg = msg or "Downloading..."
         self.logger = logger or logging.getLogger(__name__)
@@ -138,6 +141,7 @@ class DownloadMonitor:
             self._progress = int(rate * 10)
             self.logger.info(str(self))
 
+    @override
     def __str__(self) -> str:
         """
         Returns a string representation of the current progress.
@@ -188,7 +192,7 @@ class SshConnection:
         self.username = ""
         self.port = 22
         self.password = None
-        self.private_key = None
+        self.private_key: paramiko.RSAKey | paramiko.Ed25519Key | None = None
 
         if config:
             self.logger.info("Loading ssh connection from config dictionary")
@@ -227,7 +231,7 @@ class SshConnection:
         self.password = config.get("password")
         key_password = config.get("key_password")
         if key_file := config.get("private_key_file"):
-            self._init_public_key(key_file_name=key_file, key_password=key_password)
+            self._init_public_key(key_file_name=key_file, key_password=key_password)  # type: ignore
         elif self.password is None:
             error = InvalidConfigError(config, "missing 'password'")
             self.logger.debug(str(error))
@@ -360,7 +364,7 @@ class SshConnection:
             self.logger.info(f"SSH command stderr:\n{textwrap.indent(error, 'SSH ERROR> ')}")
             return output, error
 
-    def upload_file(self, src: str, dst: str):
+    def upload_file(self, src: str, dst: str) -> bool:
         """Uploads a file to a remote server via sftp protocol
 
         Args:
@@ -502,42 +506,11 @@ class SshConnection:
                         sftp.remove(str(src_path))
                 return [dst_dir.joinpath(filename) for filename in files_to_download]
 
-    def check_remote_dir_exists(self, dir_path):
-        """Checks if a remote path is a directory
-
-        Args:
-            dir_path: Remote path
-
-        Returns:
-            True if the directory exists, False otherwise
-
-        Raises:
-            IOError if the path exists and is a file
-        """
-        result_flag = False
-        try:
-            with self.ssh_client() as client:
-                sftp_client = client.open_sftp()
-                self.logger.info(f"Checking remote dir {dir_path} exists")
-                sftp_stat = sftp_client.stat(dir_path)
-                sftp_client.close()
-                if stat.S_ISDIR(sftp_stat.st_mode):
-                    result_flag = True
-                else:
-                    raise IOError
-        except FileNotFoundError:
-            self.logger.debug(FILE_NOT_FOUND_ERROR, exc_info=True)
-            result_flag = False
-        except ConnectionFailedException:
-            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
-            result_flag = False
-        return result_flag
-
-    def check_file_not_empty(self, file_path):
+    def check_file_not_empty(self, file_path: str) -> bool:
         """Checks if a remote file exists and is not empty
 
         Args:
-            file_path: Path on the remote server
+            file_path: Pathlike string on the remote server
 
         Returns:
             True if file exists and is not empty, False otherwise
@@ -552,8 +525,8 @@ class SshConnection:
                 self.logger.info(f'Checking remote file "{file_path}" not empty')
                 sftp_stat = sftp_client.stat(file_path)
                 sftp_client.close()
-                if stat.S_ISREG(sftp_stat.st_mode):
-                    result_flag = sftp_stat.st_size > 0
+                if stat.S_ISREG(sftp_stat.st_mode):  # type: ignore
+                    result_flag = sftp_stat.st_size > 0  # type: ignore
                 else:
                     raise IOError(f"Not a regular file: '{file_path}'")
         except FileNotFoundError:
@@ -564,11 +537,11 @@ class SshConnection:
             result_flag = False
         return result_flag
 
-    def make_dir(self, dir_path):
+    def make_dir(self, dir_path: str) -> bool:
         """Creates a remote directory if it does not exist yet
 
         Args:
-            dir_path: Remote path of the directory that will be created
+            dir_path: Remote pathlike string of the directory that will be created
 
         Returns:
             True if path exists or the directory is successfully created, False otherwise
@@ -582,7 +555,7 @@ class SshConnection:
                 try:
                     self.logger.info(f"Checking if remote directory {dir_path} exists")
                     sftp_stat = sftp_client.stat(dir_path)
-                    result_flag = stat.S_ISDIR(sftp_stat.st_mode)
+                    result_flag = stat.S_ISDIR(sftp_stat.st_mode)  # type: ignore
                 except FileNotFoundError:
                     self.logger.info(f"Creating remote directory {dir_path}")
                     sftp_client.mkdir(dir_path)
@@ -597,11 +570,11 @@ class SshConnection:
             result_flag = False
         return result_flag
 
-    def remove_file(self, file_path):
+    def remove_file(self, file_path: str) -> bool:
         """Removes a remote file
 
         Args:
-            file_path: Path on the remote server
+            file_path: Pathlike string on the remote server
 
         Returns:
             True if file is successfully removed, False otherwise
@@ -615,46 +588,13 @@ class SshConnection:
                 try:
                     self.logger.info(f"Removing remote file {file_path}")
                     sftp_stat = sftp_client.stat(file_path)
-                    if not stat.S_ISREG(sftp_stat.st_mode):
+                    if not stat.S_ISREG(sftp_stat.st_mode):  # type: ignore
                         raise IOError(f"Not a regular file: '{file_path}'")
                     with contextlib.suppress(IOError):
                         sftp_client.remove(file_path)
                     result_flag = True
                 except FileNotFoundError:
                     self.logger.debug("FileNotFound nothing to remove", exc_info=True)
-                    result_flag = True
-                finally:
-                    sftp_client.close()
-        except ConnectionFailedException:
-            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
-            result_flag = False
-        return result_flag
-
-    def remove_dir(self, dir_path):
-        """Removes a remote directory
-
-        Args:
-            dir_path: Path on the remote server
-
-        Returns:
-            True if the directory is successfully removed, False otherwise
-
-        Raises:
-            IOError if path exists, and it is a file
-        """
-        try:
-            with self.ssh_client() as client:
-                sftp_client = client.open_sftp()
-                try:
-                    self.logger.info(f"Removing remote directory {dir_path}")
-                    sftp_stat = sftp_client.stat(dir_path)
-                    if not stat.S_ISDIR(sftp_stat.st_mode):
-                        raise IOError(f"Not a directory: '{dir_path}'")
-                    with contextlib.suppress(IOError):
-                        sftp_client.rmdir(dir_path)
-                    result_flag = True
-                except FileNotFoundError:
-                    self.logger.debug(DIRECTORY_NOT_FOUND_ERROR, exc_info=True)
                     result_flag = True
                 finally:
                     sftp_client.close()

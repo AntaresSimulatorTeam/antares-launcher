@@ -1,4 +1,5 @@
 import logging
+
 from dataclasses import dataclass
 from logging.handlers import RotatingFileHandler
 
@@ -7,7 +8,7 @@ from logging.handlers import RotatingFileHandler
 class LoggerInitializer:
     file_path: str
 
-    def init_logger(self):
+    def init_logger(self) -> None:
         """
         Initialise the logger with predefined  formats and logging.level
         Returns:

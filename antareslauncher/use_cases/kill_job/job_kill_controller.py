@@ -11,10 +11,10 @@ class JobKillController:
     display: DisplayTerminal
     repo: DataRepoTinydb
 
-    def _check_if_job_is_killable(self, job_id):
+    def _check_if_job_is_killable(self, job_id: int) -> bool:
         return self.repo.is_job_id_inside_database(job_id)
 
-    def kill_job(self, job_id: int):
+    def kill_job(self, job_id: int) -> None:
         """Kills a slurm job
 
         Args:
