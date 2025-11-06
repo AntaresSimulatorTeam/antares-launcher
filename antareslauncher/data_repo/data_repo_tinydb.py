@@ -37,7 +37,9 @@ class DataRepoTinydb:
         if not hasattr(self, "_tiny_db"):
             db = tinydb.TinyDB(self.database_file_path, sort_keys=True, indent=4)
             setattr(self, "_tiny_db", db)
-        return getattr(self, "_tiny_db")
+        tiny_db = getattr(self, "_tiny_db")
+        assert isinstance(tiny_db, tinydb.database.TinyDB)
+        return tiny_db
 
     def is_study_inside_database(self, study: StudyDTO) -> bool:
         """Get the study with selected primary key from the database
