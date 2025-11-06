@@ -164,14 +164,14 @@ class RemoteEnvironmentWithSlurm:
         self._initialise_remote_path()
         self._check_remote_script()
 
-    def _initialise_remote_path(self):
+    def _initialise_remote_path(self) -> None:
         remote_home_dir = PurePosixPath(self.connection.home_dir)
         remote_base_path = remote_home_dir.joinpath(f"REMOTE_{getpass.getuser()}_{socket.gethostname()}")
         self.remote_base_path = str(remote_base_path)
         if not self.connection.make_dir(self.remote_base_path):
             raise NoRemoteBaseDirError(remote_base_path)
 
-    def _check_remote_script(self):
+    def _check_remote_script(self) -> None:
         remote_antares_script = self.slurm_script_features.solver_script_path
         if not self.connection.check_file_not_empty(remote_antares_script):
             raise NoLaunchScriptFoundError(remote_antares_script)
@@ -207,7 +207,7 @@ class RemoteEnvironmentWithSlurm:
             raise KillJobError(job_id, reason)
 
     @staticmethod
-    def convert_time_limit_from_seconds_to_minutes(time_limit_seconds):
+    def convert_time_limit_from_seconds_to_minutes(time_limit_seconds: int) -> int:
         """Converts time in seconds to time in minutes
 
         Args:
@@ -238,6 +238,7 @@ class RemoteEnvironmentWithSlurm:
         Raises:
             SubmitJobErrorException if the job has not been successfully submitted
         """
+        assert my_study.time_limit is not None
         time_limit = self.convert_time_limit_from_seconds_to_minutes(my_study.time_limit)
         script_params = ScriptParametersDTO(
             study_dir_name=Path(my_study.path).name,

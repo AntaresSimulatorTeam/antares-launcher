@@ -534,11 +534,11 @@ class SshConnection:
             result_flag = False
         return result_flag
 
-    def check_file_not_empty(self, file_path):
+    def check_file_not_empty(self, file_path: str) -> bool:
         """Checks if a remote file exists and is not empty
 
         Args:
-            file_path: Path on the remote server
+            file_path: Pathlike string on the remote server
 
         Returns:
             True if file exists and is not empty, False otherwise
