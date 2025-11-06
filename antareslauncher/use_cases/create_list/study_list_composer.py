@@ -115,34 +115,40 @@ class StudyListComposer:
         directories = Path(self._studies_in_dir).iterdir()
         for directory_path in sorted(directories):
             if directory_path.is_dir():
-                self._update_database_with_directory(directory_path)
+                if (directory_path / "input.yaml").exists():
+                    solver_version = self._find_study_version_for_xpansion_trajectory(directory_path)
+                    xpansion_mode = "trajectory"
+                else:
+                    solver_version = get_solver_version(directory_path)
+                    xpansion_mode = self._get_xpansion_mode(directory_path)
+                self._update_database_with_directory(directory_path, solver_version, xpansion_mode)
 
         if not self._new_study_added:
             self._display.show_message("Didn't find any new simulations...", f"{__name__}.{self.__class__.__name__}")
 
-    def _update_database_with_directory(self, directory_path: Path) -> None:
-        solver_version = get_solver_version(directory_path)
+    def _find_study_version_for_xpansion_trajectory(self, directory: Path) -> SolverMinorVersion:
+        study_path = sorted(d for d in directory.iterdir() if d.is_dir())[0]
+        return get_solver_version(study_path)
+
+    def _get_xpansion_mode(self, study_path: Path) -> str:
+        candidates_file_path = study_path.joinpath("user", "expansion", "candidates.ini")
+        is_xpansion_study = candidates_file_path.is_file()
+        return self.xpansion_mode if is_xpansion_study else ""
+
+    def _update_database_with_directory(
+        self, directory_path: Path, solver_version: SolverMinorVersion, xpansion_mode: str
+    ) -> None:
         antares_version = self.antares_version if self.antares_version != DEFAULT_VERSION else solver_version
         if not antares_version:
-            self._display.show_message(
-                "... not a valid Antares study",
-                __name__ + "." + self.__class__.__name__,
-            )
+            self._display.show_message("... not a valid Antares study", __name__ + "." + self.__class__.__name__)
         elif antares_version not in self.ANTARES_VERSIONS_ON_REMOTE_SERVER:
             message = (
                 f"... Antares version {antares_version} is not supported"
                 f" (supported versions: {self.ANTARES_VERSIONS_ON_REMOTE_SERVER})"
             )
-            self._display.show_message(
-                message,
-                __name__ + "." + self.__class__.__name__,
-            )
+            self._display.show_message(message, __name__ + "." + self.__class__.__name__)
         else:
-            candidates_file_path = directory_path.joinpath("user", "expansion", "candidates.ini")
-            is_xpansion_study = candidates_file_path.is_file()
-            xpansion_mode = self.xpansion_mode if is_xpansion_study else ""
-
-            valid_xpansion_candidate = self.xpansion_mode in ["r", "cpp"] and is_xpansion_study
+            valid_xpansion_candidate = self.xpansion_mode == xpansion_mode
             valid_antares_candidate = not self.xpansion_mode
 
             if valid_antares_candidate or valid_xpansion_candidate:

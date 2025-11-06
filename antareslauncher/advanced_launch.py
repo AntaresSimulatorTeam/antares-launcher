@@ -28,6 +28,7 @@ def main() -> None:
         alt_ssh_paths=alt_ssh_paths,
     )
     arguments = parser.parser.parse_args(sys.argv[1:])
+    arguments.xpansion_mode = "trajectory"
     main_parameters: MainParameters = param_reader.get_main_parameters()
     (config.json_dir / main_parameters.default_json_db_name).unlink(missing_ok=True)
     run_with(arguments=arguments, parameters=main_parameters, show_banner=True)
