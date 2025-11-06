@@ -20,18 +20,13 @@ class ConfigFileNotFoundError(AntaresLauncherException):
         super().__init__(possible_dirs, config_name, *args)
 
     @property
-    def possible_dirs(self) -> Sequence[pathlib.Path]:
-        return self.args[0]
-
-    @property
     def config_name(self) -> str:
         return self.args[1]
 
     @override
     def __str__(self):
-        possible_dirs = ", ".join(f"'{p}'" for p in self.possible_dirs)
-        config_name = self.config_name
-        return f"Configuration file '{config_name}' not found in the following locations: {possible_dirs}"
+        possible_dirs = ", ".join(f"'{p}'" for p in self.args[0])
+        return f"Configuration file '{self.args[1]}' not found in the following locations: {possible_dirs}"
 
 
 class ConfigError(AntaresLauncherException):
