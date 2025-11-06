@@ -30,7 +30,7 @@ def retry(
     delay_sec: float = 5,
     max_retry: int = 5,
     msg_fmt: str = "Retrying in {delay_sec} seconds...",
-):
+) -> t.Callable[[t.Any], t.Any]:
     """
     Decorator to retry a function call if it raises an exception.
 
