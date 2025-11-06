@@ -526,7 +526,7 @@ class SshConnection:
                 sftp_stat = sftp_client.stat(file_path)
                 sftp_client.close()
                 if stat.S_ISREG(sftp_stat.st_mode):  # type: ignore
-                    result_flag = sftp_stat.st_size > 0
+                    result_flag = sftp_stat.st_size > 0  # type: ignore
                 else:
                     raise IOError(f"Not a regular file: '{file_path}'")
         except FileNotFoundError:
