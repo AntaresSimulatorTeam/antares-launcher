@@ -153,7 +153,7 @@ class StudyListComposer:
                 if not self._repo.is_study_inside_database(buffer_study):
                     self._add_study_to_database(buffer_study)
 
-    def _add_study_to_database(self, buffer_study):
+    def _add_study_to_database(self, buffer_study: StudyDTO) -> None:
         self._repo.save_study(buffer_study)
         self._display.show_message(
             f"New study added "
