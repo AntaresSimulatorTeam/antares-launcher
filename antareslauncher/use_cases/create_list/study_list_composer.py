@@ -108,7 +108,7 @@ class StudyListComposer:
         message = f"Updating current database from '{self._studies_in_dir}'..."
         if self.xpansion_mode:
             message += f"New studies will be run in xpansion mode {self.xpansion_mode}"
-        self._display.show_message(message, f"{__name__}.{__class__.__name__}")
+        self._display.show_message(message, f"{__name__}.{self.__class__.__name__}")
 
         self._new_study_added = False
 
@@ -118,10 +118,7 @@ class StudyListComposer:
                 self._update_database_with_directory(directory_path)
 
         if not self._new_study_added:
-            self._display.show_message(
-                "Didn't find any new simulations...",
-                f"{__name__}.{__class__.__name__}",
-            )
+            self._display.show_message("Didn't find any new simulations...", f"{__name__}.{self.__class__.__name__}")
 
     def _update_database_with_directory(self, directory_path: Path) -> None:
         solver_version = get_solver_version(directory_path)
