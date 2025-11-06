@@ -11,6 +11,7 @@ class Modes(IntEnum):
     antares = 1
     xpansion_r = 2
     xpansion_cpp = 3
+    xpansion_trajectory = 4
 
 
 @dataclass

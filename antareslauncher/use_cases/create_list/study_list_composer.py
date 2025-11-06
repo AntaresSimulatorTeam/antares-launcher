@@ -86,6 +86,7 @@ class StudyListComposer:
             "": Modes.antares,
             "r": Modes.xpansion_r,
             "cpp": Modes.xpansion_cpp,
+            "trajectory": Modes.xpansion_trajectory,
         }.get(self.xpansion_mode, Modes.antares)
         new_study = StudyDTO(
             path=str(path),

@@ -73,6 +73,7 @@ class SlurmScriptFeatures:
             Modes.antares: "ANTARES",  # Mode for Antares Solver
             Modes.xpansion_r: "ANTARES_XPANSION_R",  # Mode for Old Xpansion implemented in R
             Modes.xpansion_cpp: "ANTARES_XPANSION_CPP",  # Mode for Xpansion implemented in C++
+            Modes.xpansion_trajectory: "ANTARES_XPANSION_TRAJECTORY",  # Mode for Xpansion implemented in C++
         }[script_params.run_mode]
 
         # Construct the `sbatch` command
