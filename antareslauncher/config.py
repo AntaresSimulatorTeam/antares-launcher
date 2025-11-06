@@ -256,7 +256,7 @@ class Config:
         self.ssh_config.save_config(config_dir.joinpath(ssh_config_name))
 
 
-def get_user_config_dir(system: str = ""):
+def get_user_config_dir(system: str = "") -> pathlib.Path:
     """
     Retrieve the user configuration directory based on the system platform.
 
