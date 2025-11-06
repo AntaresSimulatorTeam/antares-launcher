@@ -91,4 +91,4 @@ class ParametersReader:
             ssh_dict = json.load(ssh_connection_json)
         if "private_key_file" in ssh_dict:
             ssh_dict["private_key_file"] = os.path.expanduser(ssh_dict["private_key_file"])
-        return ssh_dict
+        return t.cast(dict[str, t.Any], ssh_dict)
