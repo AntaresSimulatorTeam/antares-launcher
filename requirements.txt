@@ -1,4 +1,4 @@
-antares-study-version~=1.0.7
+antares-study-version~=1.0.20
 bcrypt~=5.0.0
 cffi~=1.15.1
 cryptography~=39.0.1
