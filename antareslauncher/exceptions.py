@@ -20,7 +20,7 @@ class ConfigFileNotFoundError(AntaresLauncherException):
         super().__init__(possible_dirs, config_name, *args)
 
     @override
-    def __str__(self):
+    def __str__(self) -> str:
         possible_dirs = ", ".join(f"'{p}'" for p in self.args[0])
         return f"Configuration file '{self.args[1]}' not found in the following locations: {possible_dirs}"
 
@@ -31,41 +31,26 @@ class ConfigError(AntaresLauncherException):
     def __init__(self, config_path: pathlib.Path, *args):
         super().__init__(config_path, *args)
 
-    @property
-    def config_path(self) -> pathlib.Path:
-        return self.args[0]
-
     @override
-    def __str__(self):
-        config_path = self.config_path
-        return f"Invalid configuration file '{config_path}'"
+    def __str__(self) -> str:
+        return f"Invalid configuration file '{self.args[0]}'"
 
 
 class UnknownFileSuffixError(ConfigError):
     def __init__(self, config_path: pathlib.Path, suffix: str):
         super().__init__(config_path, suffix)
 
-    @property
-    def suffix(self) -> str:
-        return self.args[1]
-
     @override
     def __str__(self):
         parent_msg = super().__str__()
-        suffix = self.suffix
-        return f"{parent_msg}: unknown file suffix '{suffix}'"
+        return f"{parent_msg}: unknown file suffix '{self.args[1]}'"
 
 
 class InvalidConfigValueError(ConfigError):
     def __init__(self, config_path: pathlib.Path, error_msg: str):
         super().__init__(config_path, error_msg)
 
-    @property
-    def error_msg(self) -> str:
-        return self.args[1]
-
     @override
     def __str__(self):
         parent_msg = super().__str__()
-        error_msg = self.error_msg
-        return f"{parent_msg}: Invalid config value: {error_msg}"
+        return f"{parent_msg}: Invalid config value: {self.args[1]}"
