@@ -47,16 +47,18 @@ def study_list_composer_fixture(
             xpansion_mode="",
             output_dir=str(tmp_path.joinpath("FINISHED")),
             post_processing=False,
-            antares_versions_on_remote_server=[SolverMinorVersion.parse(v) for v in [
-                "800",
-                "810",
-                "820",
-                "830",
-                "840",
-                "850",
-            ]],
+            antares_versions_on_remote_server=[
+                SolverMinorVersion.parse(v)
+                for v in [
+                    "800",
+                    "810",
+                    "820",
+                    "830",
+                    "840",
+                    "850",
+                ]
+            ],
             other_options="",
-
         ),
     )
     return composer

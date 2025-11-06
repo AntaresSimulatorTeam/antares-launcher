@@ -297,17 +297,16 @@ class TestRemoteEnvironmentWithSlurm:
     @pytest.mark.unit_test
     def test_get_job_state_flags__scontrol_succeeds_after_retry(self, remote_env, study):
         study.job_id = 42
-        remote_env.connection.execute_command.side_effect = [
-            ("", "error"),
-            ("JobState=RUNNING", "")
-        ]
+        remote_env.connection.execute_command.side_effect = [("", "error"), ("JobState=RUNNING", "")]
 
         actual = remote_env.get_job_state_flags(study)
         assert actual == (True, False, False)
-        remote_env.connection.execute_command.assert_has_calls([
-            call(f"scontrol show job {study.job_id}"),
-            call(f"scontrol show job {study.job_id}"),
-        ])
+        remote_env.connection.execute_command.assert_has_calls(
+            [
+                call(f"scontrol show job {study.job_id}"),
+                call(f"scontrol show job {study.job_id}"),
+            ]
+        )
         assert remote_env.connection.execute_command.call_count == 2
 
     # noinspection SpellCheckingInspection

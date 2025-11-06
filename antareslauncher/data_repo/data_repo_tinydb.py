@@ -18,11 +18,7 @@ def _calc_diff(
     diff_map = {
         "DEL": {k: old[k] for k in old_keys - new_keys},
         "ADD": {k: new[k] for k in new_keys - old_keys},
-        "UPD": {
-            k: f"{old[k]!r} => {new[k]!r}"
-            for k in old_keys & new_keys
-            if old[k] != new[k]
-        },
+        "UPD": {k: f"{old[k]!r} => {new[k]!r}" for k in old_keys & new_keys if old[k] != new[k]},
     }
     diff_map = {k: v for k, v in diff_map.items() if v}
     return diff_map

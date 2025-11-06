@@ -67,6 +67,7 @@ class JobStateCodes(enum.Enum):
     The possible values for this column depend on the cluster management system
     you are using, but here are some of the most common values:
     """
+
     # Job terminated due to launch failure, typically due to a hardware failure
     # (e.g. unable to boot the node or block and the job can not be requeued).
     BOOT_FAIL = "BOOT_FAIL"
@@ -119,8 +120,9 @@ class JobStateCodes(enum.Enum):
     TIMEOUT = "TIMEOUT"
 
 
-def _execute_with_retry(connection: SshConnection, command: str, attempts: int = 5, sleep_time: float = 5)\
-        -> Tuple[Optional[str], str]:
+def _execute_with_retry(
+    connection: SshConnection, command: str, attempts: int = 5, sleep_time: float = 5
+) -> Tuple[Optional[str], str]:
     """Executes a command with retries in case the command outputs an error.
 
     Note that the SSH connection implementation may already implement a retry mechanism for the

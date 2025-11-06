@@ -1,6 +1,7 @@
 """
 Parse the configuration file `configuration.yaml`.
 """
+
 import dataclasses
 import getpass
 import json

@@ -1,6 +1,7 @@
 """
 Antares Launcher Exceptions
 """
+
 import pathlib
 
 from typing import Sequence

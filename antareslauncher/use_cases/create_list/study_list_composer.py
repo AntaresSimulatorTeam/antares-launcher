@@ -12,6 +12,7 @@ from antareslauncher.study_dto import Modes, StudyDTO
 
 DEFAULT_VERSION = SolverMinorVersion.parse(0)
 
+
 def get_solver_version(study_dir: Path, *, default: SolverMinorVersion = DEFAULT_VERSION) -> SolverMinorVersion:
     """
     Retrieve the solver version number or else the study version number
