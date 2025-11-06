@@ -5,7 +5,7 @@ name: Test Python 🐍 package 📦
 
 on:
   push:
-    branches: [ '**' ]
+    branches: [ 'a' ]
 
 jobs:
   build:
