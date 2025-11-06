@@ -154,13 +154,11 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
     launcher.run()
 
 
-def verify_connection(connection, display):
-    # fmt: off
+def verify_connection(connection: ssh_connection.SshConnection, display: DisplayTerminal) -> None:
     if connection.test_connection():
         display.show_message(f"SSH connection to {connection.host} established", __name__)
     else:
         raise Exception(f"Could not establish SSH connection to {connection.host}")
-    # fmt: on
 
 
 def get_ssh_config_dict(

@@ -61,7 +61,7 @@ class ParametersReader:
         except KeyError as e:
             raise MissingValueException(yaml_filepath, str(e)) from None
 
-    def get_parser_parameters(self):
+    def get_parser_parameters(self) -> ParserParameters:
         return ParserParameters(
             default_wait_time=self.default_wait_time,
             default_time_limit=self.time_limit,
