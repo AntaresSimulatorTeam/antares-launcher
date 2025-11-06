@@ -361,7 +361,7 @@ class SshConnection:
             self.logger.info(f"SSH command stderr:\n{textwrap.indent(error, 'SSH ERROR> ')}")
             return output, error
 
-    def upload_file(self, src: str, dst: str):
+    def upload_file(self, src: str, dst: str) -> bool:
         """Uploads a file to a remote server via sftp protocol
 
         Args:

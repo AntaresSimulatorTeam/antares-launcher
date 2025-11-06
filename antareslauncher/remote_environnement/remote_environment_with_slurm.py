@@ -266,7 +266,7 @@ class RemoteEnvironmentWithSlurm:
 
     def get_job_state_flags(
         self,
-        study,
+        study: StudyDTO,
         *,
         attempts=5,
         sleep_time=0.5,
@@ -413,11 +413,11 @@ class RemoteEnvironmentWithSlurm:
         reason = f"The command [{command}] return an non-parsable output:\n{textwrap.indent(output, 'OUTPUT> ')}"
         raise GetJobStateError(job_id, job_name, reason)
 
-    def upload_file(self, src) -> bool:
+    def upload_file(self, src: str) -> bool:
         """Uploads a file to the remote server
 
         Args:
-            src: Path of the file to upload
+            src: Pathlike string of the file to upload
 
         Returns:
             True if the file has been successfully sent, False otherwise
