@@ -11,6 +11,7 @@ import typing as t
 from pathlib import Path, PurePosixPath
 
 import paramiko
+
 from typing_extensions import override
 
 RemotePath = PurePosixPath
@@ -108,7 +109,7 @@ class DownloadMonitor:
         logger: A logger object for logging progress messages.
     """
 
-    def __init__(self, total_size: int, msg: str = "", logger: logging.Logger | None =None) -> None:
+    def __init__(self, total_size: int, msg: str = "", logger: logging.Logger | None = None) -> None:
         self.total_size = total_size
         self.msg = msg or "Downloading..."
         self.logger = logger or logging.getLogger(__name__)
@@ -191,7 +192,7 @@ class SshConnection:
         self.username = ""
         self.port = 22
         self.password = None
-        self.private_key = None
+        self.private_key: paramiko.RSAKey | paramiko.Ed25519Key | None = None
 
         if config:
             self.logger.info("Loading ssh connection from config dictionary")
@@ -504,37 +505,6 @@ class SshConnection:
                         src_path = src_dir.joinpath(filename)
                         sftp.remove(str(src_path))
                 return [dst_dir.joinpath(filename) for filename in files_to_download]
-
-    def check_remote_dir_exists(self, dir_path):
-        """Checks if a remote path is a directory
-
-        Args:
-            dir_path: Remote path
-
-        Returns:
-            True if the directory exists, False otherwise
-
-        Raises:
-            IOError if the path exists and is a file
-        """
-        result_flag = False
-        try:
-            with self.ssh_client() as client:
-                sftp_client = client.open_sftp()
-                self.logger.info(f"Checking remote dir {dir_path} exists")
-                sftp_stat = sftp_client.stat(dir_path)
-                sftp_client.close()
-                if stat.S_ISDIR(sftp_stat.st_mode):
-                    result_flag = True
-                else:
-                    raise IOError
-        except FileNotFoundError:
-            self.logger.debug(FILE_NOT_FOUND_ERROR, exc_info=True)
-            result_flag = False
-        except ConnectionFailedException:
-            self.logger.error(REMOTE_CONNECTION_ERROR, exc_info=True)
-            result_flag = False
-        return result_flag
 
     def check_file_not_empty(self, file_path: str) -> bool:
         """Checks if a remote file exists and is not empty
