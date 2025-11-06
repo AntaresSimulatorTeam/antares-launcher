@@ -220,13 +220,13 @@ class RemoteEnvironmentWithSlurm:
         time_limit_minutes = int(time_limit_seconds / 60)
         return max(time_limit_minutes, minimum_duration_in_minutes)
 
-    def compose_launch_command(self, script_params: ScriptParametersDTO):
+    def compose_launch_command(self, script_params: ScriptParametersDTO) -> str:
         return self.slurm_script_features.compose_launch_command(
             self.remote_base_path,
             script_params,
         )
 
-    def submit_job(self, my_study: StudyDTO):
+    def submit_job(self, my_study: StudyDTO) -> int:
         """Submits the Antares job to slurm
 
         Args:
