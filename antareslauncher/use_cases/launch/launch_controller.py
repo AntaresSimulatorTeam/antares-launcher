@@ -7,6 +7,7 @@ from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.data_repo.data_reporter import DataReporter
 from antareslauncher.display.display_terminal import DisplayTerminal
 from antareslauncher.remote_environnement.remote_environment_with_slurm import RemoteEnvironmentWithSlurm
+from antareslauncher.study_dto import StudyDTO
 from antareslauncher.use_cases.launch.study_submitter import StudySubmitter
 from antareslauncher.use_cases.launch.study_zip_uploader import StudyZipfileUploader
 
@@ -26,7 +27,7 @@ class StudyLauncher:
         self._study_submitter = study_submitter
         self.reporter = reporter
 
-    def launch_study(self, study):
+    def launch_study(self, study: StudyDTO) -> None:
         if study.job_id:
             # No need to display a user message here; job already exists.
             return
