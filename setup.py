@@ -14,6 +14,7 @@ from antareslauncher import __author__, __project_name__, __version__
 # Warning: this package is used as a library, so you should not constrain the versions too much.
 install_requires = [
     "paramiko~= 3.4.1",
+    "antares-study-version~= 1.0.18",
     "PyYAML",
     "tinydb < 4.8",
     "tqdm < 4.65",
