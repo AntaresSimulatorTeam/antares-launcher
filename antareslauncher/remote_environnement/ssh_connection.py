@@ -555,7 +555,7 @@ class SshConnection:
                 try:
                     self.logger.info(f"Checking if remote directory {dir_path} exists")
                     sftp_stat = sftp_client.stat(dir_path)
-                    result_flag = stat.S_ISDIR(sftp_stat.st_mode)
+                    result_flag = stat.S_ISDIR(sftp_stat.st_mode)  # type: ignore
                 except FileNotFoundError:
                     self.logger.info(f"Creating remote directory {dir_path}")
                     sftp_client.mkdir(dir_path)
@@ -588,7 +588,7 @@ class SshConnection:
                 try:
                     self.logger.info(f"Removing remote file {file_path}")
                     sftp_stat = sftp_client.stat(file_path)
-                    if not stat.S_ISREG(sftp_stat.st_mode):
+                    if not stat.S_ISREG(sftp_stat.st_mode):  # type: ignore
                         raise IOError(f"Not a regular file: '{file_path}'")
                     with contextlib.suppress(IOError):
                         sftp_client.remove(file_path)
