@@ -28,7 +28,7 @@ class ConfigFileNotFoundError(AntaresLauncherException):
 class ConfigError(AntaresLauncherException):
     """A problem with a config file, or a value in one."""
 
-    def __init__(self, config_path: pathlib.Path, *args):
+    def __init__(self, config_path: pathlib.Path, *args):  # type: ignore
         super().__init__(config_path, *args)
 
     @override
