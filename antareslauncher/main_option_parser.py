@@ -29,8 +29,8 @@ class MainOptionParser:
     def __init__(self, parameters: ParserParameters) -> None:
         self.parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
         defaults = {
-            "wait_mode": True,
-            "wait_time": 5,
+            "wait_mode": False,
+            "wait_time": parameters.default_wait_time,
             "studies_in": str(parameters.studies_in_dir),
             "output_dir": str(parameters.finished_dir),
             "check_queue": False,
