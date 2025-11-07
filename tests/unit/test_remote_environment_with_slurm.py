@@ -714,6 +714,7 @@ class TestRemoteEnvironmentWithSlurm:
             ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, False, ""),
             ("ANTARES", Modes.antares, False, ""),
             ("ANTARES", Modes.antares, False, 'xpress param-optim1="THREADS 4 PRESOLVE 1" solver-logs'),
+            ("ANTARES_XPANSION_TRAJECTORY", Modes.xpansion_trajectory, False, ""),
         ],
     )
     @pytest.mark.unit_test
