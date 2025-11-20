@@ -53,7 +53,7 @@ class StudyListComposerParameters:
     time_limit: int
     log_dir: str
     n_cpu: int
-    xpansion_mode: str  # "", "r", "cpp"
+    xpansion_mode: str  # "", "r", "cpp", "trajectory"
     output_dir: str
     post_processing: bool
     antares_versions_on_remote_server: t.Sequence[SolverMinorVersion]
