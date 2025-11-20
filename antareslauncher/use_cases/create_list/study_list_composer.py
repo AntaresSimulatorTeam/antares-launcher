@@ -126,7 +126,7 @@ class StudyListComposer:
         directories = Path(self._studies_in_dir).iterdir()
         for directory_path in sorted(directories):
             if directory_path.is_dir():
-                if (directory_path / "user-trajectory.yaml").exists():
+                if (directory_path / "input-trajectory.yaml").exists():
                     # Means this is an Xpansion trajectory study.
                     solver_version = _find_study_version_for_xpansion_trajectory(directory_path)
                     xpansion_mode = "trajectory"
