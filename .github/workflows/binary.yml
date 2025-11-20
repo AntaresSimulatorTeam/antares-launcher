@@ -2,7 +2,7 @@ name: Deploy Executable
 on:
   push:
     branches:
-      - '**'
+      - 'main'
       - 'dev'
       - 'release/**'
       - 'support/**'
@@ -17,7 +17,7 @@ jobs:
         # We should build a binary executable for windows-2016,
         # But currently, the oldest available version is windows-2022.
         # We also build a binary executable for ubuntu-20.04 for integration tests.
-        os: [ ubuntu-22.04 ]
+        os: [ windows-2022, ubuntu-22.04 ]
 
     steps:
       - name: Checkout github repo (+ download lfs dependencies)
@@ -35,7 +35,7 @@ jobs:
       - name: Generate Antares Launcher executable
         # Generates:
         # - "Antares_Launcher-X.Y.Z-windows-2019.exe" on Windows
-        # - "Antares_Launcher-X.Y.Z-ubuntu-20.04" on Ubuntu
+        # - "Antares_Launcher-X.Y.Z-ubuntu-22.04" on Ubuntu
         run: |
           pyinstaller -F antareslauncher/advanced_launch.py -n Antares_Launcher-$(python setup.py --version)-${{ matrix.os }}
       - name: Archive Antares Launcher executable
