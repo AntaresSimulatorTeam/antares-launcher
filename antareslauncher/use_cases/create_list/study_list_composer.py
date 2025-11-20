@@ -53,7 +53,7 @@ class StudyListComposerParameters:
     time_limit: int
     log_dir: str
     n_cpu: int
-    xpansion_mode: str  # "", "r", "cpp"
+    xpansion_mode: str  # "", "r", "cpp", "trajectory"
     output_dir: str
     post_processing: bool
     antares_versions_on_remote_server: t.Sequence[SolverMinorVersion]
@@ -97,7 +97,7 @@ class StudyListComposer:
             "r": Modes.xpansion_r,
             "cpp": Modes.xpansion_cpp,
             "trajectory": Modes.xpansion_trajectory,
-        }.get(self.xpansion_mode, Modes.antares)
+        }.get(xpansion_mode, Modes.antares)
         new_study = StudyDTO(
             path=str(path),
             n_cpu=self.n_cpu,
