@@ -2,10 +2,7 @@ name: Deploy Executable
 on:
   push:
     branches:
-      - 'main'
-      - 'dev'
-      - 'release/**'
-      - 'support/**'
+      - '**'
   release:
     types: [ published ]
 
