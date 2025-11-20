@@ -31,6 +31,17 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install .[pyinstaller]
+
+      - name: Check ipaddress availability
+        run: |
+          python3 - << 'EOF'
+          try:
+              import ipaddress
+              print("ipaddress module: OK")
+          except Exception as e:
+              print("ipaddress module: MISSING:", e)
+          EOF
+
       - name: Generate Antares Launcher executable
         # Generates:
         # - "Antares_Launcher-X.Y.Z-windows-2019.exe" on Windows
