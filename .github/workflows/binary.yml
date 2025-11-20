@@ -17,7 +17,7 @@ jobs:
         # We should build a binary executable for windows-2016,
         # But currently, the oldest available version is windows-2022.
         # We also build a binary executable for ubuntu-20.04 for integration tests.
-        os: [ windows-2022, ubuntu-22.04 ]
+        os: [ ubuntu-22.04 ]
 
     steps:
       - name: Checkout github repo (+ download lfs dependencies)
@@ -25,22 +25,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.10
       - name: Install pip dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install .[pyinstaller]
-
-      - name: Check ipaddress availability
-        run: |
-          python3 - << 'EOF'
-          try:
-              import ipaddress
-              print("ipaddress module: OK")
-          except Exception as e:
-              print("ipaddress module: MISSING:", e)
-          EOF
 
       - name: Generate Antares Launcher executable
         # Generates:
