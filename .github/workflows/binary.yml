@@ -37,7 +37,7 @@ jobs:
         # - "Antares_Launcher-X.Y.Z-windows-2019.exe" on Windows
         # - "Antares_Launcher-X.Y.Z-ubuntu-20.04" on Ubuntu
         run: |
-          pyinstaller -F antareslauncher/advanced_launch.py --hidden-import=ipaddress -n Antares_Launcher-$(python3 setup.py --version)-${{ matrix.os }}
+          pyinstaller -F antareslauncher/advanced_launch.py --hidden-import=ipaddress -n Antares_Launcher-$(python setup.py --version)-${{ matrix.os }}
       - name: Archive Antares Launcher executable
         uses: actions/upload-artifact@v4
         with:
