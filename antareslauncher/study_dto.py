@@ -11,6 +11,7 @@ class Modes(IntEnum):
     antares = 1
     xpansion_r = 2
     xpansion_cpp = 3
+    xpansion_trajectory = 4
 
 
 @dataclass
@@ -47,7 +48,7 @@ class StudyDTO:
     time_limit: t.Optional[int] = None
     n_cpu: int = 1
     antares_version: StudyVersion = StudyVersion.parse(0)
-    xpansion_mode: str = ""  # "", "r", "cpp"
+    xpansion_mode: str = ""  # "", "r", "cpp", "trajectory"
     run_mode: Modes = Modes.antares
     post_processing: bool = False
     other_options: str = ""

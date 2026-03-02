@@ -66,7 +66,7 @@ class TestGetSolverVersion:
 
 
 class TestStudyListComposer:
-    @pytest.mark.parametrize("xpansion_mode", ["r", "cpp", ""])
+    @pytest.mark.parametrize("xpansion_mode", ["r", "cpp", "", "trajectory"])
     def test_update_study_database__xpansion_mode(
         self,
         study_list_composer: StudyListComposer,
@@ -86,6 +86,7 @@ class TestStudyListComposer:
             },
             "r": {"SMTA-case"},
             "cpp": {"SMTA-case"},
+            "trajectory": {"SMTA-case"},
         }[study_list_composer.xpansion_mode or ""]
         assert actual_names == expected_names
 
