@@ -8,7 +8,17 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
-## [1.4.5] - 2025-10-08
+## [1.4.7] - 2026-02-03
+
+### Changed
+
+* feat(xpansion): support xpansion trajectory [#96](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/96)
+* chore(deps): bump pyinstaller [#97](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/97)
+* chore(db): remove dead code [#95](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/95)
+* feat(deps): add mypy and ruff + drop support of Python3.8 and 3.9 [#94](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/94)
+* fix(binary): correctly build the binary [#93](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/93)
+
+## [1.4.6] - 2025-10-08
 
 ### Changed
 
