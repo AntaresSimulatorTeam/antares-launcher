@@ -259,6 +259,7 @@ class TestRemoteEnvironmentWithSlurm:
             run_mode=study.run_mode,
             post_processing=study.post_processing,
             other_options="",
+            over_subscribe=False,
         )
         command = remote_env.slurm_script_features.compose_launch_command(remote_env.remote_base_path, script_params)
         remote_env.connection.execute_command.assert_called_once_with(command)
@@ -742,6 +743,7 @@ class TestRemoteEnvironmentWithSlurm:
             run_mode=study.run_mode,
             post_processing=study.post_processing,
             other_options=other_options,
+            over_subscribe=False,
         )
         command = remote_env.compose_launch_command(script_params)
         # then
