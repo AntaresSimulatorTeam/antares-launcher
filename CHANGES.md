@@ -8,6 +8,12 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+## [1.4.8] - 2026-06-09
+
+### Changed
+
+* feat: support oversubscribe option [#102](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/102)
+
 ## [1.4.7] - 2026-02-03
 
 ### Changed
