@@ -259,7 +259,7 @@ class TestRemoteEnvironmentWithSlurm:
             run_mode=study.run_mode,
             post_processing=study.post_processing,
             other_options="",
-            over_subscribe=False,
+            oversubscribe=False,
         )
         command = remote_env.slurm_script_features.compose_launch_command(remote_env.remote_base_path, script_params)
         remote_env.connection.execute_command.assert_called_once_with(command)
@@ -706,7 +706,7 @@ class TestRemoteEnvironmentWithSlurm:
         assert output == 1
 
     @pytest.mark.parametrize(
-        "job_type,mode,post_processing,other_options,over_subscribe",
+        "job_type,mode,post_processing,other_options,oversubscribe",
         [
             ("ANTARES_XPANSION_R", Modes.xpansion_r, True, "", False),
             ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, True, "", False),
@@ -727,7 +727,7 @@ class TestRemoteEnvironmentWithSlurm:
         mode,
         post_processing,
         other_options,
-        over_subscribe: bool,
+        oversubscribe: bool,
         study,
     ):
         # given
@@ -745,12 +745,12 @@ class TestRemoteEnvironmentWithSlurm:
             run_mode=study.run_mode,
             post_processing=study.post_processing,
             other_options=other_options,
-            over_subscribe=over_subscribe,
+            oversubscribe=oversubscribe,
         )
         command = remote_env.compose_launch_command(script_params)
         # then
         change_dir = f"cd {remote_env.remote_base_path}"
-        cmd_start = "sbatch" if not over_subscribe else "sbatch --oversubscribe"
+        cmd_start = "sbatch" if not oversubscribe else "sbatch --oversubscribe"
         reference_submit_command = (
             f"{cmd_start}"
             " --partition=fake_partition"

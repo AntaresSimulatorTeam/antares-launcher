@@ -115,7 +115,7 @@ def run_with(arguments: argparse.Namespace, parameters: MainParameters, show_ban
             antares_versions_on_remote_server=parameters.antares_versions_on_remote_server,
             other_options=arguments.other_options or "",
             antares_version=SolverMinorVersion.parse(arguments.antares_version),
-            over_subscribe=arguments.over_subscribe or False,
+            oversubscribe=arguments.oversubscribe or False,
         ),
     )
     launch_controller = LaunchController(repo=data_repo, env=environment, display=display)

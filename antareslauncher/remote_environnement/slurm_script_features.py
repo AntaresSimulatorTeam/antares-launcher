@@ -16,7 +16,7 @@ class ScriptParametersDTO:
     run_mode: Modes
     post_processing: bool
     other_options: str
-    over_subscribe: bool
+    oversubscribe: bool
 
 
 class SlurmScriptFeatures:
@@ -79,7 +79,7 @@ class SlurmScriptFeatures:
 
         # Construct the `sbatch` command
         args = ["sbatch"]
-        if script_params.over_subscribe:
+        if script_params.oversubscribe:
             args.append("--oversubscribe")
         args.extend(f"{k}={shlex.quote(str(v))}" for k, v in _opts.items() if v)
         args.extend(
