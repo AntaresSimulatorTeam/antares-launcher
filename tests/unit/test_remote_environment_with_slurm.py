@@ -706,16 +706,17 @@ class TestRemoteEnvironmentWithSlurm:
         assert output == 1
 
     @pytest.mark.parametrize(
-        "job_type,mode,post_processing,other_options",
+        "job_type,mode,post_processing,other_options,over_subscribe",
         [
-            ("ANTARES_XPANSION_R", Modes.xpansion_r, True, ""),
-            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, True, ""),
-            ("ANTARES", Modes.antares, True, "adq_patch_rc"),
-            ("ANTARES_XPANSION_R", Modes.xpansion_r, False, ""),
-            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, False, ""),
-            ("ANTARES", Modes.antares, False, ""),
-            ("ANTARES", Modes.antares, False, 'xpress param-optim1="THREADS 4 PRESOLVE 1" solver-logs'),
-            ("ANTARES_XPANSION_TRAJECTORY", Modes.xpansion_trajectory, False, ""),
+            ("ANTARES_XPANSION_R", Modes.xpansion_r, True, "", False),
+            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, True, "", False),
+            ("ANTARES", Modes.antares, True, "adq_patch_rc", False),
+            ("ANTARES_XPANSION_R", Modes.xpansion_r, False, "", False),
+            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, False, "", False),
+            ("ANTARES", Modes.antares, False, "", False),
+            ("ANTARES", Modes.antares, False, 'xpress param-optim1="THREADS 4 PRESOLVE 1" solver-logs', False),
+            ("ANTARES_XPANSION_TRAJECTORY", Modes.xpansion_trajectory, False, "", False),
+            ("ANTARES", Modes.antares, False, "", True),
         ],
     )
     @pytest.mark.unit_test
@@ -726,6 +727,7 @@ class TestRemoteEnvironmentWithSlurm:
         mode,
         post_processing,
         other_options,
+        over_subscribe: bool,
         study,
     ):
         # given
@@ -743,13 +745,14 @@ class TestRemoteEnvironmentWithSlurm:
             run_mode=study.run_mode,
             post_processing=study.post_processing,
             other_options=other_options,
-            over_subscribe=False,
+            over_subscribe=over_subscribe,
         )
         command = remote_env.compose_launch_command(script_params)
         # then
         change_dir = f"cd {remote_env.remote_base_path}"
+        cmd_start = "sbatch" if not over_subscribe else "sbatch --oversubscribe"
         reference_submit_command = (
-            f"sbatch"
+            f"{cmd_start}"
             " --partition=fake_partition"
             " --qos=user1_qos"
             f" --job-name={Path(study.path).name}"
