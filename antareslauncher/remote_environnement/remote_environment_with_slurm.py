@@ -242,7 +242,8 @@ class RemoteEnvironmentWithSlurm:
             antares_version=SolverMinorVersion.parse(my_study.antares_version),
             run_mode=my_study.run_mode,
             post_processing=my_study.post_processing,
-            other_options=my_study.other_options or "",
+            other_options=my_study.other_options,
+            oversubscribe=my_study.oversubscribe,
         )
         command = self.compose_launch_command(script_params)
 

@@ -52,6 +52,7 @@ class StudyDTO:
     run_mode: Modes = Modes.antares
     post_processing: bool = False
     other_options: str = ""
+    oversubscribe: bool = False
 
     def __post_init__(self) -> None:
         self.name = Path(self.path).name

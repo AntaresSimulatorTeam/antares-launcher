@@ -59,6 +59,7 @@ class StudyListComposerParameters:
     antares_versions_on_remote_server: t.Sequence[SolverMinorVersion]
     other_options: str
     antares_version: SolverMinorVersion = DEFAULT_VERSION
+    oversubscribe: bool = False
 
 
 class StudyListComposer:
@@ -82,6 +83,7 @@ class StudyListComposer:
         self._new_study_added = False
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
         self.ANTARES_VERSIONS_ON_REMOTE_SERVER = parameters.antares_versions_on_remote_server
+        self._oversubscribe = parameters.oversubscribe
 
     def get_list_of_studies(self) -> t.Sequence[StudyDTO]:
         """Retrieve the list of studies from the repo
@@ -109,6 +111,7 @@ class StudyListComposer:
             run_mode=run_mode,
             post_processing=self.post_processing,
             other_options=self.other_options,
+            oversubscribe=self._oversubscribe,
         )
         return new_study
 
