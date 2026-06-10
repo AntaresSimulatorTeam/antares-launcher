@@ -44,6 +44,7 @@ class MainOptionParser:
             "version": False,
             "post_processing": False,
             "other_options": None,
+            "oversubscribe": False,
         }
         self.parser.set_defaults(**defaults)
 
