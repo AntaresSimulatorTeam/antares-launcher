@@ -31,6 +31,7 @@ class TestMainOptionParser:
             "job_id_to_kill": None,
             "post_processing": False,
             "json_ssh_config": look_for_default_ssh_conf_file(self.main_options_parameters),
+            "oversubscribe": False,
         }
 
     @pytest.fixture(scope="function")
