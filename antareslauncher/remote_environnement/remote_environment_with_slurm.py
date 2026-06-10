@@ -76,6 +76,9 @@ class JobStateCodes(enum.Enum):
     # Indicates that the only job on the node or that all jobs on the node are in the process of completing.
     COMPLETING = "COMPLETING"
 
+    # Job has been allocated nodes and is waiting for them to boot or reboot.
+    CONFIGURING = "CONFIGURING"
+
     # Job terminated on deadline.
     DEADLINE = "DEADLINE"
 
@@ -91,6 +94,15 @@ class JobStateCodes(enum.Enum):
     # Job is awaiting resource allocation.
     PENDING = "PENDING"
 
+    # Job is immediately eligible for scheduling with the highest possible priority.
+    EXPEDITING = "EXPEDITING"
+
+    # Job failed to launch on the chosen nodes.
+    LAUNCH_FAILED = "LAUNCH_FAILED"
+
+    # Job has been allocated powered down nodes and is waiting for them to boot.
+    POWER_UP_NODE = "POWER_UP_NODE"
+
     # Job terminated due to preemption.
     PREEMPTED = "PREEMPTED"
 
@@ -100,18 +112,45 @@ class JobStateCodes(enum.Enum):
     # Job was requeued.
     REQUEUED = "REQUEUED"
 
+    # Node configuration for job failed.
+    RECONFIG_FAIL = "RECONFIG_FAIL"
+
+    # Job was requeued due to conditions of its sibling job in a federated setup.
+    REQUEUE_FED = "REQUEUE_FED"
+
+    # Job was requeued but will not be considered for scheduling until released.
+    REQUEUE_HOLD = "REQUEUE_HOLD"
+
     # Job is about to change size.
     RESIZING = "RESIZING"
 
+    # Job is held due to a deleted reservation.
+    RESV_DEL_HOLD = "RESV_DEL_HOLD"
+
     # Sibling was removed from cluster due to other cluster starting the job.
     REVOKED = "REVOKED"
+
+    # Outgoing signal to job is pending.
+    SIGNALING = "SIGNALING"
+
+    # Job was requeued in a special hold state.
+    SPECIAL_EXIT = "SPECIAL_EXIT"
+
+    # Job is staging out data.
+    STAGE_OUT = "STAGE_OUT"
 
     # Job has an allocation, but execution has been suspended and
     # CPUs have been released for other jobs.
     SUSPENDED = "SUSPENDED"
 
+    # Job received SIGSTOP to suspend execution without releasing resources.
+    STOPPED = "STOPPED"
+
     # Job terminated upon reaching its time limit.
     TIMEOUT = "TIMEOUT"
+
+    # Job is sending an update to the database.
+    UPDATE_DB = "UPDATE_DB"
 
 
 def _execute_with_retry(
@@ -301,24 +340,43 @@ class RemoteEnvironmentWithSlurm:
                 f"Assuming it was recently launched and will start processing soon."
             )
             job_state = JobStateCodes.RUNNING
+
+        not_started = (False, False, False)
+        started = (True, False, False)
+        finished_successfully = (True, True, False)
+        finished_with_error = (True, True, True)
+
         return {
             # JobStateCodes ------ started, finished, with_error
-            JobStateCodes.BOOT_FAIL: (False, False, False),
-            JobStateCodes.CANCELLED: (True, True, True),
-            JobStateCodes.COMPLETED: (True, True, False),
-            JobStateCodes.COMPLETING: (True, False, False),
-            JobStateCodes.DEADLINE: (True, True, True),  # similar to timeout
-            JobStateCodes.FAILED: (True, True, True),
-            JobStateCodes.NODE_FAIL: (True, True, True),
-            JobStateCodes.OUT_OF_MEMORY: (True, True, True),
-            JobStateCodes.PENDING: (False, False, False),
-            JobStateCodes.PREEMPTED: (False, False, False),
-            JobStateCodes.RUNNING: (True, False, False),
-            JobStateCodes.REQUEUED: (False, False, False),
-            JobStateCodes.RESIZING: (False, False, False),
-            JobStateCodes.REVOKED: (False, False, False),
-            JobStateCodes.SUSPENDED: (True, False, False),
-            JobStateCodes.TIMEOUT: (True, True, True),
+            JobStateCodes.BOOT_FAIL: not_started,
+            JobStateCodes.CANCELLED: finished_with_error,
+            JobStateCodes.COMPLETED: finished_successfully,
+            JobStateCodes.COMPLETING: started,
+            JobStateCodes.CONFIGURING: started,
+            JobStateCodes.DEADLINE: finished_with_error,  # similar to timeout
+            JobStateCodes.EXPEDITING: not_started,
+            JobStateCodes.FAILED: finished_with_error,
+            JobStateCodes.LAUNCH_FAILED: finished_with_error,
+            JobStateCodes.NODE_FAIL: finished_with_error,
+            JobStateCodes.OUT_OF_MEMORY: finished_with_error,
+            JobStateCodes.PENDING: not_started,
+            JobStateCodes.POWER_UP_NODE: started,
+            JobStateCodes.PREEMPTED: not_started,
+            JobStateCodes.RECONFIG_FAIL: finished_with_error,
+            JobStateCodes.REQUEUE_FED: not_started,
+            JobStateCodes.REQUEUE_HOLD: not_started,
+            JobStateCodes.RUNNING: started,
+            JobStateCodes.REQUEUED: not_started,
+            JobStateCodes.RESIZING: not_started,
+            JobStateCodes.RESV_DEL_HOLD: not_started,
+            JobStateCodes.REVOKED: not_started,
+            JobStateCodes.SIGNALING: started,
+            JobStateCodes.SPECIAL_EXIT: not_started,
+            JobStateCodes.STAGE_OUT: started,
+            JobStateCodes.STOPPED: started,
+            JobStateCodes.SUSPENDED: started,
+            JobStateCodes.TIMEOUT: finished_with_error,
+            JobStateCodes.UPDATE_DB: started,
         }[job_state]
 
     def _retrieve_slurm_control_state(
