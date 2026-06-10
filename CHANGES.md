@@ -8,6 +8,14 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
 
+## [1.4.9] - 2026-06-10
+
+### Changed
+
+* fix: add default value for oversubscribe option [#104](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/104)
+* fix(remote): add missing job state values [#105](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/105)
+
+
 ## [1.4.8] - 2026-06-09
 
 ### Changed
