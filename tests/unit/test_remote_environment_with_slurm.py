@@ -740,6 +740,7 @@ class TestRemoteEnvironmentWithSlurm:
             ("ANTARES_XPANSION_TRAJECTORY", Modes.xpansion_trajectory, False, "", False, ""),
             ("ANTARES", Modes.antares, False, "", True, ""),
             ("ANTARES", Modes.antares, False, "", False, "2026-07-04T19:00:00"),
+            ("ANTARES", Modes.antares, False, "", False, "now+5minutes"),
         ],
     )
     @pytest.mark.unit_test
