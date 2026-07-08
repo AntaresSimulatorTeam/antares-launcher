@@ -17,6 +17,7 @@ class ScriptParametersDTO:
     post_processing: bool
     other_options: str
     oversubscribe: bool
+    begin: str = ""
 
 
 class SlurmScriptFeatures:
@@ -68,6 +69,7 @@ class SlurmScriptFeatures:
             "--job-name": script_params.study_dir_name,  # non-empty string
             "--time": script_params.time_limit,  # greater than 0
             "--cpus-per-task": script_params.n_cpu,  # greater than 0
+            "--begin": script_params.begin,  # non-empty ISO-8601 string
         }
 
         _job_type = {
