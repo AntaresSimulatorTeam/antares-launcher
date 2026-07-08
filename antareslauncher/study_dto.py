@@ -53,7 +53,8 @@ class StudyDTO:
     post_processing: bool = False
     other_options: str = ""
     oversubscribe: bool = False
-    begin: str = "" # time, either YYYY-MM-DDTHH:MM or now+xminutes
+    begin: str = ""  # time, either YYYY-MM-DDTHH:MM or now+xminutes
+
     def __post_init__(self) -> None:
         self.name = Path(self.path).name
 

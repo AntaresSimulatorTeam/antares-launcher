@@ -283,7 +283,7 @@ class RemoteEnvironmentWithSlurm:
             post_processing=my_study.post_processing,
             other_options=my_study.other_options,
             oversubscribe=my_study.oversubscribe,
-            begin=my_study.begin
+            begin=my_study.begin,
         )
         command = self.compose_launch_command(script_params)
 

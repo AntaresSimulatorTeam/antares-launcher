@@ -164,9 +164,7 @@ class MainOptionParser:
         self.parser.add_argument(
             "--begin",
             dest="begin",
-            help=(
-                "Schedule the job to start at a given time, passed verbatim to SLURM's\n"
-            ),
+            help=("Schedule the job to start at a given time, passed verbatim to SLURM's\n"),
         )
 
         self.parser.add_argument(
