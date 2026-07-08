@@ -69,7 +69,7 @@ class SlurmScriptFeatures:
             "--job-name": script_params.study_dir_name,  # non-empty string
             "--time": script_params.time_limit,  # greater than 0
             "--cpus-per-task": script_params.n_cpu,  # greater than 0
-            "--begin": script_params.begin,  # non-empty ISO-8601 string or now+minutes
+            "--begin": script_params.begin,  # non-empty ISO-8601 string or now+minutes, check slurm doc for --begin for more details
         }
 
         _job_type = {
