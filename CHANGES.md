@@ -11,7 +11,7 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 
 ### Changed
 
-* feat: support begin option [#104](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/107)
+* feat: support begin option [#107](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/107)
 
 ## [1.4.9] - 2026-06-10
 
