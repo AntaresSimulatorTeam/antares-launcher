@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import pathlib
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-from antareslauncher import __author__, __project_name__, __version__
+from antareslauncher import __author__, __project_name__
 
 # Dependencies required to install the application in "production" or "development" mode.
 # Use `pip install -e .` to install in "development" mode.

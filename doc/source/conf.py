@@ -12,6 +12,7 @@
 #
 import os
 import sys
+
 # import recommonmark
 from m2r import MdInclude
 
@@ -104,6 +105,7 @@ html_static_path = ["_static"]
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"https://docs.python.org/": None}
+
 
 # from m2r to make `mdinclude` work
 def setup(app):

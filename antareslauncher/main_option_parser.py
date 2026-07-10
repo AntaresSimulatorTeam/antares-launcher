@@ -45,6 +45,7 @@ class MainOptionParser:
             "post_processing": False,
             "other_options": None,
             "oversubscribe": False,
+            "begin": None,
         }
         self.parser.set_defaults(**defaults)
 
@@ -158,6 +159,12 @@ class MainOptionParser:
             "--other-options",
             dest="other_options",
             help="Other options to pass to the antares launcher script",
+        )
+
+        self.parser.add_argument(
+            "--begin",
+            dest="begin",
+            help=("Schedule the job to start at a given time, passed verbatim to SLURM's\n"),
         )
 
         self.parser.add_argument(
