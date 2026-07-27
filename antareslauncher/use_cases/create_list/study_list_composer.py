@@ -8,7 +8,8 @@ from antares.study.version import SolverMinorVersion, StudyVersion
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
-from antareslauncher.study_dto import Modes, StudyDTO
+from antareslauncher.enums import XpansionMode
+from antareslauncher.study_dto import StudyDTO
 
 DEFAULT_VERSION = SolverMinorVersion.parse(0)
 
@@ -53,7 +54,7 @@ class StudyListComposerParameters:
     time_limit: int
     log_dir: str
     n_cpu: int
-    xpansion_mode: str  # "", "r", "cpp", "trajectory"
+    xpansion_mode: XpansionMode
     output_dir: str
     post_processing: bool
     antares_versions_on_remote_server: t.Sequence[SolverMinorVersion]
@@ -95,13 +96,7 @@ class StudyListComposer:
         """
         return self._repo.get_list_of_studies()
 
-    def _create_study(self, path: Path, antares_version: SolverMinorVersion, xpansion_mode: str) -> StudyDTO:
-        run_mode = {
-            "": Modes.antares,
-            "r": Modes.xpansion_r,
-            "cpp": Modes.xpansion_cpp,
-            "trajectory": Modes.xpansion_trajectory,
-        }.get(xpansion_mode, Modes.antares)
+    def _create_study(self, path: Path, antares_version: SolverMinorVersion, xpansion_mode: XpansionMode) -> StudyDTO:
         new_study = StudyDTO(
             path=str(path),
             n_cpu=self.n_cpu,
@@ -110,7 +105,7 @@ class StudyListComposer:
             job_log_dir=self.DEFAULT_JOB_LOG_DIR_PATH,
             output_dir=str(self.output_dir),
             xpansion_mode=xpansion_mode,
-            run_mode=run_mode,
+            run_mode=xpansion_mode.to_run_mode(),
             post_processing=self.post_processing,
             other_options=self.other_options,
             oversubscribe=self._oversubscribe,
@@ -135,7 +130,7 @@ class StudyListComposer:
                 if (directory_path / "input-trajectory.yaml").exists():
                     # Means this is an Xpansion trajectory study.
                     solver_version = _find_study_version_for_xpansion_trajectory(directory_path)
-                    xpansion_mode = "trajectory"
+                    xpansion_mode = XpansionMode.TRAJECTORY
                 else:
                     # Usual behavior, the directory_path should contain a `study.antares` file.
                     solver_version = get_solver_version(directory_path)
@@ -146,7 +141,7 @@ class StudyListComposer:
             self._display.show_message("Didn't find any new simulations...", f"{__name__}.{self.__class__.__name__}")
 
     def _update_database_with_directory(
-        self, directory_path: Path, solver_version: SolverMinorVersion, xpansion_mode: str
+        self, directory_path: Path, solver_version: SolverMinorVersion, xpansion_mode: XpansionMode
     ) -> None:
         antares_version = self.antares_version if self.antares_version != DEFAULT_VERSION else solver_version
         if not antares_version:
@@ -158,13 +153,9 @@ class StudyListComposer:
             )
             self._display.show_message(message, __name__ + "." + self.__class__.__name__)
         else:
-            valid_xpansion_candidate = self.xpansion_mode in {"r", "cpp", "trajectory"}
-            valid_antares_candidate = not self.xpansion_mode
-
-            if valid_antares_candidate or valid_xpansion_candidate:
-                buffer_study = self._create_study(directory_path, antares_version, xpansion_mode)
-                if not self._repo.is_study_inside_database(buffer_study):
-                    self._add_study_to_database(buffer_study)
+            buffer_study = self._create_study(directory_path, antares_version, xpansion_mode)
+            if not self._repo.is_study_inside_database(buffer_study):
+                self._add_study_to_database(buffer_study)
 
     def _add_study_to_database(self, buffer_study: StudyDTO) -> None:
         self._repo.save_study(buffer_study)

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from antares.study.version import SolverMinorVersion
 
+from antareslauncher.enums import XpansionMode
 from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, get_solver_version
 
 CONFIG_NOMINAL_VERSION = """\
@@ -72,7 +73,7 @@ class TestStudyListComposer:
         study_list_composer: StudyListComposer,
         xpansion_mode: str,
     ):
-        study_list_composer.xpansion_mode = xpansion_mode
+        study_list_composer.xpansion_mode = XpansionMode(xpansion_mode)
         study_list_composer.update_study_database()
         studies = study_list_composer.get_list_of_studies()
 

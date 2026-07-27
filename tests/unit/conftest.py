@@ -9,6 +9,7 @@ from antares.study.version import SolverMinorVersion
 
 from antareslauncher.data_repo.data_repo_tinydb import DataRepoTinydb
 from antareslauncher.display.display_terminal import DisplayTerminal
+from antareslauncher.enums import XpansionMode
 from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, StudyListComposerParameters
 from tests.unit.assets import ASSETS_DIR
 
@@ -44,7 +45,7 @@ def study_list_composer_fixture(
             time_limit=42,
             n_cpu=24,
             log_dir=str(tmp_path.joinpath("LOGS")),
-            xpansion_mode="",
+            xpansion_mode=XpansionMode.NOT_XPANSION,
             output_dir=str(tmp_path.joinpath("FINISHED")),
             post_processing=False,
             antares_versions_on_remote_server=[
