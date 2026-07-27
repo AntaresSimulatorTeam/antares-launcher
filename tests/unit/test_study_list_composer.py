@@ -80,11 +80,7 @@ class TestStudyListComposer:
         assert actual_names == expected_names
 
     @pytest.mark.parametrize("antares_version", [0, 850, 990])
-    def test_update_study_database__antares_version(
-        self,
-        study_list_composer: StudyListComposer,
-        antares_version: int,
-    ):
+    def test_update_study_database__antares_version(self, study_list_composer: StudyListComposer, antares_version: int):
         parsed_version = SolverMinorVersion.parse(antares_version)
         study_list_composer.antares_version = parsed_version
         study_list_composer.update_study_database()
