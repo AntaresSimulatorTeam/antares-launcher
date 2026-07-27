@@ -80,15 +80,11 @@ class TestStudyListComposer:
         # check the found studies
         actual_names = {s.name for s in studies}
         expected_names = {
-            "": {
-                "013 TS Generation - Solar power",
-                "024 Hurdle costs - 1",
-                "SMTA-case",
-            },
-            "r": {"SMTA-case"},
-            "cpp": {"SMTA-case"},
-            "trajectory": {"SMTA-case"},
-        }[study_list_composer.xpansion_mode or ""]
+            "013 TS Generation - Solar power",
+            "024 Hurdle costs - 1",
+            "SMTA-case",
+        }
+
         assert actual_names == expected_names
 
     @pytest.mark.parametrize("antares_version", [0, 850, 990])
