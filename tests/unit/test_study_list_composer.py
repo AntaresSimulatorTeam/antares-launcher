@@ -68,11 +68,7 @@ class TestGetSolverVersion:
 
 class TestStudyListComposer:
     @pytest.mark.parametrize("xpansion_mode", ["r", "cpp", "", "trajectory"])
-    def test_update_study_database__xpansion_mode(
-        self,
-        study_list_composer: StudyListComposer,
-        xpansion_mode: str,
-    ):
+    def test_update_study_database__xpansion_mode(self, study_list_composer: StudyListComposer, xpansion_mode: str):
         study_list_composer.xpansion_mode = XpansionMode(xpansion_mode)
         study_list_composer.update_study_database()
         studies = study_list_composer.get_list_of_studies()
