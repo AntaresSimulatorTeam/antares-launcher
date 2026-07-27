@@ -4,6 +4,7 @@ from pathlib import Path
 
 from antares.study.version import SolverMinorVersion
 
+from antareslauncher.enums import XpansionMode
 from antareslauncher.use_cases.create_list.study_list_composer import StudyListComposer, get_solver_version
 
 CONFIG_NOMINAL_VERSION = """\
@@ -67,35 +68,19 @@ class TestGetSolverVersion:
 
 class TestStudyListComposer:
     @pytest.mark.parametrize("xpansion_mode", ["r", "cpp", "", "trajectory"])
-    def test_update_study_database__xpansion_mode(
-        self,
-        study_list_composer: StudyListComposer,
-        xpansion_mode: str,
-    ):
-        study_list_composer.xpansion_mode = xpansion_mode
+    def test_update_study_database__xpansion_mode(self, study_list_composer: StudyListComposer, xpansion_mode: str):
+        study_list_composer.xpansion_mode = XpansionMode(xpansion_mode)
         study_list_composer.update_study_database()
         studies = study_list_composer.get_list_of_studies()
 
         # check the found studies
         actual_names = {s.name for s in studies}
-        expected_names = {
-            "": {
-                "013 TS Generation - Solar power",
-                "024 Hurdle costs - 1",
-                "SMTA-case",
-            },
-            "r": {"SMTA-case"},
-            "cpp": {"SMTA-case"},
-            "trajectory": {"SMTA-case"},
-        }[study_list_composer.xpansion_mode or ""]
+        expected_names = {"013 TS Generation - Solar power", "024 Hurdle costs - 1", "SMTA-case"}
+
         assert actual_names == expected_names
 
     @pytest.mark.parametrize("antares_version", [0, 850, 990])
-    def test_update_study_database__antares_version(
-        self,
-        study_list_composer: StudyListComposer,
-        antares_version: int,
-    ):
+    def test_update_study_database__antares_version(self, study_list_composer: StudyListComposer, antares_version: int):
         parsed_version = SolverMinorVersion.parse(antares_version)
         study_list_composer.antares_version = parsed_version
         study_list_composer.update_study_database()

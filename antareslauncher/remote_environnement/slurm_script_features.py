@@ -3,7 +3,7 @@ import shlex
 
 from antares.study.version import SolverMinorVersion
 
-from antareslauncher.study_dto import Modes
+from antareslauncher.enums import Modes
 
 
 @dataclasses.dataclass
