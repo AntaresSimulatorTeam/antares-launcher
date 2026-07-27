@@ -101,5 +101,5 @@ setup(
     entry_points={
         "console_scripts": ["Antares_Launcher = antareslauncher.advanced_launch:main"],
     },
-    python_requires=">=3.10, <4",
+    python_requires=">=3.11, <4",
 )
