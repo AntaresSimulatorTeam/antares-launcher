@@ -139,22 +139,11 @@ class StudyListComposer:
                 else:
                     # Usual behavior, the directory_path should contain a `study.antares` file.
                     solver_version = get_solver_version(directory_path)
-                    xpansion_mode = self._get_xpansion_mode(directory_path)
+                    xpansion_mode = self.xpansion_mode
                 self._update_database_with_directory(directory_path, solver_version, xpansion_mode)
 
         if not self._new_study_added:
             self._display.show_message("Didn't find any new simulations...", f"{__name__}.{self.__class__.__name__}")
-
-    def _get_xpansion_mode(self, study_path: Path) -> str:
-        """
-        Checks if the given study contains Xpansion candidates.
-        If it does, return self.xpansion_mode.
-        Else, return an empty string. This way when comparing self.xpansion_mode and the empty string we can detect
-        if there are inconsistencies between the study and what the user asked for.
-        """
-        candidates_file_path = study_path.joinpath("user", "expansion", "candidates.ini")
-        is_xpansion_study = candidates_file_path.is_file()
-        return self.xpansion_mode if is_xpansion_study else ""
 
     def _update_database_with_directory(
         self, directory_path: Path, solver_version: SolverMinorVersion, xpansion_mode: str
@@ -169,7 +158,7 @@ class StudyListComposer:
             )
             self._display.show_message(message, __name__ + "." + self.__class__.__name__)
         else:
-            valid_xpansion_candidate = self.xpansion_mode == xpansion_mode
+            valid_xpansion_candidate = self.xpansion_mode in {"r", "cpp", "trajectory"}
             valid_antares_candidate = not self.xpansion_mode
 
             if valid_antares_candidate or valid_xpansion_candidate:
