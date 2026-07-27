@@ -25,9 +25,9 @@ install_requires = [
 # Extra dependencies used for testing in "development" mode.
 # Use `pip install -e .[test]` to install.
 test_requires = [
-    "pytest ~= 7.2.1",
-    "pytest-cov ~= 4.0.0",
-    "pytest-xdist ~= 3.1.0",
+    "pytest ~= 9.1.1",
+    "pytest-cov ~= 7.1.0",
+    "pytest-xdist ~= 3.8.0",
 ]
 
 # Extra dependencies used for developing.
@@ -87,9 +87,10 @@ setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Environment :: Console",
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
