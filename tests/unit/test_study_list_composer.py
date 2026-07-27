@@ -79,11 +79,7 @@ class TestStudyListComposer:
 
         # check the found studies
         actual_names = {s.name for s in studies}
-        expected_names = {
-            "013 TS Generation - Solar power",
-            "024 Hurdle costs - 1",
-            "SMTA-case",
-        }
+        expected_names = {"013 TS Generation - Solar power", "024 Hurdle costs - 1", "SMTA-case"}
 
         assert actual_names == expected_names
 
