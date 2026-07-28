@@ -7,6 +7,15 @@ This change log can be generated with [`auto-changelog`](https://github.com/Cook
 npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 ``` 
 -->
+
+## [1.6.0] - 2026-07-28
+
+### Changed
+
+* fix(xpansion)!: remove check on candidates + add support for 3.13 and 3.14, no longer support 3.10 [#109]( https://github.com/AntaresSimulatorTeam/antares-launcher/pull/109)
+* feat(slurm)!: replace begin with run_at [#110](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/110)
+
+
 ## [1.5.0] - 2026-07-10
 
 ### Changed
