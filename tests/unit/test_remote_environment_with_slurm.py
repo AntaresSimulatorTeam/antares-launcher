@@ -5,6 +5,7 @@ import re
 import shlex
 import socket
 
+from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import List
 from unittest import mock
@@ -728,19 +729,17 @@ class TestRemoteEnvironmentWithSlurm:
         assert output == 1
 
     @pytest.mark.parametrize(
-        "job_type,mode,post_processing,other_options,oversubscribe,begin",
+        "job_type,mode,post_processing,other_options,oversubscribe",
         [
-            ("ANTARES_XPANSION_R", Modes.xpansion_r, True, "", False, ""),
-            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, True, "", False, ""),
-            ("ANTARES", Modes.antares, True, "adq_patch_rc", False, ""),
-            ("ANTARES_XPANSION_R", Modes.xpansion_r, False, "", False, ""),
-            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, False, "", False, ""),
-            ("ANTARES", Modes.antares, False, "", False, ""),
-            ("ANTARES", Modes.antares, False, 'xpress param-optim1="THREADS 4 PRESOLVE 1" solver-logs', False, ""),
-            ("ANTARES_XPANSION_TRAJECTORY", Modes.xpansion_trajectory, False, "", False, ""),
-            ("ANTARES", Modes.antares, False, "", True, ""),
-            ("ANTARES", Modes.antares, False, "", False, "2026-07-04T19:00:00"),
-            ("ANTARES", Modes.antares, False, "", False, "now+5minutes"),
+            ("ANTARES_XPANSION_R", Modes.xpansion_r, True, "", False),
+            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, True, "", False),
+            ("ANTARES", Modes.antares, True, "adq_patch_rc", False),
+            ("ANTARES_XPANSION_R", Modes.xpansion_r, False, "", False),
+            ("ANTARES_XPANSION_CPP", Modes.xpansion_cpp, False, "", False),
+            ("ANTARES", Modes.antares, False, "", False),
+            ("ANTARES", Modes.antares, False, 'xpress param-optim1="THREADS 4 PRESOLVE 1" solver-logs', False),
+            ("ANTARES_XPANSION_TRAJECTORY", Modes.xpansion_trajectory, False, "", False),
+            ("ANTARES", Modes.antares, False, "", True),
         ],
     )
     @pytest.mark.unit_test
@@ -752,10 +751,9 @@ class TestRemoteEnvironmentWithSlurm:
         post_processing,
         other_options,
         oversubscribe: bool,
-        begin: str,
         study,
     ):
-        # given
+        # given: no scheduled start (run_at defaults to None) -> no `--begin` token
         filename_launch_script = remote_env.slurm_script_features.solver_script_path
         # when
         study.run_mode = mode
@@ -771,13 +769,11 @@ class TestRemoteEnvironmentWithSlurm:
             post_processing=study.post_processing,
             other_options=other_options,
             oversubscribe=oversubscribe,
-            begin=begin,
         )
         command = remote_env.compose_launch_command(script_params)
         # then
         change_dir = f"cd {remote_env.remote_base_path}"
         cmd_start = "sbatch" if not oversubscribe else "sbatch --oversubscribe"
-        begin_opt = f" --begin={begin}" if begin else ""
         reference_submit_command = (
             f"{cmd_start}"
             " --partition=fake_partition"
@@ -785,7 +781,6 @@ class TestRemoteEnvironmentWithSlurm:
             f" --job-name={Path(study.path).name}"
             f" --time={study.time_limit // 60}"
             f" --cpus-per-task={study.n_cpu}"
-            f"{begin_opt}"
             f" {filename_launch_script}"
             f" {Path(study.zipfile_path).name}"
             f" {study.antares_version:2d}"
@@ -796,3 +791,28 @@ class TestRemoteEnvironmentWithSlurm:
         reference_command = f"{change_dir} && {reference_submit_command}"
         assert command.split() == reference_command.split()
         assert command == reference_command
+
+    @pytest.mark.unit_test
+    def test_compose_launch_command_with_scheduled_run_at(self, remote_env, study):
+        # given: run_at is 30 minutes after the (mocked) current time
+        script_params = ScriptParametersDTO(
+            study_dir_name=Path(study.path).name,
+            input_zipfile_name=Path(study.zipfile_path).name,
+            time_limit=1,
+            n_cpu=study.n_cpu,
+            antares_version=study.antares_version,
+            run_mode=study.run_mode,
+            post_processing=study.post_processing,
+            other_options="",
+            oversubscribe=False,
+            run_at=datetime(2026, 7, 28, 12, 30, 0),
+        )
+        # when: current_time is frozen so the relative offset is deterministic
+        with mock.patch(
+            "antareslauncher.remote_environnement.slurm_script_features.current_time",
+            return_value=datetime(2026, 7, 28, 12, 0, 0),
+        ):
+            command = remote_env.compose_launch_command(script_params)
+        # then: relative offset, unquoted, positioned right before the launch script
+        filename_launch_script = remote_env.slurm_script_features.solver_script_path
+        assert f"--cpus-per-task={study.n_cpu} --begin=now+30minutes {filename_launch_script}" in command

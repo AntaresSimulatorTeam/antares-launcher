@@ -45,7 +45,7 @@ class MainOptionParser:
             "post_processing": False,
             "other_options": None,
             "oversubscribe": False,
-            "begin": None,
+            "run_at": None,
         }
         self.parser.set_defaults(**defaults)
 
@@ -162,9 +162,13 @@ class MainOptionParser:
         )
 
         self.parser.add_argument(
-            "--begin",
-            dest="begin",
-            help=("Schedule the job to start at a given time, passed verbatim to SLURM's\n"),
+            "--run-at",
+            dest="run_at",
+            type=datetime.datetime.fromisoformat,
+            help=(
+                "Schedule the job to start at a given time instead of as soon as possible.\n"
+                "Expected format is a naive UTC datetime 'YYYY-MM-DDTHH:MM:SS'.\n"
+            ),
         )
 
         self.parser.add_argument(

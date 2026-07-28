@@ -87,6 +87,8 @@ class DataRepoTinydb:
         study_dict = vars(study)
         new = copy.deepcopy(study_dict)  # to avoid modifying the study object
         new["antares_version"] = f"{new['antares_version']:2d}"
+        if new.get("run_at") is not None:
+            new["run_at"] = new["run_at"].isoformat()
         if old:
             diff = _calc_diff(old, new)
             logger.info(f"Updating study '{pk_value}' in database: {diff!r}")
