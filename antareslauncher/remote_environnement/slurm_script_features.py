@@ -1,9 +1,35 @@
 import dataclasses
+import math
 import shlex
+import typing as t
+
+from datetime import datetime, timezone
 
 from antares.study.version import SolverMinorVersion
 
 from antareslauncher.enums import Modes
+
+
+def current_time() -> datetime:
+    """Return the current time as a naive UTC datetime."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def format_slurm_begin(run_at: t.Optional[datetime]) -> t.Optional[str]:
+    """
+    Format a scheduled start time for the SLURM `sbatch --begin` option.
+
+    `run_at` is a naive UTC datetime. We convert it to a *relative* offset
+    (`now+<minutes>minutes`) rather than an absolute time so the result is
+    independent of the SLURM controller's local timezone.
+
+    Returns None when `run_at` is None (the job then starts as soon as possible).
+    """
+    if run_at is None:
+        return None
+    # Round up: a partial minute must never schedule the job *before* `run_at` (e.g. +30s => 1 min).
+    minutes = math.ceil((run_at - current_time()).total_seconds() / 60)
+    return f"now+{max(0, minutes)}minutes"
 
 
 @dataclasses.dataclass
@@ -17,7 +43,7 @@ class ScriptParametersDTO:
     post_processing: bool
     other_options: str
     oversubscribe: bool
-    begin: str = ""
+    run_at: t.Optional[datetime] = None
 
 
 class SlurmScriptFeatures:
@@ -69,7 +95,7 @@ class SlurmScriptFeatures:
             "--job-name": script_params.study_dir_name,  # non-empty string
             "--time": script_params.time_limit,  # greater than 0
             "--cpus-per-task": script_params.n_cpu,  # greater than 0
-            "--begin": script_params.begin,  # non-empty ISO-8601 string or now+minutes, check slurm doc for --begin for more details
+            "--begin": format_slurm_begin(script_params.run_at),  # "now+<minutes>minutes" when scheduled, else None
         }
 
         _job_type = {

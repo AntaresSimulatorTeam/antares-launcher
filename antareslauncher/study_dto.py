@@ -1,6 +1,7 @@
 import typing as t
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 
 from antares.study.version import StudyVersion
@@ -47,7 +48,7 @@ class StudyDTO:
     post_processing: bool = False
     other_options: str = ""
     oversubscribe: bool = False
-    begin: str = ""  # time, either YYYY-MM-DDTHH:MM or now+xminutes
+    run_at: t.Optional[datetime] = None 
 
     def __post_init__(self) -> None:
         self.name = Path(self.path).name
@@ -60,4 +61,6 @@ class StudyDTO:
         attrs = dict(**doc)
         attrs.pop("name", None)  # calculated
         attrs["antares_version"] = StudyVersion.parse(attrs["antares_version"])
+        if attrs.get("run_at"):
+            attrs["run_at"] = datetime.fromisoformat(attrs["run_at"])
         return cls(**attrs)

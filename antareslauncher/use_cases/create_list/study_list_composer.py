@@ -2,6 +2,7 @@ import configparser
 import typing as t
 
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 from antares.study.version import SolverMinorVersion, StudyVersion
@@ -61,7 +62,7 @@ class StudyListComposerParameters:
     other_options: str
     antares_version: SolverMinorVersion = DEFAULT_VERSION
     oversubscribe: bool = False
-    begin: str = ""
+    run_at: t.Optional[datetime] = None
 
 
 class StudyListComposer:
@@ -86,7 +87,7 @@ class StudyListComposer:
         self.DEFAULT_JOB_LOG_DIR_PATH = str(Path(self.log_dir) / "JOB_LOGS")
         self.ANTARES_VERSIONS_ON_REMOTE_SERVER = parameters.antares_versions_on_remote_server
         self._oversubscribe = parameters.oversubscribe
-        self._begin = parameters.begin
+        self._run_at = parameters.run_at
 
     def get_list_of_studies(self) -> t.Sequence[StudyDTO]:
         """Retrieve the list of studies from the repo
@@ -109,7 +110,7 @@ class StudyListComposer:
             post_processing=self.post_processing,
             other_options=self.other_options,
             oversubscribe=self._oversubscribe,
-            begin=self._begin,
+            run_at=self._run_at,
         )
         return new_study
 

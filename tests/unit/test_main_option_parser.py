@@ -1,5 +1,6 @@
 import pytest
 
+from datetime import datetime
 from pathlib import Path
 
 from antareslauncher.main_option_parser import MainOptionParser, ParserParameters, look_for_default_ssh_conf_file
@@ -32,7 +33,7 @@ class TestMainOptionParser:
             "post_processing": False,
             "json_ssh_config": look_for_default_ssh_conf_file(self.main_options_parameters),
             "oversubscribe": False,
-            "begin": None,
+            "run_at": None,
         }
 
     @pytest.fixture(scope="function")
@@ -62,7 +63,7 @@ class TestMainOptionParser:
         assert output.studies_in == "hello"
 
     @pytest.mark.unit_test
-    def test_begin_get_correctly_set(self, parser):
+    def test_run_at_get_correctly_parsed_to_datetime(self, parser):
         parser.add_basic_arguments()
-        output = parser.parser.parse_args(["--begin=2026-07-04T19:00:00"])
-        assert output.begin == "2026-07-04T19:00:00"
+        output = parser.parser.parse_args(["--run-at=2026-07-04T19:00:00"])
+        assert output.run_at == datetime(2026, 7, 4, 19, 0, 0)
