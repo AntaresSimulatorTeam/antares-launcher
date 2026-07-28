@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import shlex; print\\(shlex.quote\\('2026-07-04T19:00:00'\\)\\)\")",
+      "Bash(python -m pytest tests/ -q)",
+      "Bash(pip show *)",
+      "Bash(python -m pip install 'antares-study-version~=1.0.18' -q)",
+      "Bash(pyenv virtualenv *)",
+      "Bash(python -c \"from antares.study.version import SolverMinorVersion; import antares; print\\('ok'\\)\")",
+      "Bash(python -m pytest tests/unit/test_remote_environment_with_slurm.py tests/unit/test_study_dto.py -q)",
+      "Bash(git --no-pager diff --stat)",
+      "Bash(python -c ' *)"
+    ]
+  }
+}
