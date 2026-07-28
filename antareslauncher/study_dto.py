@@ -48,7 +48,7 @@ class StudyDTO:
     post_processing: bool = False
     other_options: str = ""
     oversubscribe: bool = False
-    run_at: t.Optional[datetime] = None 
+    run_at: t.Optional[datetime] = None
 
     def __post_init__(self) -> None:
         self.name = Path(self.path).name

@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
-from unittest import mock
-
 import pytest
+
+from datetime import datetime, timedelta, timezone
+from unittest import mock
 
 from antareslauncher.remote_environnement.slurm_script_features import format_slurm_begin
 

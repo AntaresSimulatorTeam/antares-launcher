@@ -24,9 +24,14 @@ def format_slurm_begin(run_at: t.Optional[datetime]) -> t.Optional[str]:
     independent of the SLURM controller's local timezone.
 
     Returns None when `run_at` is None (the job then starts as soon as possible).
+
+    Raises:
+        ValueError: if `run_at` is timezone-aware (only naive UTC is accepted).
     """
     if run_at is None:
         return None
+    if run_at.tzinfo is not None:
+        raise ValueError(f"run_at must be a naive UTC datetime (no timezone info), got {run_at!r}")
     # Round up: a partial minute must never schedule the job *before* `run_at` (e.g. +30s => 1 min).
     minutes = math.ceil((run_at - current_time()).total_seconds() / 60)
     return f"now+{max(0, minutes)}minutes"
