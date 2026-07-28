@@ -12,8 +12,7 @@ npx auto-changelog -l false --hide-empty-releases  -v v1.3.1 -o CHANGES.out.md
 
 ### Changed
 
-
-* fix(xpansion): remove check on candidates [#109]( https://github.com/AntaresSimulatorTeam/antares-launcher/pull/109)
+* fix(xpansion)!: remove check on candidates + add support for 3.12 and 3.14, no longer support 3.10 [#109]( https://github.com/AntaresSimulatorTeam/antares-launcher/pull/109)
 * feat(slurm)!: replace begin with run_at [#110](https://github.com/AntaresSimulatorTeam/antares-launcher/pull/110)
 
 
