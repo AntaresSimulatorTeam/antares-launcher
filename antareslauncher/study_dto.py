@@ -43,7 +43,7 @@ class StudyDTO:
     time_limit: t.Optional[int] = None
     n_cpu: int = 1
     antares_version: StudyVersion = StudyVersion.parse(0)
-    xpansion_mode: XpansionMode = XpansionMode.NOT_XPANSION
+    xpansion_mode: XpansionMode | None = None
     run_mode: Modes = Modes.antares
     post_processing: bool = False
     other_options: str = ""

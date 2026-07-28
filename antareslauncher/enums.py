@@ -9,15 +9,12 @@ class Modes(IntEnum):
 
 
 class XpansionMode(StrEnum):
-    NOT_XPANSION = ""
     R = "r"
     CPP = "cpp"
     TRAJECTORY = "trajectory"
 
     def to_run_mode(self) -> Modes:
-        if self == XpansionMode.NOT_XPANSION:
-            return Modes.antares
-        elif self == XpansionMode.R:
+        if self == XpansionMode.R:
             return Modes.xpansion_r
         elif self == XpansionMode.CPP:
             return Modes.xpansion_cpp
