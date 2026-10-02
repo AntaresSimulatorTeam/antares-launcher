@@ -200,7 +200,7 @@ class TestRemoteEnvironmentWithSlurm:
         host = "host"
         remote_env.connection.username = username
         remote_env.connection.host = host
-        command = f"squeue -u {username} --Format=name:40,state:12,starttime:22,TimeUsed:12,timelimit:12"
+        command = f"squeue -u {username} --Format=jobid:10,name:40,state:12,starttime:22,TimeUsed:12,timelimit:12"
         output = "output"
         error = None
         # when
